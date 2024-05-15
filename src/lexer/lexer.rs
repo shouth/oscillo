@@ -3,6 +3,13 @@ use std::str::Chars;
 
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Debug, Hash)]
 pub enum TokenKind {
+    Space,
+    NewLine,
+    LineJoint,
+    Comment,
+    Indent,
+    Dedent,
+
     Identifier,
     String,
     Integer,
@@ -35,11 +42,6 @@ pub enum TokenKind {
     Percent,
     Exclamation,
 
-    Comment,
-    Indent,
-    Dedent,
-    Space,
-    NewLine,
     Eos,
 
     Error,
@@ -198,6 +200,80 @@ impl<'a> RawLexer<'_> {
                     self.eat('\n');
                     self.token(TokenKind::NewLine)
                 }
+                '\\' => {
+                    if self.eat('\n') {
+                        self.token(TokenKind::LineJoint)
+                    } else if self.eat('\r') {
+                        self.eat('\n');
+                        self.token(TokenKind::LineJoint)
+                    } else {
+                        self.token(TokenKind::Error)
+                    }
+                }
+                '#' => {
+                    while self.first().is_some_and(|c| c != '\n' && c != '\r') {
+                        self.bump();
+                    }
+                    self.token(TokenKind::Comment)
+                }
+                '|' => {
+                    while self.first().is_some_and(|c| c != '|') {
+                        self.bump();
+                    }
+                    self.bump();
+                    self.token(TokenKind::Identifier)
+                }
+                c if is_id_start_char(c) => {
+                    while self.first().is_some_and(is_id_char) {
+                        self.bump();
+                    }
+                    self.token(TokenKind::Identifier)
+                }
+                '"' | '\'' => {
+                    self.eat_string(c);
+                    self.token(TokenKind::String)
+                }
+                '0'..='9' => {
+                    if c == '0' && self.first().is_some_and(|c| c == 'x') {
+                        if self.second().is_some_and(|c| c.is_digit(16)) {
+                            // hexadecimal
+                            self.bump();
+                            self.eat_digits(16);
+                            self.token(TokenKind::Integer)
+                        } else {
+                            // just '0'
+                            self.token(TokenKind::Integer)
+                        }
+                    } else {
+                        // decimal
+                        self.eat_digits(10);
+                        if let Some('.') = self.first() {
+                            if self.second().is_some_and(|c| c.is_digit(10)) {
+                                self.bump();
+                                self.eat_digits(10);
+                                self.eat_exponent();
+                                self.token(TokenKind::Float)
+                            } else {
+                                self.token(TokenKind::Integer)
+                            }
+                        } else if self.eat_exponent() {
+                            self.token(TokenKind::Float)
+                        } else {
+                            self.token(TokenKind::Integer)
+                        }
+                    }
+                }
+                '.' => {
+                    if self.eat('.') {
+                        self.token(TokenKind::DotDot)
+                    } else if self.first().is_some_and(|c| c.is_digit(10)) {
+                        self.eat_digits(10);
+                        self.eat_exponent();
+                        self.token(TokenKind::Float)
+                    } else {
+                        self.token(TokenKind::Dot)
+                    }
+                }
                 ',' => self.token(TokenKind::Comma),
                 '@' => self.token(TokenKind::At),
                 '(' => self.token(TokenKind::LeftParenthesis),
@@ -252,70 +328,6 @@ impl<'a> RawLexer<'_> {
                     } else {
                         self.token(TokenKind::Assign)
                     }
-                }
-                '.' => {
-                    if self.eat('.') {
-                        self.token(TokenKind::DotDot)
-                    } else if self.first().is_some_and(|c| c.is_digit(10)) {
-                        self.eat_digits(10);
-                        self.eat_exponent();
-                        self.token(TokenKind::Float)
-                    } else {
-                        self.token(TokenKind::Dot)
-                    }
-                }
-                '#' => {
-                    while self.first().is_some_and(|c| c != '\n' && c != '\r') {
-                        self.bump();
-                    }
-                    self.token(TokenKind::Comment)
-                }
-                '|' => {
-                    while self.first().is_some_and(|c| c != '|') {
-                        self.bump();
-                    }
-                    self.bump();
-                    self.token(TokenKind::Identifier)
-                }
-                '"' | '\'' => {
-                    self.eat_string(c);
-                    self.token(TokenKind::String)
-                }
-                '0'..='9' => {
-                    if c == '0' && self.first().is_some_and(|c| c == 'x') {
-                        if self.second().is_some_and(|c| c.is_digit(16)) {
-                            // hexadecimal
-                            self.bump();
-                            self.eat_digits(16);
-                            self.token(TokenKind::Integer)
-                        } else {
-                            // just '0'
-                            self.token(TokenKind::Integer)
-                        }
-                    } else {
-                        // decimal
-                        self.eat_digits(10);
-                        if let Some('.') = self.first() {
-                            if self.second().is_some_and(|c| c.is_digit(10)) {
-                                self.bump();
-                                self.eat_digits(10);
-                                self.eat_exponent();
-                                self.token(TokenKind::Float)
-                            } else {
-                                self.token(TokenKind::Integer)
-                            }
-                        } else if self.eat_exponent() {
-                            self.token(TokenKind::Float)
-                        } else {
-                            self.token(TokenKind::Integer)
-                        }
-                    }
-                }
-                c if is_id_start_char(c) => {
-                    while self.first().is_some_and(is_id_char) {
-                        self.bump();
-                    }
-                    self.token(TokenKind::Identifier)
                 }
                 _ => self.token(TokenKind::Error),
             }
