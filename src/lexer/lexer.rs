@@ -1,19 +1,21 @@
-use super::identifier_char::{is_id_char, is_id_start_char};
+use super::chars::{is_id_char, is_id_start_char};
 use std::str::Chars;
 
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Debug, Hash)]
 pub enum TokenKind {
-    Identifier { closed: bool },
-    String {},
-    Integer {},
+    Identifier,
+    String,
+    Integer,
     Float,
 
     Dot,
+    DotDot,
     Comma,
     Colon,
+    ColonColon,
     Assign,
     At,
     SingleArrow,
-    VerticalLine,
     LeftParenthesis,
     RightParenthesis,
     LeftBracket,
@@ -31,188 +33,372 @@ pub enum TokenKind {
     Star,
     Slash,
     Percent,
+    Exclamation,
 
-    Indent {},
-    Space {},
-    NewLine {},
+    Indent,
+    Dedent,
+    Space,
+    NewLine,
+    Eos,
 
-    Unknown,
+    Error,
 }
 
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Debug, Hash)]
 pub struct Token {
     pub kind: TokenKind,
     pub length: usize,
 }
 
-struct Lexer<'a> {
+struct LowerLexer<'a> {
     source: Chars<'a>,
     offset: usize,
 }
 
-impl<'a> Lexer<'a> {
-    fn new(src: &'a str) -> Lexer {
-        Lexer {
+impl<'a> LowerLexer<'a> {
+    fn new(src: &'a str) -> LowerLexer {
+        LowerLexer {
             source: src.chars(),
             offset: 0,
         }
     }
 
-    fn bump(&mut self) {
-        self.offset += 1;
-    }
-
     fn first(&self) -> Option<char> {
-        self.source.clone().nth(self.offset)
+        self.source.clone().nth(self.offset + 0)
     }
 
     fn second(&self) -> Option<char> {
         self.source.clone().nth(self.offset + 1)
     }
 
-    fn token(&mut self, kind: TokenKind) -> Token {
-        let offset = self.offset;
-        self.offset = 0;
-        self.source.nth(offset);
-        Token {
-            kind,
-            length: offset,
-        }
+    fn third(&self) -> Option<char> {
+        self.source.clone().nth(self.offset + 2)
     }
 
-    fn lex_identifier(&mut self) -> Option<Token> {
-        match self.first() {
-            Some(c) if is_id_start_char(c) => {
-                self.bump();
-                while let Some(c) = self.first() {
-                    if !is_id_char(c) {
-                        break;
-                    }
-                    self.bump();
-                }
-                Some(self.token(TokenKind::Identifier { closed: true }))
-            }
-            Some('|') => {
-                self.bump();
-                while let Some(c) = self.first() {
-                    if c == '|' {
-                        break;
-                    }
-                    self.bump();
-                }
-
-                if let Some('|') = self.first() {
-                    self.bump();
-                    Some(self.token(TokenKind::Identifier { closed: true }))
-                } else {
-                    Some(self.token(TokenKind::Identifier { closed: false }))
-                }
-            }
-            Some(_) => {
-                self.bump();
-                Some(self.token(TokenKind::Unknown))
-            }
-            None => None,
-        }
+    fn bump(&mut self) {
+        self.offset += 1;
     }
 
-    fn read_digits(&mut self, radix: u32) -> usize {
-        let mut count = 0;
-        while let Some(c) = self.first() {
-            if c.is_digit(radix) {
-                self.bump();
-                count += 1;
-            } else {
-                break;
-            }
-        }
-        count
-    }
-
-    fn lex_float_with_exponent(&mut self) -> Option<Token> {
-        match self.first() {
-            Some('e' | 'E') => self.bump(),
-            _ => return Some(self.token(TokenKind::Unknown)),
-        };
-
-        match self.first() {
-            Some('+' | '-') => self.bump(),
-            _ => (),
-        };
-
-        if self.read_digits(10) > 0 {
-            Some(self.token(TokenKind::Float))
+    fn eat(&mut self, c: char) -> bool {
+        if self.first().is_some_and(|x| x == c) {
+            self.bump();
+            true
         } else {
-            Some(self.token(TokenKind::Unknown))
+            false
         }
     }
 
-    fn lex_float_with_fraction_and_exponent(&mut self) -> Option<Token> {
-        match self.first() {
-            Some('.') => self.bump(),
-            _ => return Some(self.token(TokenKind::Unknown)),
-        };
-
-        if self.read_digits(10) == 0 {
-            return Some(self.token(TokenKind::Unknown));
-        }
-
-        match self.first() {
-            Some('e' | 'E') => self.lex_float_with_exponent(),
-            _ => Some(self.token(TokenKind::Float)),
+    fn eat_digits(&mut self, radix: u32) -> bool {
+        if self.first().is_some_and(|c| c.is_digit(radix)) {
+            while self.first().is_some_and(|c| c.is_digit(radix)) {
+                self.bump();
+            }
+            true
+        } else {
+            false
         }
     }
 
-    fn lex_decimal_without_sign(&mut self, allow_integer: bool) -> Option<Token> {
-        if self.read_digits(10) == 0 {
-            return Some(self.token(TokenKind::Unknown));
+    fn eat_exponent(&mut self) -> bool {
+        if self.first().is_some_and(|c| c != 'e' && c != 'E') {
+            false
+        } else if self.second().is_some_and(|c| c == '+' || c == '-')
+            && self.third().is_some_and(|c| c.is_digit(10))
+        {
+            // start with 'e+', 'e-', 'E+', 'E-'
+            self.bump();
+            self.bump();
+            self.eat_digits(10);
+            true
+        } else if self.second().is_some_and(|c| c.is_digit(10)) {
+            // start with 'e', 'E'
+            self.bump();
+            self.eat_digits(10);
+            true
+        } else {
+            false
         }
+    }
 
-        match self.first() {
-            Some('.') => self.lex_float_with_fraction_and_exponent(),
-            Some('e' | 'E') => self.lex_float_with_exponent(),
-            _ => {
-                if allow_integer {
-                    Some(self.token(TokenKind::Integer {}))
+    fn eat_string(&mut self, delimiter: char) -> bool {
+        if !self.eat(delimiter) {
+            false
+        } else if !self.eat(delimiter) {
+            // nonempty short-string
+            loop {
+                if let Some(c) = self.first() {
+                    match c {
+                        '\\' => {
+                            self.bump();
+                            self.bump();
+                        }
+                        '\n' | '\r' => break,
+                        _ if c == delimiter => {
+                            self.bump();
+                            break;
+                        }
+                        _ => self.bump(),
+                    }
                 } else {
-                    Some(self.token(TokenKind::Unknown))
+                    break;
                 }
             }
+            true
+        } else if !self.eat(delimiter) {
+            // empty short-string
+            true
+        } else {
+            // long-string
+            loop {
+                if let Some(c) = self.first() {
+                    match c {
+                        '\\' => {
+                            self.bump();
+                            self.bump();
+                        }
+                        _ if c == delimiter => {
+                            self.bump();
+                            break;
+                        }
+                        _ => self.bump(),
+                    }
+                } else {
+                    break;
+                }
+            }
+            true
         }
     }
 
-    fn lex_number(&mut self) -> Option<Token> {
-        match self.first() {
-            Some('+') => {
-                self.bump();
-                match self.first() {
-                    Some('.') => self.lex_float_with_fraction_and_exponent(),
-                    Some(c) if c.is_digit(10) => self.lex_decimal_without_sign(false),
-                    _ => Some(self.token(TokenKind::Unknown)),
+    fn token(&mut self, kind: TokenKind) -> Token {
+        let length = self.offset;
+        self.offset = 0;
+        if length > 0 {
+            self.source.nth(length - 1);
+        }
+        Token { kind, length }
+    }
+
+    pub fn lex(&mut self) -> Token {
+        if let Some(c) = self.first() {
+            self.bump();
+            match c {
+                ' ' | '\t' => {
+                    while self.eat(' ') || self.eat('\t') {}
+                    self.token(TokenKind::Space)
                 }
-            }
-            Some('-') => {
-                self.bump();
-                match self.first() {
-                    Some('.') => self.lex_float_with_fraction_and_exponent(),
-                    Some(c) if c.is_digit(10) => self.lex_decimal_without_sign(true),
-                    _ => Some(self.token(TokenKind::Unknown)),
+                '\n' => self.token(TokenKind::NewLine),
+                '\r' => {
+                    self.eat('\n');
+                    self.token(TokenKind::NewLine)
                 }
-            }
-            Some('.') => self.lex_float_with_fraction_and_exponent(),
-            Some(c) if c.is_digit(10) => match self.second() {
-                Some('x') => {
-                    self.bump();
-                    self.bump();
-                    if self.read_digits(16) > 0 {
-                        Some(self.token(TokenKind::Integer {}))
+                ',' => self.token(TokenKind::Comma),
+                '@' => self.token(TokenKind::At),
+                '(' => self.token(TokenKind::LeftParenthesis),
+                ')' => self.token(TokenKind::RightParenthesis),
+                '[' => self.token(TokenKind::LeftBracket),
+                ']' => self.token(TokenKind::RightBracket),
+                '?' => self.token(TokenKind::Question),
+                '+' => self.token(TokenKind::Plus),
+                '*' => self.token(TokenKind::Star),
+                '/' => self.token(TokenKind::Slash),
+                '%' => self.token(TokenKind::Percent),
+                ':' => {
+                    if self.eat(':') {
+                        self.token(TokenKind::ColonColon)
                     } else {
-                        Some(self.token(TokenKind::Unknown))
+                        self.token(TokenKind::Colon)
                     }
                 }
-                _ => self.lex_decimal_without_sign(true),
-            },
-            Some(_) => Some(self.token(TokenKind::Unknown)),
-            None => None,
+                '<' => {
+                    if self.eat('=') {
+                        self.token(TokenKind::LessThanEqual)
+                    } else {
+                        self.token(TokenKind::LessThan)
+                    }
+                }
+                '>' => {
+                    if self.eat('=') {
+                        self.token(TokenKind::GreaterThanEqual)
+                    } else {
+                        self.token(TokenKind::GreaterThan)
+                    }
+                }
+                '!' => {
+                    if self.eat('=') {
+                        self.token(TokenKind::NotEqual)
+                    } else {
+                        self.token(TokenKind::Exclamation)
+                    }
+                }
+                '-' => {
+                    if self.eat('>') {
+                        self.token(TokenKind::SingleArrow)
+                    } else {
+                        self.token(TokenKind::Minus)
+                    }
+                }
+                '=' => {
+                    if self.eat('>') {
+                        self.token(TokenKind::DoubleArrow)
+                    } else if self.eat('=') {
+                        self.token(TokenKind::Equal)
+                    } else {
+                        self.token(TokenKind::Assign)
+                    }
+                }
+                '.' => {
+                    if self.eat('.') {
+                        self.token(TokenKind::DotDot)
+                    } else if self.first().is_some_and(|c| c.is_digit(10)) {
+                        self.eat_digits(10);
+                        self.eat_exponent();
+                        self.token(TokenKind::Float)
+                    } else {
+                        self.token(TokenKind::Dot)
+                    }
+                }
+                '|' => {
+                    while self.first().is_some_and(|c| c != '|') {
+                        self.bump();
+                    }
+                    self.bump();
+                    self.token(TokenKind::Identifier)
+                }
+                c @ ('"' | '\'') => {
+                    self.eat_string(c);
+                    self.token(TokenKind::String)
+                }
+                c @ '0'..='9' => {
+                    if c == '0' && self.first().is_some_and(|c| c == 'x') {
+                        if self.second().is_some_and(|c| c.is_digit(16)) {
+                            // hexadecimal
+                            self.bump();
+                            self.eat_digits(16);
+                            self.token(TokenKind::Integer)
+                        } else {
+                            // just '0'
+                            self.token(TokenKind::Integer)
+                        }
+                    } else {
+                        // decimal
+                        self.eat_digits(10);
+                        if let Some('.') = self.first() {
+                            if self.second().is_some_and(|c| c.is_digit(10)) {
+                                self.bump();
+                                self.eat_digits(10);
+                                self.eat_exponent();
+                                self.token(TokenKind::Float)
+                            } else {
+                                self.token(TokenKind::Integer)
+                            }
+                        } else if self.eat_exponent() {
+                            self.token(TokenKind::Float)
+                        } else {
+                            self.token(TokenKind::Integer)
+                        }
+                    }
+                }
+                c if is_id_start_char(c) => {
+                    while self.first().is_some_and(is_id_char) {
+                        self.bump();
+                    }
+                    self.token(TokenKind::Identifier)
+                }
+                _ => self.token(TokenKind::Error),
+            }
+        } else {
+            self.token(TokenKind::Eos)
         }
+    }
+}
+
+struct Lexer<'a> {
+    lower: LowerLexer<'a>,
+    token: Token,
+}
+
+impl Lexer<'_> {
+    pub fn new(src: &str) -> Lexer {
+        let mut lower = LowerLexer::new(src);
+        let token = lower.lex();
+        Lexer { lower, token }
+    }
+
+    fn lex(&mut self) -> Token {
+        let mut token = self.lower.lex();
+        std::mem::swap(&mut self.token, &mut token);
+        token
+    }
+}
+
+impl Iterator for Lexer<'_> {
+    type Item = Token;
+
+    fn next(&mut self) -> Option<Token> {
+        let token = self.lex();
+        match (token.kind, self.token.kind) {
+            (TokenKind::Plus, TokenKind::Float) => {
+                let next_token = self.lex();
+                Some(Token {
+                    kind: TokenKind::Float,
+                    length: token.length + self.token.length + next_token.length,
+                })
+            }
+            (TokenKind::Minus, TokenKind::Integer | TokenKind::Float) => {
+                let next_token = self.lex();
+                Some(Token {
+                    kind: TokenKind::Float,
+                    length: token.length + self.token.length + next_token.length,
+                })
+            }
+            (TokenKind::Eos, _) => None,
+            _ => Some(token),
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::vec;
+
+    use super::*;
+
+    fn tokenize(source: &str) -> Vec<&str> {
+        let lexer = Lexer::new(source);
+        let tokens: Vec<Token> = lexer.collect();
+        tokens
+            .iter()
+            .scan(0, |offset, token| {
+                let end = *offset + token.length;
+                let lexeme = &source[*offset..end];
+                *offset = end;
+                Some(lexeme)
+            })
+            .collect()
+    }
+
+    #[test]
+    fn test_numeric() {
+        assert_eq!(tokenize("0x"), vec!["0", "x"]);
+        assert_eq!(tokenize("0x0"), vec!["0x0"]);
+
+        assert_eq!(tokenize("123."), vec!["123", "."]);
+        assert_eq!(tokenize("123.."), vec!["123", ".."]);
+        assert_eq!(tokenize(".123"), vec![".123"]);
+        assert_eq!(tokenize("..123"), vec!["..", "123"]);
+
+        assert_eq!(tokenize("1.23"), vec!["1.23"]);
+        assert_eq!(tokenize("+1.23"), vec!["+1.23"]);
+        assert_eq!(tokenize("-1.23"), vec!["-1.23"]);
+
+        assert_eq!(tokenize("1.23e456"), vec!["1.23e456"]);
+        assert_eq!(tokenize("1.23e 456"), vec!["1.23", "e", " ", "456"]);
+        assert_eq!(tokenize("1.23e+456"), vec!["1.23e+456"]);
+        assert_eq!(tokenize("1.23ee+456"), vec!["1.23", "ee", "+", "456"]);
+        assert_eq!(tokenize("1.23e +456"), vec!["1.23", "e", " ", "+", "456"]);
+        assert_eq!(tokenize("1.23e-456"), vec!["1.23e-456"]);
+        assert_eq!(tokenize("1.23ee-456"), vec!["1.23", "ee", "-456"]);
+        assert_eq!(tokenize("1.23e -456"), vec!["1.23", "e", " ", "-456"]);
     }
 }
