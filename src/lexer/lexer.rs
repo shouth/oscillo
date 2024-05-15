@@ -35,6 +35,7 @@ pub enum TokenKind {
     Percent,
     Exclamation,
 
+    Comment,
     Indent,
     Dedent,
     Space,
@@ -263,6 +264,12 @@ impl<'a> RawLexer<'_> {
                         self.token(TokenKind::Dot)
                     }
                 }
+                '#' => {
+                    while self.first().is_some_and(|c| c != '\n' && c != '\r') {
+                        self.bump();
+                    }
+                    self.token(TokenKind::Comment)
+                }
                 '|' => {
                     while self.first().is_some_and(|c| c != '|') {
                         self.bump();
@@ -319,20 +326,32 @@ impl<'a> RawLexer<'_> {
 }
 
 struct Lexer<'a> {
+    src: &'a str,
     lexer: RawLexer<'a>,
     token: Token,
+    offset: usize,
+    indent: Vec<(&'a str, usize)>,
+    newline: bool,
 }
 
 impl Lexer<'_> {
     pub fn new(src: &str) -> Lexer {
         let mut lexer = RawLexer::new(src);
         let token = lexer.next();
-        Lexer { lexer, token }
+        Lexer {
+            src,
+            lexer,
+            token,
+            offset: 0,
+            indent: vec![("", 0)],
+            newline: true,
+        }
     }
 
     fn lex(&mut self) -> Token {
         let mut token = self.lexer.next();
         std::mem::swap(&mut self.token, &mut token);
+        self.offset += token.length;
         token
     }
 
@@ -341,29 +360,71 @@ impl Lexer<'_> {
     }
 
     pub fn next(&mut self) -> Token {
-        let token = self.lex();
-        match token.kind {
-            TokenKind::Plus => match self.peek().kind {
-                TokenKind::Float => {
-                    let next_token = self.lex();
-                    Token {
-                        kind: TokenKind::Float,
-                        length: token.length + next_token.length,
+        if self.newline {
+            self.newline = false;
+
+            let (indent_str, indent_width) = match self.peek().kind {
+                TokenKind::Space => {
+                    let indent_str = &self.src[self.offset..self.offset + self.peek().length];
+                    let indent_width = indent_str
+                        .chars()
+                        .map(|c| if c == '\t' { 8 } else { 1 })
+                        .sum();
+                    (indent_str, indent_width)
+                }
+                _ => ("", 0),
+            };
+
+            let (prev_indent_str, prev_indent_width) = self.indent.last().unwrap();
+            if indent_width > *prev_indent_width {
+                self.indent.push((indent_str, indent_width));
+                Token {
+                    kind: TokenKind::Indent,
+                    length: 0,
+                }
+            } else if indent_width < *prev_indent_width {
+                self.indent.pop();
+                Token {
+                    kind: TokenKind::Dedent,
+                    length: 0,
+                }
+            } else if indent_str != *prev_indent_str {
+                Token {
+                    kind: TokenKind::Error,
+                    length: 0,
+                }
+            } else {
+                self.next()
+            }
+        } else {
+            let token = self.lex();
+            match token.kind {
+                TokenKind::Plus => match self.peek().kind {
+                    TokenKind::Float => {
+                        let next_token = self.lex();
+                        Token {
+                            kind: TokenKind::Float,
+                            length: token.length + next_token.length,
+                        }
                     }
+                    _ => token,
+                },
+                TokenKind::Minus => match self.peek().kind {
+                    kind @ (TokenKind::Integer | TokenKind::Float) => {
+                        let next_token = self.lex();
+                        Token {
+                            kind,
+                            length: token.length + next_token.length,
+                        }
+                    }
+                    _ => token,
+                },
+                TokenKind::NewLine => {
+                    self.newline = true;
+                    token
                 }
                 _ => token,
-            },
-            TokenKind::Minus => match self.peek().kind {
-                kind @ (TokenKind::Integer | TokenKind::Float) => {
-                    let next_token = self.lex();
-                    Token {
-                        kind,
-                        length: token.length + next_token.length,
-                    }
-                }
-                _ => token,
-            },
-            _ => token,
+            }
         }
     }
 }
