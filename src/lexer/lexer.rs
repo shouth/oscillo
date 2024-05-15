@@ -342,14 +342,14 @@ impl Iterator for Lexer<'_> {
                 let next_token = self.lex();
                 Some(Token {
                     kind: TokenKind::Float,
-                    length: token.length + self.token.length + next_token.length,
+                    length: token.length + next_token.length,
                 })
             }
             (TokenKind::Minus, TokenKind::Integer | TokenKind::Float) => {
                 let next_token = self.lex();
                 Some(Token {
                     kind: TokenKind::Float,
-                    length: token.length + self.token.length + next_token.length,
+                    length: token.length + next_token.length,
                 })
             }
             (TokenKind::Eos, _) => None,
