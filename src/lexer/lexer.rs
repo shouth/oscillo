@@ -50,14 +50,14 @@ pub struct Token {
     pub length: usize,
 }
 
-struct LowerLexer<'a> {
+struct RawLexer<'a> {
     source: Chars<'a>,
     offset: usize,
 }
 
-impl<'a> LowerLexer<'a> {
-    fn new(src: &'a str) -> LowerLexer {
-        LowerLexer {
+impl<'a> RawLexer<'a> {
+    fn new(src: &'a str) -> RawLexer {
+        RawLexer {
             source: src.chars(),
             offset: 0,
         }
@@ -75,8 +75,10 @@ impl<'a> LowerLexer<'a> {
         self.source.clone().nth(self.offset + 2)
     }
 
-    fn bump(&mut self) {
+    fn bump(&mut self) -> Option<char> {
+        let offset = self.offset;
         self.offset += 1;
+        self.source.clone().nth(offset)
     }
 
     fn eat(&mut self, c: char) -> bool {
@@ -137,7 +139,9 @@ impl<'a> LowerLexer<'a> {
                             self.bump();
                             break;
                         }
-                        _ => self.bump(),
+                        _ => {
+                            self.bump();
+                        }
                     }
                 } else {
                     break;
@@ -160,7 +164,9 @@ impl<'a> LowerLexer<'a> {
                             self.bump();
                             break;
                         }
-                        _ => self.bump(),
+                        _ => {
+                            self.bump();
+                        }
                     }
                 } else {
                     break;
@@ -179,9 +185,8 @@ impl<'a> LowerLexer<'a> {
         Token { kind, length }
     }
 
-    pub fn lex(&mut self) -> Token {
-        if let Some(c) = self.first() {
-            self.bump();
+    pub fn next(&mut self) -> Token {
+        if let Some(c) = self.bump() {
             match c {
                 ' ' | '\t' => {
                     while self.eat(' ') || self.eat('\t') {}
@@ -265,11 +270,11 @@ impl<'a> LowerLexer<'a> {
                     self.bump();
                     self.token(TokenKind::Identifier)
                 }
-                c @ ('"' | '\'') => {
+                '"' | '\'' => {
                     self.eat_string(c);
                     self.token(TokenKind::String)
                 }
-                c @ '0'..='9' => {
+                '0'..='9' => {
                     if c == '0' && self.first().is_some_and(|c| c == 'x') {
                         if self.second().is_some_and(|c| c.is_digit(16)) {
                             // hexadecimal
@@ -314,56 +319,71 @@ impl<'a> LowerLexer<'a> {
 }
 
 struct Lexer<'a> {
-    lower: LowerLexer<'a>,
+    lexer: RawLexer<'a>,
     token: Token,
 }
 
 impl Lexer<'_> {
     pub fn new(src: &str) -> Lexer {
-        let mut lower = LowerLexer::new(src);
-        let token = lower.lex();
-        Lexer { lower, token }
+        let mut lexer = RawLexer::new(src);
+        let token = lexer.next();
+        Lexer { lexer, token }
     }
 
     fn lex(&mut self) -> Token {
-        let mut token = self.lower.lex();
+        let mut token = self.lexer.next();
         std::mem::swap(&mut self.token, &mut token);
         token
     }
-}
 
-impl Iterator for Lexer<'_> {
-    type Item = Token;
+    fn peek(&self) -> &Token {
+        &self.token
+    }
 
-    fn next(&mut self) -> Option<Token> {
+    pub fn next(&mut self) -> Token {
         let token = self.lex();
-        match (token.kind, self.token.kind) {
-            (TokenKind::Plus, TokenKind::Float) => {
-                let next_token = self.lex();
-                Some(Token {
-                    kind: TokenKind::Float,
-                    length: token.length + next_token.length,
-                })
-            }
-            (TokenKind::Minus, kind @ (TokenKind::Integer | TokenKind::Float)) => {
-                let next_token = self.lex();
-                Some(Token {
-                    kind,
-                    length: token.length + next_token.length,
-                })
-            }
-            (TokenKind::Eos, _) => None,
-            _ => Some(token),
+        match token.kind {
+            TokenKind::Plus => match self.peek().kind {
+                TokenKind::Float => {
+                    let next_token = self.lex();
+                    Token {
+                        kind: TokenKind::Float,
+                        length: token.length + next_token.length,
+                    }
+                }
+                _ => token,
+            },
+            TokenKind::Minus => match self.peek().kind {
+                kind @ (TokenKind::Integer | TokenKind::Float) => {
+                    let next_token = self.lex();
+                    Token {
+                        kind,
+                        length: token.length + next_token.length,
+                    }
+                }
+                _ => token,
+            },
+            _ => token,
         }
     }
 }
 
+pub fn tokenize(source: &str) -> impl Iterator<Item = Token> + '_ {
+    let mut lexer = Lexer::new(source);
+    std::iter::from_fn(move || {
+        let token = lexer.next();
+        if token.kind == TokenKind::Eos {
+            None
+        } else {
+            Some(token)
+        }
+    })
+}
+
 #[cfg(test)]
 mod tests {
-    use super::*;
-
     fn tokenize(source: &str) -> Vec<&str> {
-        Lexer::new(source)
+        super::tokenize(source)
             .scan(0, |offset, token| {
                 let end = *offset + token.length;
                 let lexeme = &source[*offset..end];
