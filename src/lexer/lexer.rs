@@ -360,15 +360,10 @@ impl Iterator for Lexer<'_> {
 
 #[cfg(test)]
 mod tests {
-    use std::vec;
-
     use super::*;
 
     fn tokenize(source: &str) -> Vec<&str> {
-        let lexer = Lexer::new(source);
-        let tokens: Vec<Token> = lexer.collect();
-        tokens
-            .iter()
+        Lexer::new(source)
             .scan(0, |offset, token| {
                 let end = *offset + token.length;
                 let lexeme = &source[*offset..end];
@@ -380,25 +375,25 @@ mod tests {
 
     #[test]
     fn test_numeric() {
-        assert_eq!(tokenize("0x"), vec!["0", "x"]);
-        assert_eq!(tokenize("0x0"), vec!["0x0"]);
+        assert_eq!(tokenize("0x"), ["0", "x"]);
+        assert_eq!(tokenize("0x0"), ["0x0"]);
 
-        assert_eq!(tokenize("123."), vec!["123", "."]);
-        assert_eq!(tokenize("123.."), vec!["123", ".."]);
-        assert_eq!(tokenize(".123"), vec![".123"]);
-        assert_eq!(tokenize("..123"), vec!["..", "123"]);
+        assert_eq!(tokenize("123."), ["123", "."]);
+        assert_eq!(tokenize("123.."), ["123", ".."]);
+        assert_eq!(tokenize(".123"), [".123"]);
+        assert_eq!(tokenize("..123"), ["..", "123"]);
 
-        assert_eq!(tokenize("1.23"), vec!["1.23"]);
-        assert_eq!(tokenize("+1.23"), vec!["+1.23"]);
-        assert_eq!(tokenize("-1.23"), vec!["-1.23"]);
+        assert_eq!(tokenize("1.23"), ["1.23"]);
+        assert_eq!(tokenize("+1.23"), ["+1.23"]);
+        assert_eq!(tokenize("-1.23"), ["-1.23"]);
 
-        assert_eq!(tokenize("1.23e456"), vec!["1.23e456"]);
-        assert_eq!(tokenize("1.23e 456"), vec!["1.23", "e", " ", "456"]);
-        assert_eq!(tokenize("1.23e+456"), vec!["1.23e+456"]);
-        assert_eq!(tokenize("1.23ee+456"), vec!["1.23", "ee", "+", "456"]);
-        assert_eq!(tokenize("1.23e +456"), vec!["1.23", "e", " ", "+", "456"]);
-        assert_eq!(tokenize("1.23e-456"), vec!["1.23e-456"]);
-        assert_eq!(tokenize("1.23ee-456"), vec!["1.23", "ee", "-456"]);
-        assert_eq!(tokenize("1.23e -456"), vec!["1.23", "e", " ", "-456"]);
+        assert_eq!(tokenize("1.23e456"), ["1.23e456"]);
+        assert_eq!(tokenize("1.23e 456"), ["1.23", "e", " ", "456"]);
+        assert_eq!(tokenize("1.23e+456"), ["1.23e+456"]);
+        assert_eq!(tokenize("1.23ee+456"), ["1.23", "ee", "+", "456"]);
+        assert_eq!(tokenize("1.23e +456"), ["1.23", "e", " ", "+", "456"]);
+        assert_eq!(tokenize("1.23e-456"), ["1.23e-456"]);
+        assert_eq!(tokenize("1.23ee-456"), ["1.23", "ee", "-456"]);
+        assert_eq!(tokenize("1.23e -456"), ["1.23", "e", " ", "-456"]);
     }
 }
