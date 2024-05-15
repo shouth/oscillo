@@ -55,8 +55,8 @@ struct RawLexer<'a> {
     offset: usize,
 }
 
-impl<'a> RawLexer<'a> {
-    fn new(src: &'a str) -> RawLexer {
+impl<'a> RawLexer<'_> {
+    fn new(src: &str) -> RawLexer {
         RawLexer {
             source: src.chars(),
             offset: 0,
