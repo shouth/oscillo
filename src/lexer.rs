@@ -1,2 +1,2 @@
-mod identifier_char;
+mod chars;
 mod lexer;
