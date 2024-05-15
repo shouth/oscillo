@@ -338,46 +338,84 @@ impl<'a> RawLexer<'_> {
 }
 
 struct Lexer<'a> {
-    src: &'a str,
-    lexer: RawLexer<'a>,
-    token: Token,
+    source: &'a str,
     offset: usize,
+    lexer: RawLexer<'a>,
     indent: Vec<(&'a str, usize)>,
     newline: bool,
+    tokens: [Token; 2],
+    first_index: usize,
 }
 
 impl Lexer<'_> {
-    pub fn new(src: &str) -> Lexer {
-        let mut lexer = RawLexer::new(src);
-        let token = lexer.next();
+    pub fn new(source: &str) -> Lexer {
+        let mut lexer = RawLexer::new(source);
+        let first = lexer.next();
+        let second = lexer.next();
         Lexer {
-            src,
-            lexer,
-            token,
+            source,
             offset: 0,
+            lexer,
             indent: vec![("", 0)],
             newline: true,
+            tokens: [first, second],
+            first_index: 0,
         }
     }
 
-    fn lex(&mut self) -> Token {
+    fn bump(&mut self) -> Token {
         let mut token = self.lexer.next();
-        std::mem::swap(&mut self.token, &mut token);
+        std::mem::swap(&mut self.tokens[self.first_index], &mut token);
         self.offset += token.length;
+        self.first_index = (self.first_index + 1) % 2;
         token
     }
 
-    fn peek(&self) -> &Token {
-        &self.token
+    fn first(&self) -> &Token {
+        &self.tokens[self.first_index]
+    }
+
+    fn second(&self) -> &Token {
+        &self.tokens[(self.first_index + 1) % 2]
     }
 
     pub fn next(&mut self) -> Token {
-        if self.newline {
+        if !self.newline
+            || (self.first().kind == TokenKind::Space && self.second().kind == TokenKind::NewLine)
+        {
+            let token = self.bump();
+            match token.kind {
+                TokenKind::Plus => match self.first().kind {
+                    TokenKind::Float => {
+                        let next_token = self.bump();
+                        Token {
+                            kind: TokenKind::Float,
+                            length: token.length + next_token.length,
+                        }
+                    }
+                    _ => token,
+                },
+                TokenKind::Minus => match self.first().kind {
+                    kind @ (TokenKind::Integer | TokenKind::Float) => {
+                        let next_token = self.bump();
+                        Token {
+                            kind,
+                            length: token.length + next_token.length,
+                        }
+                    }
+                    _ => token,
+                },
+                TokenKind::NewLine => {
+                    self.newline = true;
+                    token
+                }
+                _ => token,
+            }
+        } else {
             self.newline = false;
-
-            let (indent_str, indent_width) = match self.peek().kind {
+            let (indent_str, indent_width) = match self.first().kind {
                 TokenKind::Space => {
-                    let indent_str = &self.src[self.offset..self.offset + self.peek().length];
+                    let indent_str = &self.source[self.offset..self.offset + self.first().length];
                     let indent_width = indent_str
                         .chars()
                         .map(|c| if c == '\t' { 8 } else { 1 })
@@ -407,35 +445,6 @@ impl Lexer<'_> {
                 }
             } else {
                 self.next()
-            }
-        } else {
-            let token = self.lex();
-            match token.kind {
-                TokenKind::Plus => match self.peek().kind {
-                    TokenKind::Float => {
-                        let next_token = self.lex();
-                        Token {
-                            kind: TokenKind::Float,
-                            length: token.length + next_token.length,
-                        }
-                    }
-                    _ => token,
-                },
-                TokenKind::Minus => match self.peek().kind {
-                    kind @ (TokenKind::Integer | TokenKind::Float) => {
-                        let next_token = self.lex();
-                        Token {
-                            kind,
-                            length: token.length + next_token.length,
-                        }
-                    }
-                    _ => token,
-                },
-                TokenKind::NewLine => {
-                    self.newline = true;
-                    token
-                }
-                _ => token,
             }
         }
     }
