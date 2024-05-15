@@ -1463,15 +1463,17 @@ const ID_CHARS_CODE_POINT_RANGES: [(char, char); 782] = [
 ];
 
 fn is_contained(c: char, ranges: &[(char, char)]) -> bool {
-    ranges.binary_search_by(|(start, end)| {
-        if c < *start {
-            Ordering::Greater
-        } else if c > *end {
-            Ordering::Less
-        } else {
-            Ordering::Equal
-        }
-    }).is_ok()
+    ranges
+        .binary_search_by(|(start, end)| {
+            if c < *start {
+                Ordering::Greater
+            } else if c > *end {
+                Ordering::Less
+            } else {
+                Ordering::Equal
+            }
+        })
+        .is_ok()
 }
 
 pub fn is_id_start_char(c: char) -> bool {
