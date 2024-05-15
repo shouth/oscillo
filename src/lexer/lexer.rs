@@ -345,10 +345,10 @@ impl Iterator for Lexer<'_> {
                     length: token.length + next_token.length,
                 })
             }
-            (TokenKind::Minus, TokenKind::Integer | TokenKind::Float) => {
+            (TokenKind::Minus, kind @ (TokenKind::Integer | TokenKind::Float)) => {
                 let next_token = self.lex();
                 Some(Token {
-                    kind: TokenKind::Float,
+                    kind,
                     length: token.length + next_token.length,
                 })
             }
