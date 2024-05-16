@@ -5,7 +5,8 @@ use std::str::Chars;
 pub enum TokenKind {
     Space,
     NewLine,
-    LineJoint,
+    ExplicitLineJoint,
+    ImplicitLineJoint,
     Comment,
     Indent,
     Dedent,
@@ -148,10 +149,10 @@ impl<'a> RawLexer<'_> {
                 }
                 '\\' => {
                     if self.eat('\n') {
-                        self.token(TokenKind::LineJoint)
+                        self.token(TokenKind::ExplicitLineJoint)
                     } else if self.eat('\r') {
                         self.eat('\n');
-                        self.token(TokenKind::LineJoint)
+                        self.token(TokenKind::ExplicitLineJoint)
                     } else {
                         self.token(TokenKind::Error)
                     }
@@ -328,6 +329,7 @@ struct Lexer<'a> {
     lexer: RawLexer<'a>,
     indent: Vec<(&'a str, usize)>,
     newline: bool,
+    enclosure: Vec<TokenKind>,
     tokens: [Token; 2],
     first_index: usize,
 }
@@ -343,6 +345,7 @@ impl Lexer<'_> {
             lexer,
             indent: vec![("", 0)],
             newline: true,
+            enclosure: vec![],
             tokens: [first, second],
             first_index: 0,
         }
@@ -390,9 +393,36 @@ impl Lexer<'_> {
                     }
                     _ => token,
                 },
-                TokenKind::NewLine => {
-                    self.newline = true;
+                TokenKind::LeftBracket | TokenKind::LeftParenthesis => {
+                    self.enclosure.push(token.kind);
                     token
+                }
+                TokenKind::RightBracket | TokenKind::RightParenthesis => {
+                    let left = if token.kind == TokenKind::RightBracket {
+                        TokenKind::LeftBracket
+                    } else {
+                        TokenKind::LeftParenthesis
+                    };
+
+                    if self.enclosure.last().is_some_and(|&x| x == left) {
+                        self.enclosure.pop();
+                    } else {
+                        // enclosure is mismatched.
+                        // clear all left enclosures to avoid joining lines implicitly later.
+                        self.enclosure.clear();
+                    }
+                    token
+                }
+                TokenKind::NewLine => {
+                    if self.enclosure.is_empty() {
+                        self.newline = true;
+                        token
+                    } else {
+                        Token {
+                            kind: TokenKind::ImplicitLineJoint,
+                            length: token.length,
+                        }
+                    }
                 }
                 _ => token,
             }
