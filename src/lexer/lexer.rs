@@ -125,60 +125,6 @@ impl<'a> RawLexer<'_> {
         }
     }
 
-    fn eat_string(&mut self, delimiter: char) -> bool {
-        if !self.eat(delimiter) {
-            false
-        } else if !self.eat(delimiter) {
-            // nonempty short-string
-            loop {
-                if let Some(c) = self.first() {
-                    match c {
-                        '\\' => {
-                            self.bump();
-                            self.bump();
-                        }
-                        '\n' | '\r' => break,
-                        _ if c == delimiter => {
-                            self.bump();
-                            break;
-                        }
-                        _ => {
-                            self.bump();
-                        }
-                    }
-                } else {
-                    break;
-                }
-            }
-            true
-        } else if !self.eat(delimiter) {
-            // empty short-string
-            true
-        } else {
-            // long-string
-            loop {
-                if let Some(c) = self.first() {
-                    match c {
-                        '\\' => {
-                            self.bump();
-                            self.bump();
-                        }
-                        _ if c == delimiter => {
-                            self.bump();
-                            break;
-                        }
-                        _ => {
-                            self.bump();
-                        }
-                    }
-                } else {
-                    break;
-                }
-            }
-            true
-        }
-    }
-
     fn token(&mut self, kind: TokenKind) -> Token {
         let length = self.offset;
         self.offset = 0;
@@ -230,7 +176,46 @@ impl<'a> RawLexer<'_> {
                     self.token(TokenKind::Identifier)
                 }
                 '"' | '\'' => {
-                    self.eat_string(c);
+                    if !self.eat(c) {
+                        // non-empty string
+                        while let Some(e) = self.first() {
+                            match e {
+                                '\\' => {
+                                    self.bump();
+                                    self.bump();
+                                }
+                                '\n' | '\r' => break,
+                                _ if e == c => {
+                                    self.bump();
+                                    break;
+                                }
+                                _ => {
+                                    self.bump();
+                                }
+                            }
+                        }
+                    } else if !self.eat(c) {
+                        // empty string
+                    } else {
+                        // long string
+                        while let Some(e) = self.first() {
+                            match e {
+                                '\\' => {
+                                    self.bump();
+                                    self.bump();
+                                }
+                                _ if e == c => {
+                                    self.bump();
+                                    if self.eat(c) && self.eat(c) {
+                                        break;
+                                    }
+                                }
+                                _ => {
+                                    self.bump();
+                                }
+                            }
+                        }
+                    }
                     self.token(TokenKind::String)
                 }
                 '0'..='9' => {
