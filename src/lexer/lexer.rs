@@ -4,9 +4,9 @@ use std::str::Chars;
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Debug, Hash)]
 pub enum TokenKind {
     Space,
-    NewLine,
-    ExplicitLineJoint,
-    ImplicitLineJoint,
+    FormFeed,
+    PhysicalNewLine,
+    LogicalNewLine,
     Comment,
     Indent,
     Dedent,
@@ -16,6 +16,7 @@ pub enum TokenKind {
     Integer,
     Float,
 
+    Backslash,
     Dot,
     DotDot,
     Comma,
@@ -142,17 +143,15 @@ impl<'a> RawLexer<'_> {
                     while self.eat(' ') || self.eat('\t') {}
                     self.token(TokenKind::Space)
                 }
-                '\n' => self.token(TokenKind::NewLine),
+                '\u{000C}' => self.token(TokenKind::FormFeed),
+                '\n' => self.token(TokenKind::PhysicalNewLine),
                 '\r' => {
                     self.eat('\n');
-                    self.token(TokenKind::NewLine)
+                    self.token(TokenKind::PhysicalNewLine)
                 }
                 '\\' => {
-                    if self.eat('\n') {
-                        self.token(TokenKind::ExplicitLineJoint)
-                    } else if self.eat('\r') {
-                        self.eat('\n');
-                        self.token(TokenKind::ExplicitLineJoint)
+                    if let Some('\n' | '\r') = self.first() {
+                        self.token(TokenKind::Backslash)
                     } else {
                         self.token(TokenKind::Error)
                     }
@@ -369,7 +368,8 @@ impl Lexer<'_> {
 
     pub fn next(&mut self) -> Token {
         if !self.newline
-            || (self.first().kind == TokenKind::Space && self.second().kind == TokenKind::NewLine)
+            || (self.first().kind == TokenKind::Space
+                && self.second().kind == TokenKind::PhysicalNewLine)
         {
             let token = self.bump();
             match token.kind {
@@ -413,13 +413,13 @@ impl Lexer<'_> {
                     }
                     token
                 }
-                TokenKind::NewLine => {
+                TokenKind::PhysicalNewLine => {
                     if self.enclosure.is_empty() {
                         self.newline = true;
                         token
                     } else {
                         Token {
-                            kind: TokenKind::ImplicitLineJoint,
+                            kind: TokenKind::LogicalNewLine,
                             length: token.length,
                         }
                     }
@@ -482,9 +482,8 @@ mod tests {
     fn tokenize(source: &str) -> Vec<&str> {
         super::tokenize(source)
             .scan(0, |offset, token| {
-                let end = *offset + token.length;
-                let lexeme = &source[*offset..end];
-                *offset = end;
+                let lexeme = &source[*offset..][..token.length];
+                *offset += token.length;
                 Some(lexeme)
             })
             .collect()
