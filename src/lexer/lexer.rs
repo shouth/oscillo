@@ -323,144 +323,53 @@ impl<'a> RawLexer<'_> {
 }
 
 struct Lexer<'a> {
-    source: &'a str,
-    offset: usize,
     lexer: RawLexer<'a>,
-    indent: Vec<(&'a str, usize)>,
-    newline: bool,
-    enclosure: Vec<TokenKind>,
-    tokens: [Token; 2],
-    first_index: usize,
+    token: Token,
 }
 
 impl Lexer<'_> {
     pub fn new(source: &str) -> Lexer {
         let mut lexer = RawLexer::new(source);
-        let first = lexer.next();
-        let second = lexer.next();
-        Lexer {
-            source,
-            offset: 0,
-            lexer,
-            indent: vec![("", 0)],
-            newline: true,
-            enclosure: vec![],
-            tokens: [first, second],
-            first_index: 0,
-        }
+        let token = lexer.next();
+        Lexer { lexer, token }
     }
 
     fn bump(&mut self) -> Token {
         let mut token = self.lexer.next();
-        std::mem::swap(&mut self.tokens[self.first_index], &mut token);
-        self.offset += token.length;
-        self.first_index = (self.first_index + 1) % 2;
+        std::mem::swap(&mut self.token, &mut token);
         token
     }
 
-    fn first(&self) -> &Token {
-        &self.tokens[self.first_index]
-    }
-
-    fn second(&self) -> &Token {
-        &self.tokens[(self.first_index + 1) % 2]
+    fn peek(&self) -> &Token {
+        &self.token
     }
 
     pub fn next(&mut self) -> Token {
-        if !self.newline
-            || (self.first().kind == TokenKind::Space
-                && self.second().kind == TokenKind::PhysicalNewLine)
-        {
-            let token = self.bump();
-            match token.kind {
-                TokenKind::Plus => match self.first().kind {
-                    TokenKind::Float => {
-                        let next_token = self.bump();
-                        Token {
-                            kind: TokenKind::Float,
-                            length: token.length + next_token.length,
-                        }
-                    }
-                    _ => token,
-                },
-                TokenKind::Minus => match self.first().kind {
-                    kind @ (TokenKind::Integer | TokenKind::Float) => {
-                        let next_token = self.bump();
-                        Token {
-                            kind,
-                            length: token.length + next_token.length,
-                        }
-                    }
-                    _ => token,
-                },
-                TokenKind::LeftBracket | TokenKind::LeftParenthesis => {
-                    self.enclosure.push(token.kind);
-                    token
-                }
-                TokenKind::RightBracket | TokenKind::RightParenthesis => {
-                    let left = if token.kind == TokenKind::RightBracket {
-                        TokenKind::LeftBracket
-                    } else {
-                        TokenKind::LeftParenthesis
-                    };
+        let token = self.bump();
 
-                    if self.enclosure.last().is_some_and(|&x| x == left) {
-                        self.enclosure.pop();
-                    } else {
-                        // enclosure is mismatched.
-                        // clear all left enclosures to avoid joining lines implicitly later.
-                        self.enclosure.clear();
-                    }
-                    token
-                }
-                TokenKind::PhysicalNewLine => {
-                    if self.enclosure.is_empty() {
-                        self.newline = true;
-                        token
-                    } else {
-                        Token {
-                            kind: TokenKind::LogicalNewLine,
-                            length: token.length,
-                        }
+        // glue sign token and adjacent numeric token to meet max munch rule
+        match token.kind {
+            TokenKind::Plus => match self.peek().kind {
+                TokenKind::Float => {
+                    let next_token = self.bump();
+                    Token {
+                        kind: TokenKind::Float,
+                        length: token.length + next_token.length,
                     }
                 }
                 _ => token,
-            }
-        } else {
-            self.newline = false;
-            let (indent_str, indent_width) = match self.first().kind {
-                TokenKind::Space => {
-                    let indent_str = &self.source[self.offset..self.offset + self.first().length];
-                    let indent_width = indent_str
-                        .chars()
-                        .map(|c| if c == '\t' { 8 } else { 1 })
-                        .sum();
-                    (indent_str, indent_width)
+            },
+            TokenKind::Minus => match self.peek().kind {
+                kind @ (TokenKind::Integer | TokenKind::Float) => {
+                    let next_token = self.bump();
+                    Token {
+                        kind,
+                        length: token.length + next_token.length,
+                    }
                 }
-                _ => ("", 0),
-            };
-
-            let (prev_indent_str, prev_indent_width) = self.indent.last().unwrap();
-            if indent_width > *prev_indent_width {
-                self.indent.push((indent_str, indent_width));
-                Token {
-                    kind: TokenKind::Indent,
-                    length: 0,
-                }
-            } else if indent_width < *prev_indent_width {
-                self.indent.pop();
-                Token {
-                    kind: TokenKind::Dedent,
-                    length: 0,
-                }
-            } else if indent_str != *prev_indent_str {
-                Token {
-                    kind: TokenKind::Error,
-                    length: 0,
-                }
-            } else {
-                self.next()
-            }
+                _ => token,
+            },
+            _ => token,
         }
     }
 }
