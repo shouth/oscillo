@@ -105,6 +105,9 @@ checksum = "97b3888a4aecf77e811145cadf6eef5901f4782c53886191b2f693f24761847c"
 [[package]]
 name = "oscelas"
 version = "0.1.0"
+dependencies = [
+ "ucd-trie",
+]
 
 [[package]]
 name = "rand"
@@ -167,6 +170,12 @@ dependencies = [
  "rand",
  "remove_dir_all",
 ]
+
+[[package]]
+name = "ucd-trie"
+version = "0.1.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ed646292ffc8188ef8ea4d1e0e0150fb15a5c2e12ad9b8fc191ae7a8a7f3c4b9"
 
 [[package]]
 name = "utf8parse"

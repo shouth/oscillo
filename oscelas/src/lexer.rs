@@ -1,2 +1,1 @@
-mod chars;
 mod lexer;

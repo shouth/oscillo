@@ -1,5 +1,6 @@
-use super::chars::{is_id_char, is_id_start_char};
 use std::str::Chars;
+
+use crate::char_set::{is_id_char, is_id_start_char};
 
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Debug, Hash)]
 pub enum TokenKind {
