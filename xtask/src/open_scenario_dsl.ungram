@@ -1,0 +1,664 @@
+// Legend:
+//
+//   //          -- comment
+//   Name =      -- non-terminal definition
+//   'ident'     -- token (terminal)
+//   A B         -- sequence
+//   A | B       -- alternation
+//   A*          -- zero or more repetition
+//   A?          -- zero or one repetition
+//   (A)         -- same as A
+//   label:A     -- suggested name for field of AST node
+
+
+// Keywords and identifiers
+
+QualifiedIdentifier =
+  'ident'
+| PrefixedIdentifier
+
+PrefixedIdentifier =
+  NamespaceName? '::' 'ident'
+
+
+// Boolean literals
+
+BoolLiteral =
+  'true' | 'false'
+
+
+// Integer literals
+
+IntegerLiteral =
+  'uint_lit' | 'hex_uint_lit' | 'int_lit'
+
+
+// Physical type literals
+
+PhysicalLiteral =
+  ('float_lit' | IntegerLiteral) UnitName
+
+UnitName =
+  QualifiedIdentifier
+
+// Top-level structure
+
+OscFile =
+  PreludeStatement* MainStatement*
+
+
+// Prelude statements
+
+PreludeStatement =
+  ImportStatement
+
+
+// Import statement
+
+ImportStatement =
+  'import' ImportReference 'newline'
+
+ImportReference =
+  'string'
+| StructuredIdentifier
+
+StructuredIdentifier =
+  'ident'
+| StructuredIdentifier '.' 'ident'
+
+
+// Main statements
+
+MainStatement =
+  NamespaceStatement
+| ExportStatement
+| OscDeclaration
+
+
+// Namespace statement
+
+NamespaceStatement =
+  'namespace' NamespaceName 'newline' ('use' NamespaceList)? 'newline'
+
+NamespaceList =
+  NamespaceName (',' NamespaceName)*
+
+NamespaceName =
+  'ident'
+| GlobalNamespaceName
+
+GlobalNamespaceName =
+  'null'
+
+
+// Export statement
+
+ExportStatement =
+  'export' ExportSpecification (',' ExportSpecification)* 'newline'
+
+ExportSpecification =
+  QualifiedIdentifier
+| ExportWildcardSpecification
+
+ExportWildcardSpecification =
+  (NamespaceName? '::')? '*'
+
+
+// Top-level declarations
+
+OscDeclaration =
+  PhysicalTypeDeclaration
+| UnitDeclaration
+| EnumDeclaration
+| StructDeclaration
+| ActorDeclaration
+| ActionDeclaration
+| ScenarioDeclaration
+| ModifierDeclaration
+| TypeExtension
+| GlobalParameterDeclaration
+
+
+// Type declarations
+
+TypeDeclarator =
+  NonAggregateTypeDeclarator
+| AggregateTypeDeclarator
+
+NonAggregateTypeDeclarator =
+  PrimitiveType
+| PhysicalTypeName
+| EnumName
+| StructName
+| ActorName
+| QualifiedBehaviorName
+
+AggregateTypeDeclarator =
+  ListTypeDeclarator
+
+ListTypeDeclarator =
+  'list' 'of' NonAggregateTypeDeclarator
+
+PrimitiveType =
+  'int' | 'uint' | 'float' | 'bool' | 'string'
+
+
+// Physical type and units
+
+PhysicalTypeDeclaration =
+  'type' PhysicalTypeName 'is' BaseUnitSpecifier 'newline'
+
+PhysicalTypeName =
+  QualifiedIdentifier
+
+UnitDeclaration =
+  'unit' UnitName 'of' PhysicalTypeName 'is' UnitSpecifier 'newline'
+
+BaseUnitSpecifier =
+  SiBaseUnitSpecifier
+
+UnitSpecifier =
+  SiUnitSpecifier
+
+SiBaseUnitSpecifier =
+  'SI' '(' SiBaseExponentList ')'
+
+SiBaseExponentList = SiBaseExponent (',' SiBaseExponent)*
+
+SiBaseExponent =
+  SiBaseUnitName ':' IntegerLiteral
+
+SiUnitSpecifier =
+  'SI' '(' SiBaseExponentList (',' SiFactor)? (',' SiOffset)? ')'
+
+SiFactor =
+  'factor' ':' ('float_lit' | IntegerLiteral)
+
+SiOffset =
+  'offset' ':' ('float_lit' | IntegerLiteral)
+
+SiBaseUnitName =
+  'kg' | 'm' | 's' | 'A' | 'K' | 'mol' | 'cd' | 'rad'
+
+
+// Enumerations
+
+EnumDeclaration =
+  'enum' EnumName ':' '[' EnumMemberDecl (',' EnumMemberDecl)* ']' 'newline'
+
+EnumMemberDecl =
+  EnumMemberName ('=' EnumMemberValue)?
+
+EnumName =
+  QualifiedIdentifier
+
+EnumMemberName =
+  QualifiedIdentifier
+
+EnumMemberValue =
+  'uint_lit' | 'hex_uint_lit'
+
+EnumValueReference =
+  (EnumName '!')? EnumMemberName
+
+
+// Structs
+
+StructDeclaration =
+  'struct' StructName ('inherits' StructName ('(' FieldName '==' (EnumValueReference | BoolLiteral) ')')?)?
+    ((':' 'newline' 'indent' StructMemberDecl* 'dedent') | 'newline')
+
+StructMemberDecl =
+  EventDeclaration
+| FieldDeclaration
+| ConstraintDeclaration
+| MethodDeclaration
+| CoverageDeclaration
+
+StructName =
+  QualifiedIdentifier
+
+FieldName =
+  QualifiedIdentifier
+
+
+// Actors
+
+ActorDeclaration =
+  'actor' ActorName ('inherits' ActorName ('(' FieldName '==' (EnumValueReference | BoolLiteral) ')')?)?
+    ((':' 'newline' 'indent' ActorMemberDecl* 'dedent') | 'newline')
+
+ActorMemberDecl =
+  EventDeclaration
+| FieldDeclaration
+| ConstraintDeclaration
+| MethodDeclaration
+| CoverageDeclaration
+
+ActorName =
+  QualifiedIdentifier
+
+
+// Scenarios
+
+ScenarioDeclaration =
+  'scenario' QualifiedBehaviorName ('inherits' QualifiedBehaviorName ('(' FieldName '==' (EnumValueReference | BoolLiteral) ')')?)?
+    ((':' 'newline' 'indent' (ScenarioMemberDecl | BehaviorSpecification)* 'dedent') | 'newline')
+
+ScenarioMemberDecl =
+  EventDeclaration
+| FieldDeclaration
+| ConstraintDeclaration
+| MethodDeclaration
+| CoverageDeclaration
+
+QualifiedBehaviorName =
+  (ActorName '.')? BehaviorName
+
+BehaviorName =
+  QualifiedIdentifier
+
+
+// Actions
+
+ActionDeclaration =
+  'action' QualifiedBehaviorName ('inherits' QualifiedBehaviorName ('(' FieldName '==' (EnumValueReference | BoolLiteral) ')')?)?
+    ((':' 'newline' 'indent' (ScenarioMemberDecl | BehaviorSpecification)* 'dedent') | 'newline')
+
+// Modifiers
+
+ModifierDeclaration =
+  'modifier' (ActorName '.')? ModifierName ('of' QualifiedBehaviorName)? ((':' 'newline' 'indent' (ScenarioMemberDecl | OnDirective)* 'dedent') | 'newline')
+
+ModifierName =
+  QualifiedIdentifier
+
+
+// Type extension
+
+TypeExtension =
+  EnumTypeExtension
+| StructuredTypeExtension
+
+EnumTypeExtension =
+  'extend' EnumName ':' '[' EnumMemberDecl (',' EnumMemberDecl)* ']' 'newline'
+
+StructuredTypeExtension =
+  'extend' ExtendableTypeName ':' 'newline' 'indent' ExtendableMemberDecl* 'dedent'
+
+ExtendableTypeName =
+  StructName
+| ActorName
+| QualifiedBehaviorName
+
+ExtendableMemberDecl =
+  StructMemberDecl
+| ActorMemberDecl
+| ScenarioMemberDecl
+| BehaviorSpecification
+
+
+// Global parameter declarations
+
+GlobalParameterDeclaration =
+  'global' ParameterDeclaration
+
+
+// Events
+
+EventDeclaration =
+  'event' EventName ('(' ArgumentListSpecification ')')? ('is' EventSpecification)? 'newline'
+
+EventSpecification =
+  EventReference ((EventFieldDecl)? 'if' EventCondition)?
+| EventCondition
+
+EventReference =
+  '@' EventPath
+
+EventFieldDecl =
+  'as' EventFieldName
+
+EventFieldName =
+  QualifiedIdentifier
+
+EventName =
+  QualifiedIdentifier
+
+EventPath =
+  (Expression '.')? EventName
+
+EventCondition =
+  BoolExpression
+| RiseExpression
+| FallExpression
+| ElapsedExpression
+| EveryExpression
+
+RiseExpression =
+  'rise' '(' BoolExpression ')'
+
+FallExpression =
+  'fall' '(' BoolExpression ')'
+
+ElapsedExpression =
+  'elapsed' '(' DurationExpression ')'
+
+EveryExpression =
+  'every' '(' DurationExpression (',' 'offset' ':' DurationExpression)? ')'
+
+BoolExpression =
+  Expression
+
+DurationExpression =
+  Expression
+
+
+// Fields
+
+FieldDeclaration =
+  ParameterDeclaration
+| VariableDeclaration
+
+ParameterDeclaration =
+  FieldName (',' FieldName)* ':' TypeDeclarator ('=' DefaultValue)? (ParameterWithDeclaration | 'newline')
+
+VariableDeclaration =
+  'var' FieldName (',' FieldName)* ':' TypeDeclarator ('=' (DefaultValue | SampleExpression))? 'newline'
+
+SampleExpression =
+  'sample' '(' Expression ',' EventSpecification (',' DefaultValue)? ')'
+
+DefaultValue =
+  Expression
+
+ParameterWithDeclaration =
+  'with' ':' 'newline' 'indent' ParameterWithMember 'dedent'
+
+ParameterWithMember =
+  ConstraintDeclaration
+
+
+// Constraints
+
+ConstraintDeclaration =
+  KeepConstraintDeclaration
+| RemoveDefaultDeclaration
+
+KeepConstraintDeclaration =
+  'keep' '(' ConstraintQualifier? ConstraintExpression ')' 'newline'
+
+ConstraintQualifier =
+  'default' | 'hard'
+
+ConstraintExpression =
+  Expression
+
+RemoveDefaultDeclaration =
+  'remove_default' '(' ParameterReference ')' 'newline'
+
+ParameterReference =
+  FieldName
+| FieldAccess
+
+
+// Methods
+
+MethodDeclaration =
+  'def' MethodName '(' ArgumentListSpecification? ')' ('->' ReturnType)? MethodImplementation 'newline'
+
+ReturnType =
+  TypeDeclarator
+
+MethodImplementation =
+  'is' MethodQualifier? ('expression' Expression | 'undefined' | 'external' StructuredIdentifier '(' ArgumentList? ')')
+
+MethodQualifier =
+  'only'
+
+MethodName =
+  QualifiedIdentifier
+
+
+// Coverage
+
+CoverageDeclaration =
+  ('cover' | 'record') '(' ArgumentList ')' 'newline'
+
+
+// Modifier application
+
+ModifierApplication =
+  (ActorExpression '.')? ModifierName '(' ArgumentList? ')' 'newline'
+
+
+// Behavior specification
+
+BehaviorSpecification =
+  OnDirective
+| DoDirective
+
+
+// On directive
+
+OnDirective =
+  'on' EventSpecification ':' 'newline' 'indent' OnMember* 'dedent'
+
+OnMember =
+  CallDirective
+| EmitDirective
+
+DoDirective =
+  'do' DoMember
+
+DoMember =
+  (LabelName ':')? (Composition | BehaviorInvocation | WaitDirective | EmitDirective | CallDirective)
+
+LabelName =
+  QualifiedIdentifier
+
+
+// Composition
+
+Composition =
+  CompositionOperator ('(' UnqualifiedArgumentList ')')? 'newline' 'indent' DoMember* 'dedent' BehaviorWithDeclaration?
+
+CompositionOperator =
+  'serial' | 'one_of' | 'parallel'
+
+
+// Behavior invocation
+
+BehaviorInvocation =
+  (ActorExpression '.')? BehaviorName '(' ArgumentList? ')' (BehaviorWithDeclaration | 'newline')
+
+BehaviorWithDeclaration =
+  'with' ':' 'newline' 'indent' BehaviorWithMember* 'dedent'
+
+BehaviorWithMember =
+  ConstraintDeclaration
+| ModifierApplication
+| UntilDirective
+
+ActorExpression =
+  Expression
+
+
+// Wait directive
+
+WaitDirective =
+  'wait' EventSpecification 'newline'
+
+
+// Emit directive
+
+EmitDirective =
+  'emit' EventName ('(' ArgumentList ')')? 'newline'
+
+
+// Call directive
+
+CallDirective =
+  'call' MethodInvocation 'newline'
+
+MethodInvocation =
+  PostfixExp '(' ArgumentList? ')'
+
+
+// Until directive
+
+UntilDirective =
+  'until' EventSpecification 'newline'
+
+
+// Argumen list specification
+
+ArgumentListSpecification =
+  ArgumentSpecification (',' ArgumentSpecification)*
+
+ArgumentSpecification =
+  ArgumentName ':' TypeDeclarator ('=' DefaultValue)?
+
+ArgumentName =
+  QualifiedIdentifier
+
+
+// Argument list
+
+ArgumentList =
+  PositionalArgument (',' PositionalArgument)* (',' NamedArgument)*
+| NamedArgument (',' NamedArgument)*
+
+PositionalArgument =
+  Expression
+
+NamedArgument =
+  ArgumentName ':' Expression
+
+
+// Unqualified argument list
+
+UnqualifiedArgumentList =
+  PositionalArgument (',' PositionalArgument)* (',' UnqualifiedNamedArgument)*
+| UnqualifiedNamedArgument (',' UnqualifiedNamedArgument)*
+
+UnqualifiedArgumentName =
+  'ident'
+
+UnqualifiedNamedArgument =
+  UnqualifiedArgumentName ':' Expression
+
+
+// Expressions
+
+Expression =
+  Implication
+| TernaryOpExp
+
+
+// Ternary operator
+
+TernaryOpExp =
+  Implication '?' Implication ':' Implication
+
+
+// Logical operators
+
+Implication =
+  Disjunction ('=>' Disjunction)*
+
+Disjunction =
+  Conjunction ('or' Conjunction)*
+
+Conjunction =
+  Inversion ('and' Inversion)*
+
+Inversion =
+  'not' Inversion
+| Relation
+
+
+// Relational operators
+
+Relation =
+  Sum
+| Sum RelationalOp Sum
+
+RelationalOp =
+  '==' | '!=' | '<' | '<=' | '>' | '>=' | 'in'
+
+
+// Arithmetic operators
+
+Sum =
+  Term
+| Sum AdditiveOp Term
+
+AdditiveOp =
+  '+' | '-'
+
+Term =
+  Factor
+| Term MultiplicativeOp Factor
+
+MultiplicativeOp =
+  '*' | '/' | '%'
+
+Factor =
+  PostfixExp
+| '-' Factor
+
+
+// Postfix operators
+
+PostfixExp =
+  PrimaryExp
+| CastExp
+| TypeTestExp
+| ElementAccess
+| FunctionApplication
+| FieldAccess
+
+CastExp =
+  PostfixExp '.' 'as' '(' TypeDeclarator ')'
+
+TypeTestExp =
+  PostfixExp '.' 'is' '(' TypeDeclarator ')'
+
+ElementAccess =
+  PostfixExp '[' Expression ']'
+
+FunctionApplication =
+  PostfixExp '(' ArgumentList? ')'
+
+FieldAccess =
+  PostfixExp '.' FieldName
+
+
+// Primary expressions
+
+PrimaryExp =
+  ValueExp
+| 'it'
+| QualifiedIdentifier
+| '(' Expression ')'
+
+ValueExp =
+  IntegerLiteral
+| 'float_lit'
+| PhysicalLiteral
+| BoolLiteral
+| 'string'
+| EnumValueReference
+| ListConstructor
+| RangeConstructor
+
+
+// List and range constructors
+
+ListConstructor =
+  '[' Expression (',' Expression)* ']'
+
+RangeConstructor =
+  'range' '(' Expression ',' Expression ')'
+| '[' Expression '..' Expression ']'

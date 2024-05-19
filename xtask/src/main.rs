@@ -4,6 +4,7 @@ use std::{
 };
 
 use clap::{command, Command};
+use ungrammar::Grammar;
 use xshell::{cmd, Shell};
 
 fn project_root() -> PathBuf {
@@ -57,12 +58,22 @@ fn do_generate_char_set(ucd_path: &Path, out_path: &Path, var_name: &str, catego
         .expect("Failed to write char set");
 }
 
+fn generate_dsl_syntax() {
+    let grammar = include_str!("open_scenario_dsl.ungram");
+    let grammar = grammar
+        .parse::<Grammar>()
+        .expect("Failed to parse the grammar");
+}
+
 fn main() {
     let matches = command!()
         .subcommand(Command::new("generate_char_set"))
+        .subcommand(Command::new("generate_dsl_syntax"))
         .get_matches();
 
     if let Some(_) = matches.subcommand_matches("generate_char_set") {
         generate_char_set();
+    } else if let Some(_) = matches.subcommand_matches("generate_dsl_syntax") {
+        generate_dsl_syntax();
     }
 }

@@ -8,4 +8,5 @@ edition = "2021"
 [dependencies]
 clap = { version = "4.5.4", features = ["cargo"] }
 tempdir = "0.3.7"
+ungrammar = "1.16.1"
 xshell = "0.2.6"
