@@ -1,4 +1,4 @@
-mod char_set;
+mod chars;
 mod lexer;
 
 fn main() {

@@ -17,11 +17,7 @@ fn generate_char_set() {
         tempdir::TempDir::new("oscelas-xtask").expect("Failed to create a temporary directory");
     let unic_ver = "15.1.0";
     let ucd_dir = tmp_dir.path().join("UCD");
-    let gen_dir = project_root()
-        .join("oscelas")
-        .join("src")
-        .join("char_set")
-        .join("generated");
+    let gen_dir = project_root().join("oscelas/src/chars/generated");
 
     let sh = Shell::new().expect("Failed to create a shell");
     cmd!(
