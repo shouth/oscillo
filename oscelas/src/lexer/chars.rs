@@ -1,6 +1,6 @@
 use std::cmp::Ordering;
 
-const ID_START_CHAR_CODE_POINT_RANGES: [(char, char); 674] = [
+const ID_START_CHAR_CODE_POINT_RANGES: &[(char, char)] = &[
     ('\u{0041}', '\u{005a}'),
     ('\u{0061}', '\u{007a}'),
     ('\u{00aa}', '\u{00aa}'),
@@ -677,7 +677,7 @@ const ID_START_CHAR_CODE_POINT_RANGES: [(char, char); 674] = [
     ('\u{323af}', '\u{323af}'),
 ];
 
-const ID_CHARS_CODE_POINT_RANGES: [(char, char); 782] = [
+const ID_CHARS_CODE_POINT_RANGES: &[(char, char)] = &[
     ('\u{0030}', '\u{0039}'),
     ('\u{0041}', '\u{005a}'),
     ('\u{005f}', '\u{005f}'),
@@ -1477,9 +1477,9 @@ fn is_contained(c: char, ranges: &[(char, char)]) -> bool {
 }
 
 pub fn is_id_start_char(c: char) -> bool {
-    is_contained(c, &ID_START_CHAR_CODE_POINT_RANGES)
+    is_contained(c, ID_START_CHAR_CODE_POINT_RANGES)
 }
 
 pub fn is_id_char(c: char) -> bool {
-    is_contained(c, &ID_CHARS_CODE_POINT_RANGES)
+    is_contained(c, ID_CHARS_CODE_POINT_RANGES)
 }
