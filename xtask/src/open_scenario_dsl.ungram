@@ -206,12 +206,12 @@ SiBaseExponent =
   SiBaseUnitName ':' IntegerLiteral
 
 SiUnitSpecifier =
-  'SI' '(' SiBaseExponentList SiUnitFactor? SiUnitOffset? ')'
+  'SI' '(' SiBaseExponentList TrailingSiFactor? TrailingSiOffset? ')'
 
-SiUnitFactor =
+TrailingSiFactor =
   ',' 'factor' ':' NumberLiteral
 
-SiUnitOffset =
+TrailingSiOffset =
   ',' 'offset' ':' NumberLiteral
 
 SiBaseUnitName =
@@ -524,9 +524,9 @@ ElapsedExpression =
   'elapsed' '(' DurationExpression ')'
 
 EveryExpression =
-  'every' '(' DurationExpression EveryExpressionOffset? ')'
+  'every' '(' DurationExpression TrailingEveryExpOffset? ')'
 
-EveryExpressionOffset =
+TrailingEveryExpOffset =
   ',' 'offset' ':' DurationExpression
 
 BoolExpression =
@@ -707,10 +707,17 @@ CompositionOperator =
 // Behavior invocation
 
 BehaviorInvocation =
-  BehaviorInvocationPrefix? BehaviorName '(' ArgumentList? ')' (BehaviorWithDeclaration | 'newline')
+  BehaviorInvocationPrefix? BehaviorName '(' ArgumentList? ')' BehaviorConstraint
 
 BehaviorInvocationPrefix =
   ActorExpression '.'
+
+BehaviorConstraint =
+  BehaviorEmptyConstraint
+| BehaviorWithDeclaration
+
+BehaviorEmptyConstraint =
+  'newline'
 
 BehaviorWithDeclaration =
   'with' ':' 'newline' 'indent' BehaviorWithMemberList 'dedent'
@@ -748,7 +755,7 @@ CallDirective =
   'call' MethodInvocation 'newline'
 
 MethodInvocation =
-  PostfixExp '(' ArgumentList? ')'
+  Expression '(' ArgumentList? ')'
 
 
 // Until directive
@@ -763,9 +770,9 @@ ArgumentListSpecification =
   ArgumentSpecification (',' ArgumentSpecification)*
 
 ArgumentSpecification =
-  ArgumentName ':' TypeDeclarator ArgumentSpecificationInitializerClause?
+  ArgumentName ':' TypeDeclarator ArgumentInitializerClause?
 
-ArgumentSpecificationInitializerClause =
+ArgumentInitializerClause =
   '=' DefaultValue
 
 ArgumentName =
@@ -779,12 +786,12 @@ ArgumentList =
 | NamedArgumentList
 
 MixedArgumentList =
-  PositionalArgumentList SuccessiveNamedArgumentList?
+  PositionalArgumentList TrailingNamedArgumentList?
 
 PositionalArgumentList =
   PositionalArgument (',' PositionalArgument)*
 
-SuccessiveNamedArgumentList =
+TrailingNamedArgumentList =
   ',' NamedArgumentList
 
 PositionalArgument =
@@ -800,10 +807,10 @@ NamedArgument =
 // Unqualified argument list
 
 UnqualifiedArgumentList =
-  PositionalArgumentList SuccessiveUnqualifiedNamedArgumentList?
+  PositionalArgumentList TrailingUnqualifiedNamedArgumentList?
 | UnqualifiedNamedArgumentList?
 
-SuccessiveUnqualifiedNamedArgumentList =
+TrailingUnqualifiedNamedArgumentList =
   ',' UnqualifiedNamedArgumentList
 
 UnqualifiedNamedArgumentList =
@@ -819,96 +826,58 @@ UnqualifiedNamedArgument =
 // Expressions
 
 Expression =
-  Implication
-| TernaryOpExp
-
-
-// Ternary operator
-
-TernaryOpExp =
-  Implication '?' Implication ':' Implication
-
-
-// Logical operators
-
-Implication =
-  Disjunction ('=>' Disjunction)*
-
-Disjunction =
-  Conjunction ('or' Conjunction)*
-
-Conjunction =
-  Inversion ('and' Inversion)*
-
-Inversion =
-  'not' Inversion
-| Relation
-
-
-// Relational operators
-
-Relation =
-  Sum
-| Sum RelationalOp Sum
-
-RelationalOp =
-  '==' | '!=' | '<' | '<=' | '>' | '>=' | 'in'
-
-
-// Arithmetic operators
-
-Sum =
-  Term
-| Sum AdditiveOp Term
-
-AdditiveOp =
-  '+' | '-'
-
-Term =
-  Factor
-| Term MultiplicativeOp Factor
-
-MultiplicativeOp =
-  '*' | '/' | '%'
-
-Factor =
-  PostfixExp
-| '-' Factor
-
-
-// Postfix operators
-
-PostfixExp =
-  PrimaryExp
+  TernaryOpExp
+| LogicalExp
+| BinaryExp
+| UnaryExp
 | CastExp
 | TypeTestExp
 | ElementAccess
 | FunctionApplication
 | FieldAccess
-
-CastExp =
-  PostfixExp '.' 'as' '(' TypeDeclarator ')'
-
-TypeTestExp =
-  PostfixExp '.' 'is' '(' TypeDeclarator ')'
-
-ElementAccess =
-  PostfixExp '[' Expression ']'
-
-FunctionApplication =
-  PostfixExp '(' ArgumentList? ')'
-
-FieldAccess =
-  PostfixExp '.' FieldName
-
-
-// Primary expressions
-
-PrimaryExp =
-  ValueExp
 | ItExp
 | QualifiedIdentifier
 | ParenthesizedExp
+| LiteralExp
+| EnumValueReference
+| ListConstructor
+| RangeConstructor
+
+TernaryOpExp =
+  Expression '?' Expression ':' Expression
+
+LogicalExp =
+  Expression LogicalOp Expression
+
+LogicalOp =
+  '=>' | 'or' | 'and'
+
+BinaryExp =
+  Expression BinaryOp Expression
+
+BinaryOp =
+  '==' | '!=' | '<' | '<=' | '>' | '>=' | 'in' | '+' | '-' | '*' | '/' | '%'
+
+UnaryExp =
+  UnaryOp Expression
+
+UnaryOp =
+  'not' | '-'
+
+CastExp =
+  Expression '.' 'as' '(' TypeDeclarator ')'
+
+TypeTestExp =
+  Expression '.' 'is' '(' TypeDeclarator ')'
+
+ElementAccess =
+  Expression '[' Expression ']'
+
+FunctionApplication =
+  Expression '(' ArgumentList? ')'
+
+FieldAccess =
+  Expression '.' FieldName
 
 ItExp =
   'it'
@@ -916,15 +885,12 @@ ItExp =
 ParenthesizedExp =
   '(' Expression ')'
 
-ValueExp =
+LiteralExp =
   IntegerLiteral
 | FloatLiteral
 | PhysicalLiteral
 | BoolLiteral
 | StringLiteral
-| EnumValueReference
-| ListConstructor
-| RangeConstructor
 
 
 // List and range constructors
