@@ -251,7 +251,7 @@ EnumValueReferencePrefix =
 // Structs
 
 StructDeclaration =
-  'struct' StructName StructInheritsClause? StructBody
+  'struct' StructName StructInheritsClause? (StructBody | 'newline')
 
 StructInheritsClause =
   'inherits' StructName StructInheritsCondition?
@@ -264,13 +264,6 @@ StructInheritsConstant =
 | BoolLiteral
 
 StructBody =
-  StructEmptyBody
-| StructDefinitionBody
-
-StructEmptyBody =
-  'newline'
-
-StructDefinitionBody =
   ':' 'newline' 'indent' StructMemberDeclList 'dedent'
 
 StructMemberDeclList =
@@ -293,7 +286,7 @@ FieldName =
 // Actors
 
 ActorDeclaration =
-  'actor' ActorName ActorInheritsClause? ActorBody
+  'actor' ActorName ActorInheritsClause? (ActorBody | 'newline')
 
 ActorInheritsClause =
   'inherits' ActorName ActorInheritsCondition?
@@ -306,13 +299,6 @@ ActorInheritsConstant =
 | BoolLiteral
 
 ActorBody =
-  ActorEmptyBody
-| ActorDefinitionBody
-
-ActorEmptyBody =
-  'newline'
-
-ActorDefinitionBody =
   ':' 'newline' 'indent' ActorMemberDeclList 'dedent'
 
 ActorMemberDeclList =
@@ -332,7 +318,7 @@ ActorName =
 // Scenarios
 
 ScenarioDeclaration =
-  'scenario' QualifiedBehaviorName ScenarioInheritsClause? ScenarioBody
+  'scenario' QualifiedBehaviorName ScenarioInheritsClause? (ScenarioBody | 'newline')
 
 ScenarioInheritsClause =
   'inherits' QualifiedBehaviorName ScenarioInheritsCondition?
@@ -345,13 +331,6 @@ ScenarioInheritsConstant =
 | BoolLiteral
 
 ScenarioBody =
-  ScenarioEmptyBody
-| ScenarioDefinitionBody
-
-ScenarioEmptyBody =
-  'newline'
-
-ScenarioDefinitionBody =
   ':' 'newline' 'indent' ScenarioMemberItemList 'dedent'
 
 ScenarioMemberItemList =
@@ -381,7 +360,7 @@ BehaviorName =
 // Actions
 
 ActionDeclaration =
-  'action' QualifiedBehaviorName ActionInheritsClause? ActionBody
+  'action' QualifiedBehaviorName ActionInheritsClause? (ActionBody | 'newline')
 
 ActionInheritsClause =
   'inherits' QualifiedBehaviorName ActionInheritsCondition?
@@ -394,13 +373,6 @@ ActionInheritsConstant =
 | BoolLiteral
 
 ActionBody =
-  ActionEmptyBody
-| ActionDefinitionBody
-
-ActionEmptyBody =
-  'newline'
-
-ActionDefinitionBody =
   ':' 'newline' 'indent' ActionMemberItemList 'dedent'
 
 ActionMemberItemList =
@@ -413,7 +385,7 @@ ActionMemberItem =
 // Modifiers
 
 ModifierDeclaration =
-  'modifier' ModifierNamePrefix? ModifierName ModifierOfClause? ModifierBody
+  'modifier' ModifierNamePrefix? ModifierName ModifierOfClause? (ModifierBody | 'newline')
 
 ModifierNamePrefix =
   ActorName '.'
@@ -425,13 +397,6 @@ ModifierOfClause =
   'of' QualifiedBehaviorName
 
 ModifierBody =
-  ModifierEmptyBody
-| ModifierDefinitionBody
-
-ModifierEmptyBody =
-  'newline'
-
-ModifierDefinitionBody =
   ':' 'newline' 'indent' ModifierMemberItemList 'dedent'
 
 ModifierMemberItemList =
@@ -550,20 +515,13 @@ FieldDeclaration =
 | VariableDeclaration
 
 ParameterDeclaration =
-  FieldNameList ':' TypeDeclarator ParameterInitilizerClause? ParameterConstraint
+  FieldNameList ':' TypeDeclarator ParameterInitilizerClause? (ParameterWithDeclaration | 'newline')
 
 FieldNameList =
   FieldName (',' FieldName)*
 
 ParameterInitilizerClause =
   '=' DefaultValue
-
-ParameterConstraint =
-  ParameterEmptyConstraint
-| ParameterWithDeclaration
-
-ParameterEmptyConstraint =
-  'newline'
 
 VariableDeclaration =
   'var' FieldNameList ':' TypeDeclarator VariableInitializerClause? 'newline'
@@ -721,17 +679,10 @@ CompositionOperator =
 // Behavior invocation
 
 BehaviorInvocation =
-  BehaviorInvocationPrefix? BehaviorName '(' ArgumentList? ')' BehaviorConstraint
+  BehaviorInvocationPrefix? BehaviorName '(' ArgumentList? ')' (BehaviorWithDeclaration | 'newline')
 
 BehaviorInvocationPrefix =
   ActorExpression '.'
-
-BehaviorConstraint =
-  BehaviorEmptyConstraint
-| BehaviorWithDeclaration
-
-BehaviorEmptyConstraint =
-  'newline'
 
 BehaviorWithDeclaration =
   'with' ':' 'newline' 'indent' BehaviorWithMemberList 'dedent'
