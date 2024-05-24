@@ -21,6 +21,12 @@ PrefixedIdentifier =
   NamespaceName? '::' 'ident'
 
 
+// String literals
+
+StringLiteral =
+  'string_lit'
+
+
 // Boolean literals
 
 BoolLiteral =
@@ -33,18 +39,34 @@ IntegerLiteral =
   'uint_lit' | 'hex_uint_lit' | 'int_lit'
 
 
+// Float-point literals
+
+FloatLiteral =
+  'float_lit'
+
+
 // Physical type literals
 
 PhysicalLiteral =
-  ('float_lit' | IntegerLiteral) UnitName
+  NumberLiteral UnitName
+
+NumberLiteral =
+  FloatLiteral | IntegerLiteral
 
 UnitName =
   QualifiedIdentifier
 
+
 // Top-level structure
 
 OscFile =
-  PreludeStatement* MainStatement*
+  PreludeStatementList MainStatementList
+
+PreludeStatementList =
+  PreludeStatement*
+
+MainStatementList =
+  MainStatement*
 
 
 // Prelude statements
@@ -59,12 +81,14 @@ ImportStatement =
   'import' ImportReference 'newline'
 
 ImportReference =
-  'string'
+  ImportReferenceString
 | StructuredIdentifier
 
+ImportReferenceString =
+  'string'
+
 StructuredIdentifier =
-  'ident'
-| StructuredIdentifier '.' 'ident'
+  'ident' ('.' 'ident')*
 
 
 // Main statements
@@ -78,14 +102,20 @@ MainStatement =
 // Namespace statement
 
 NamespaceStatement =
-  'namespace' NamespaceName 'newline' ('use' NamespaceList)? 'newline'
+  'namespace' NamespaceName NamespaceUseClause? 'newline'
+
+NamespaceUseClause =
+  'use' NamespaceList
 
 NamespaceList =
   NamespaceName (',' NamespaceName)*
 
 NamespaceName =
-  'ident'
+  SimpleNamespaceName
 | GlobalNamespaceName
+
+SimpleNamespaceName =
+  'ident'
 
 GlobalNamespaceName =
   'null'
@@ -94,14 +124,20 @@ GlobalNamespaceName =
 // Export statement
 
 ExportStatement =
-  'export' ExportSpecification (',' ExportSpecification)* 'newline'
+  'export' ExportSpecificationList 'newline'
+
+ExportSpecificationList =
+  ExportSpecification (',' ExportSpecification)*
 
 ExportSpecification =
   QualifiedIdentifier
 | ExportWildcardSpecification
 
 ExportWildcardSpecification =
-  (NamespaceName? '::')? '*'
+  ExportWildcardSpecificationPrefix? '*'
+
+ExportWildcardSpecificationPrefix =
+  NamespaceName? '::'
 
 
 // Top-level declarations
@@ -163,19 +199,20 @@ UnitSpecifier =
 SiBaseUnitSpecifier =
   'SI' '(' SiBaseExponentList ')'
 
-SiBaseExponentList = SiBaseExponent (',' SiBaseExponent)*
+SiBaseExponentList =
+  SiBaseExponent (',' SiBaseExponent)*
 
 SiBaseExponent =
   SiBaseUnitName ':' IntegerLiteral
 
 SiUnitSpecifier =
-  'SI' '(' SiBaseExponentList (',' SiFactor)? (',' SiOffset)? ')'
+  'SI' '(' SiBaseExponentList SiUnitFactor? SiUnitOffset? ')'
 
-SiFactor =
-  'factor' ':' ('float_lit' | IntegerLiteral)
+SiUnitFactor =
+  ',' 'factor' ':' NumberLiteral
 
-SiOffset =
-  'offset' ':' ('float_lit' | IntegerLiteral)
+SiUnitOffset =
+  ',' 'offset' ':' NumberLiteral
 
 SiBaseUnitName =
   'kg' | 'm' | 's' | 'A' | 'K' | 'mol' | 'cd' | 'rad'
@@ -184,10 +221,16 @@ SiBaseUnitName =
 // Enumerations
 
 EnumDeclaration =
-  'enum' EnumName ':' '[' EnumMemberDecl (',' EnumMemberDecl)* ']' 'newline'
+  'enum' EnumName ':' '[' EnumMemberDeclList ']' 'newline'
+
+EnumMemberDeclList =
+  EnumMemberDecl (',' EnumMemberDecl)*
 
 EnumMemberDecl =
-  EnumMemberName ('=' EnumMemberValue)?
+  EnumMemberName EnumMemberInitializerClause?
+
+EnumMemberInitializerClause =
+  '=' EnumMemberValue
 
 EnumName =
   QualifiedIdentifier
@@ -199,14 +242,32 @@ EnumMemberValue =
   'uint_lit' | 'hex_uint_lit'
 
 EnumValueReference =
-  (EnumName '!')? EnumMemberName
+  EnumValueReferencePrefix? EnumMemberName
+
+EnumValueReferencePrefix =
+  EnumName '!'
 
 
 // Structs
 
 StructDeclaration =
-  'struct' StructName ('inherits' StructName ('(' FieldName '==' (EnumValueReference | BoolLiteral) ')')?)?
-    ((':' 'newline' 'indent' StructMemberDecl* 'dedent') | 'newline')
+  'struct' StructName StructInheritsClause? (StructBody | 'newline')
+
+StructInheritsClause =
+  'inherits' StructName StructInheritsCondition?
+
+StructInheritsCondition =
+  '(' FieldName '==' StructInheritsConstant ')'
+
+StructInheritsConstant =
+  EnumValueReference
+| BoolLiteral
+
+StructBody =
+  ':' 'newline' 'indent' StructMemberDeclList 'dedent'
+
+StructMemberDeclList =
+  StructMemberDecl*
 
 StructMemberDecl =
   EventDeclaration
@@ -225,8 +286,30 @@ FieldName =
 // Actors
 
 ActorDeclaration =
-  'actor' ActorName ('inherits' ActorName ('(' FieldName '==' (EnumValueReference | BoolLiteral) ')')?)?
-    ((':' 'newline' 'indent' ActorMemberDecl* 'dedent') | 'newline')
+  'actor' ActorName ActorInheritsClause? ActorBody
+
+ActorInheritsClause =
+  'inherits' ActorName ActorInheritsCondition?
+
+ActorInheritsCondition =
+  '(' FieldName '==' ActorInheritsConstant ')'
+
+ActorInheritsConstant =
+  EnumValueReference
+| BoolLiteral
+
+ActorBody =
+  ActorEmptyBody
+| ActorDefinitionBody
+
+ActorEmptyBody =
+  'newline'
+
+ActorDefinitionBody =
+  ':' 'newline' 'indent' ActorMemberDeclList 'dedent'
+
+ActorMemberDeclList =
+  ActorMemberDecl*
 
 ActorMemberDecl =
   EventDeclaration
@@ -242,8 +325,34 @@ ActorName =
 // Scenarios
 
 ScenarioDeclaration =
-  'scenario' QualifiedBehaviorName ('inherits' QualifiedBehaviorName ('(' FieldName '==' (EnumValueReference | BoolLiteral) ')')?)?
-    ((':' 'newline' 'indent' (ScenarioMemberDecl | BehaviorSpecification)* 'dedent') | 'newline')
+  'scenario' QualifiedBehaviorName ScenarioInheritsClause? ScenarioBody
+
+ScenarioInheritsClause =
+  'inherits' QualifiedBehaviorName ScenarioInheritsCondition?
+
+ScenarioInheritsCondition =
+  '(' FieldName '==' ScenarioInheritsConstant ')'
+
+ScenarioInheritsConstant =
+  EnumValueReference
+| BoolLiteral
+
+ScenarioBody =
+  ScenarioEmptyBody
+| ScenarioDefinitionBody
+
+ScenarioEmptyBody =
+  'newline'
+
+ScenarioDefinitionBody =
+  ':' 'newline' 'indent' ScenarioMemberItemList 'dedent'
+
+ScenarioMemberItemList =
+  ScenarioMemberItem*
+
+ScenarioMemberItem =
+  ScenarioMemberDecl
+| BehaviorSpecification
 
 ScenarioMemberDecl =
   EventDeclaration
@@ -253,7 +362,10 @@ ScenarioMemberDecl =
 | CoverageDeclaration
 
 QualifiedBehaviorName =
-  (ActorName '.')? BehaviorName
+  QualifiedBehaviorNamePrefix? BehaviorName
+
+QualifiedBehaviorNamePrefix =
+  ActorName '.'
 
 BehaviorName =
   QualifiedIdentifier
@@ -262,16 +374,65 @@ BehaviorName =
 // Actions
 
 ActionDeclaration =
-  'action' QualifiedBehaviorName ('inherits' QualifiedBehaviorName ('(' FieldName '==' (EnumValueReference | BoolLiteral) ')')?)?
-    ((':' 'newline' 'indent' (ScenarioMemberDecl | BehaviorSpecification)* 'dedent') | 'newline')
+  'action' QualifiedBehaviorName ActionInheritsClause? ActionBody
+
+ActionInheritsClause =
+  'inherits' QualifiedBehaviorName ActionInheritsCondition?
+
+ActionInheritsCondition =
+  '(' FieldName '==' ActionInheritsConstant ')'
+
+ActionInheritsConstant =
+  EnumValueReference
+| BoolLiteral
+
+ActionBody =
+  ActionEmptyBody
+| ActionDefinitionBody
+
+ActionEmptyBody =
+  'newline'
+
+ActionDefinitionBody =
+  ':' 'newline' 'indent' ActionMemberItemList 'dedent'
+
+ActionMemberItemList =
+  ActionMemberItem*
+
+ActionMemberItem =
+  ScenarioMemberDecl
+| BehaviorSpecification
 
 // Modifiers
 
 ModifierDeclaration =
-  'modifier' (ActorName '.')? ModifierName ('of' QualifiedBehaviorName)? ((':' 'newline' 'indent' (ScenarioMemberDecl | OnDirective)* 'dedent') | 'newline')
+  'modifier' ModifierNamePrefix? ModifierName ModifierOfClause? ModifierBody
+
+ModifierNamePrefix =
+  ActorName '.'
 
 ModifierName =
   QualifiedIdentifier
+
+ModifierOfClause =
+  'of' QualifiedBehaviorName
+
+ModifierBody =
+  ModifierEmptyBody
+| ModifierDefinitionBody
+
+ModifierEmptyBody =
+  'newline'
+
+ModifierDefinitionBody =
+  ':' 'newline' 'indent' ModifierMemberItemList 'dedent'
+
+ModifierMemberItemList =
+  ModifierMemberItem*
+
+ModifierMemberItem =
+  ScenarioMemberDecl
+| OnDirective
 
 
 // Type extension
@@ -281,10 +442,13 @@ TypeExtension =
 | StructuredTypeExtension
 
 EnumTypeExtension =
-  'extend' EnumName ':' '[' EnumMemberDecl (',' EnumMemberDecl)* ']' 'newline'
+  'extend' EnumName ':' '[' EnumMemberDeclList ']' 'newline'
 
 StructuredTypeExtension =
-  'extend' ExtendableTypeName ':' 'newline' 'indent' ExtendableMemberDecl* 'dedent'
+  'extend' ExtendableTypeName ':' 'newline' 'indent' ExtendableMemberDeclList 'dedent'
+
+ExtendableMemberDeclList =
+  ExtendableMemberDecl*
 
 ExtendableTypeName =
   StructName
@@ -307,11 +471,23 @@ GlobalParameterDeclaration =
 // Events
 
 EventDeclaration =
-  'event' EventName ('(' ArgumentListSpecification ')')? ('is' EventSpecification)? 'newline'
+  'event' EventName EventArgumentListSpecification? EventIsClause? 'newline'
+
+EventArgumentListSpecification =
+  '(' ArgumentListSpecification ')'
+
+EventIsClause =
+  'is' EventSpecification
 
 EventSpecification =
-  EventReference ((EventFieldDecl)? 'if' EventCondition)?
+  EventReferenceSpecification
 | EventCondition
+
+EventReferenceSpecification =
+  EventReference EventReferenceCondition?
+
+EventReferenceCondition =
+  EventFieldDecl? 'if' EventCondition
 
 EventReference =
   '@' EventPath
@@ -326,7 +502,10 @@ EventName =
   QualifiedIdentifier
 
 EventPath =
-  (Expression '.')? EventName
+  EventPathPrefix? EventName
+
+EventPathPrefix =
+  Expression '.'
 
 EventCondition =
   BoolExpression
@@ -345,7 +524,10 @@ ElapsedExpression =
   'elapsed' '(' DurationExpression ')'
 
 EveryExpression =
-  'every' '(' DurationExpression (',' 'offset' ':' DurationExpression)? ')'
+  'every' '(' DurationExpression EveryExpressionOffset? ')'
+
+EveryExpressionOffset =
+  ',' 'offset' ':' DurationExpression
 
 BoolExpression =
   Expression
@@ -361,13 +543,29 @@ FieldDeclaration =
 | VariableDeclaration
 
 ParameterDeclaration =
-  FieldName (',' FieldName)* ':' TypeDeclarator ('=' DefaultValue)? (ParameterWithDeclaration | 'newline')
+  FieldNameList ':' TypeDeclarator ParameterInitilizerClause? (ParameterWithDeclaration | 'newline')
+
+FieldNameList =
+  FieldName (',' FieldName)*
+
+ParameterInitilizerClause =
+  '=' DefaultValue
 
 VariableDeclaration =
-  'var' FieldName (',' FieldName)* ':' TypeDeclarator ('=' (DefaultValue | SampleExpression))? 'newline'
+  'var' FieldNameList ':' TypeDeclarator VariableInitializerClause? 'newline'
+
+VariableInitializerClause =
+  '=' VariableInitializerValue
+
+VariableInitializerValue =
+  DefaultValue
+| SampleExpression
 
 SampleExpression =
-  'sample' '(' Expression ',' EventSpecification (',' DefaultValue)? ')'
+  'sample' '(' Expression ',' EventSpecification SampleExpressionDefaultValue? ')'
+
+SampleExpressionDefaultValue =
+  ',' DefaultValue
 
 DefaultValue =
   Expression
@@ -405,16 +603,33 @@ ParameterReference =
 // Methods
 
 MethodDeclaration =
-  'def' MethodName '(' ArgumentListSpecification? ')' ('->' ReturnType)? MethodImplementation 'newline'
+  'def' MethodName '(' ArgumentListSpecification? ')' ReturnTypeClause? MethodImplementation 'newline'
+
+ReturnTypeClause =
+  '->' ReturnType
 
 ReturnType =
   TypeDeclarator
 
 MethodImplementation =
-  'is' MethodQualifier? ('expression' Expression | 'undefined' | 'external' StructuredIdentifier '(' ArgumentList? ')')
+  'is' MethodQualifier? MethodImplementationBody
 
 MethodQualifier =
   'only'
+
+MethodImplementationBody =
+  MethodExpression
+| MethodUndefined
+| MethodExternal
+
+MethodExpression =
+  'expression' Expression
+
+MethodUndefined =
+  'undefined'
+
+MethodExternal =
+  'external' StructuredIdentifier '(' ArgumentList? ')'
 
 MethodName =
   QualifiedIdentifier
@@ -429,7 +644,10 @@ CoverageDeclaration =
 // Modifier application
 
 ModifierApplication =
-  (ActorExpression '.')? ModifierName '(' ArgumentList? ')' 'newline'
+  ModifierApplicationPrefix? ModifierName '(' ArgumentList? ')' 'newline'
+
+ModifierApplicationPrefix =
+  ActorExpression '.'
 
 
 // Behavior specification
@@ -442,7 +660,10 @@ BehaviorSpecification =
 // On directive
 
 OnDirective =
-  'on' EventSpecification ':' 'newline' 'indent' OnMember* 'dedent'
+  'on' EventSpecification ':' 'newline' 'indent' OnMemberList 'dedent'
+
+OnMemberList =
+  OnMember*
 
 OnMember =
   CallDirective
@@ -452,7 +673,17 @@ DoDirective =
   'do' DoMember
 
 DoMember =
-  (LabelName ':')? (Composition | BehaviorInvocation | WaitDirective | EmitDirective | CallDirective)
+  DoMemberLabel? DoMemberBody
+
+DoMemberLabel =
+  LabelName ':'
+
+DoMemberBody =
+  Composition
+| BehaviorInvocation
+| WaitDirective
+| EmitDirective
+| CallDirective
 
 LabelName =
   QualifiedIdentifier
@@ -461,7 +692,13 @@ LabelName =
 // Composition
 
 Composition =
-  CompositionOperator ('(' UnqualifiedArgumentList ')')? 'newline' 'indent' DoMember* 'dedent' BehaviorWithDeclaration?
+  CompositionOperator CompositionArgumentList? 'newline' 'indent' DoMemberList 'dedent' BehaviorWithDeclaration?
+
+CompositionArgumentList =
+  '(' UnqualifiedArgumentList ')'
+
+DoMemberList =
+  DoMember*
 
 CompositionOperator =
   'serial' | 'one_of' | 'parallel'
@@ -470,10 +707,16 @@ CompositionOperator =
 // Behavior invocation
 
 BehaviorInvocation =
-  (ActorExpression '.')? BehaviorName '(' ArgumentList? ')' (BehaviorWithDeclaration | 'newline')
+  BehaviorInvocationPrefix? BehaviorName '(' ArgumentList? ')' (BehaviorWithDeclaration | 'newline')
+
+BehaviorInvocationPrefix =
+  ActorExpression '.'
 
 BehaviorWithDeclaration =
-  'with' ':' 'newline' 'indent' BehaviorWithMember* 'dedent'
+  'with' ':' 'newline' 'indent' BehaviorWithMemberList 'dedent'
+
+BehaviorWithMemberList =
+  BehaviorWithMember*
 
 BehaviorWithMember =
   ConstraintDeclaration
@@ -493,7 +736,10 @@ WaitDirective =
 // Emit directive
 
 EmitDirective =
-  'emit' EventName ('(' ArgumentList ')')? 'newline'
+  'emit' EventName EmitDirectiveArgumentList? 'newline'
+
+EmitDirectiveArgumentList =
+  '(' ArgumentList ')'
 
 
 // Call directive
@@ -517,7 +763,10 @@ ArgumentListSpecification =
   ArgumentSpecification (',' ArgumentSpecification)*
 
 ArgumentSpecification =
-  ArgumentName ':' TypeDeclarator ('=' DefaultValue)?
+  ArgumentName ':' TypeDeclarator ArgumentSpecificationInitializerClause?
+
+ArgumentSpecificationInitializerClause =
+  '=' DefaultValue
 
 ArgumentName =
   QualifiedIdentifier
@@ -526,11 +775,23 @@ ArgumentName =
 // Argument list
 
 ArgumentList =
-  PositionalArgument (',' PositionalArgument)* (',' NamedArgument)*
-| NamedArgument (',' NamedArgument)*
+  MixedArgumentList
+| NamedArgumentList
+
+MixedArgumentList =
+  PositionalArgumentList SuccessiveNamedArgumentList?
+
+PositionalArgumentList =
+  PositionalArgument (',' PositionalArgument)*
+
+SuccessiveNamedArgumentList =
+  ',' NamedArgumentList
 
 PositionalArgument =
   Expression
+
+NamedArgumentList =
+  NamedArgument (',' NamedArgument)*
 
 NamedArgument =
   ArgumentName ':' Expression
@@ -539,8 +800,14 @@ NamedArgument =
 // Unqualified argument list
 
 UnqualifiedArgumentList =
-  PositionalArgument (',' PositionalArgument)* (',' UnqualifiedNamedArgument)*
-| UnqualifiedNamedArgument (',' UnqualifiedNamedArgument)*
+  PositionalArgumentList SuccessiveUnqualifiedNamedArgumentList?
+| UnqualifiedNamedArgumentList?
+
+SuccessiveUnqualifiedNamedArgumentList =
+  ',' UnqualifiedNamedArgumentList
+
+UnqualifiedNamedArgumentList =
+  UnqualifiedNamedArgument (',' UnqualifiedNamedArgument)*
 
 UnqualifiedArgumentName =
   'ident'
@@ -639,16 +906,22 @@ FieldAccess =
 
 PrimaryExp =
   ValueExp
-| 'it'
+| ItExp
 | QualifiedIdentifier
-| '(' Expression ')'
+| ParenthesizedExp
+
+ItExp =
+  'it'
+
+ParenthesizedExp =
+  '(' Expression ')'
 
 ValueExp =
   IntegerLiteral
-| 'float_lit'
+| FloatLiteral
 | PhysicalLiteral
 | BoolLiteral
-| 'string'
+| StringLiteral
 | EnumValueReference
 | ListConstructor
 | RangeConstructor
@@ -657,8 +930,17 @@ ValueExp =
 // List and range constructors
 
 ListConstructor =
-  '[' Expression (',' Expression)* ']'
+  '[' ExpressionList ']'
+
+ExpressionList =
+  Expression (',' Expression)*
 
 RangeConstructor =
+  ParenthesesRangeConstructor
+| BracketsRangeConstructor
+
+ParenthesesRangeConstructor =
   'range' '(' Expression ',' Expression ')'
-| '[' Expression '..' Expression ']'
+
+BracketsRangeConstructor =
+  '[' Expression '..' Expression ']'
