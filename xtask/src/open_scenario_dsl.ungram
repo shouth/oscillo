@@ -13,8 +13,11 @@
 
 // Keywords and identifiers
 
-QualifiedIdentifier =
+Identifier =
   'ident'
+
+QualifiedIdentifier =
+  Identifier
 | PrefixedIdentifier
 
 PrefixedIdentifier =
@@ -227,9 +230,9 @@ EnumMemberDeclList =
   EnumMemberDecl (',' EnumMemberDecl)*
 
 EnumMemberDecl =
-  EnumMemberName EnumMemberInitializerClause?
+  EnumMemberName EnumMemberInitializer?
 
-EnumMemberInitializerClause =
+EnumMemberInitializer =
   '=' EnumMemberValue
 
 EnumName =
@@ -524,9 +527,9 @@ ParameterInitilizerClause =
   '=' DefaultValue
 
 VariableDeclaration =
-  'var' FieldNameList ':' TypeDeclarator VariableInitializerClause? 'newline'
+  'var' FieldNameList ':' TypeDeclarator VariableInitializer? 'newline'
 
-VariableInitializerClause =
+VariableInitializer =
   '=' VariableInitializerValue
 
 VariableInitializerValue =
@@ -534,9 +537,9 @@ VariableInitializerValue =
 | SampleExpression
 
 SampleExpression =
-  'sample' '(' Expression ',' EventSpecification SampleExpressionDefaultValue? ')'
+  'sample' '(' Expression ',' EventSpecification SampleDefaultValue? ')'
 
-SampleExpressionDefaultValue =
+SampleDefaultValue =
   ',' DefaultValue
 
 DefaultValue =
@@ -575,32 +578,32 @@ ParameterReference =
 // Methods
 
 MethodDeclaration =
-  'def' MethodName '(' ArgumentListSpecification? ')' ReturnTypeClause? MethodImplementation 'newline'
+  'def' MethodName '(' ArgumentListSpecification? ')' MethodReturnType? MethodImplementation 'newline'
 
-ReturnTypeClause =
+MethodReturnType =
   '->' ReturnType
 
 ReturnType =
   TypeDeclarator
 
 MethodImplementation =
-  'is' MethodQualifier? MethodImplementationBody
+  'is' MethodQualifier? MethodBody
 
 MethodQualifier =
   'only'
 
-MethodImplementationBody =
-  MethodExpression
-| MethodUndefined
-| MethodExternal
+MethodBody =
+  MethodExpressionBody
+| MethodUndefinedBody
+| MethodExternalBody
 
-MethodExpression =
+MethodExpressionBody =
   'expression' Expression
 
-MethodUndefined =
+MethodUndefinedBody =
   'undefined'
 
-MethodExternal =
+MethodExternalBody =
   'external' StructuredIdentifier '(' ArgumentList? ')'
 
 MethodName =
@@ -735,9 +738,9 @@ ArgumentListSpecification =
   ArgumentSpecification (',' ArgumentSpecification)*
 
 ArgumentSpecification =
-  ArgumentName ':' TypeDeclarator ArgumentInitializerClause?
+  ArgumentName ':' TypeDeclarator ArgumentInitializer?
 
-ArgumentInitializerClause =
+ArgumentInitializer =
   '=' DefaultValue
 
 ArgumentName =
@@ -747,17 +750,10 @@ ArgumentName =
 // Argument list
 
 ArgumentList =
-  MixedArgumentList
-| NamedArgumentList
-
-MixedArgumentList =
-  PositionalArgumentList TrailingNamedArgumentList?
+  PositionalArgumentList? NamedArgumentList?
 
 PositionalArgumentList =
-  PositionalArgument (',' PositionalArgument)*
-
-TrailingNamedArgumentList =
-  ',' NamedArgumentList
+  PositionalArgument (',' PositionalArgument)* ','?
 
 PositionalArgument =
   Expression
@@ -772,11 +768,7 @@ NamedArgument =
 // Unqualified argument list
 
 UnqualifiedArgumentList =
-  PositionalArgumentList TrailingUnqualifiedNamedArgumentList?
-| UnqualifiedNamedArgumentList?
-
-TrailingUnqualifiedNamedArgumentList =
-  ',' UnqualifiedNamedArgumentList
+  PositionalArgumentList? UnqualifiedNamedArgumentList?
 
 UnqualifiedNamedArgumentList =
   UnqualifiedNamedArgument (',' UnqualifiedNamedArgument)*
@@ -792,9 +784,9 @@ UnqualifiedNamedArgument =
 
 Expression =
   TernaryOpExp
-| LogicalExp
-| BinaryExp
-| UnaryExp
+| LogicalOpExp
+| BinaryOpExp
+| UnaryOpExp
 | CastExp
 | TypeTestExp
 | ElementAccess
@@ -811,19 +803,19 @@ Expression =
 TernaryOpExp =
   Expression '?' Expression ':' Expression
 
-LogicalExp =
+LogicalOpExp =
   Expression LogicalOp Expression
 
 LogicalOp =
   '=>' | 'or' | 'and'
 
-BinaryExp =
+BinaryOpExp =
   Expression BinaryOp Expression
 
 BinaryOp =
   '==' | '!=' | '<' | '<=' | '>' | '>=' | 'in' | '+' | '-' | '*' | '/' | '%'
 
-UnaryExp =
+UnaryOpExp =
   UnaryOp Expression
 
 UnaryOp =
