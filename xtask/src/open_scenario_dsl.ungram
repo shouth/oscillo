@@ -251,7 +251,7 @@ EnumValueReferencePrefix =
 // Structs
 
 StructDeclaration =
-  'struct' StructName StructInheritsClause? (StructBody | 'newline')
+  'struct' StructName StructInheritsClause? StructBody
 
 StructInheritsClause =
   'inherits' StructName StructInheritsCondition?
@@ -264,6 +264,13 @@ StructInheritsConstant =
 | BoolLiteral
 
 StructBody =
+  StructEmptyBody
+| StructDefinitionBody
+
+StructEmptyBody =
+  'newline'
+
+StructDefinitionBody =
   ':' 'newline' 'indent' StructMemberDeclList 'dedent'
 
 StructMemberDeclList =
@@ -543,13 +550,20 @@ FieldDeclaration =
 | VariableDeclaration
 
 ParameterDeclaration =
-  FieldNameList ':' TypeDeclarator ParameterInitilizerClause? (ParameterWithDeclaration | 'newline')
+  FieldNameList ':' TypeDeclarator ParameterInitilizerClause? ParameterConstraint
 
 FieldNameList =
   FieldName (',' FieldName)*
 
 ParameterInitilizerClause =
   '=' DefaultValue
+
+ParameterConstraint =
+  ParameterEmptyConstraint
+| ParameterWithDeclaration
+
+ParameterEmptyConstraint =
+  'newline'
 
 VariableDeclaration =
   'var' FieldNameList ':' TypeDeclarator VariableInitializerClause? 'newline'
