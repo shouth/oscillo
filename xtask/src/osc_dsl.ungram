@@ -13,21 +13,11 @@
 
 // Keywords and identifiers
 
-Identifier =
-  'ident'
-
 QualifiedIdentifier =
-  Identifier
-| PrefixedIdentifier
+  IdentifierPrefix? 'identifier'
 
-PrefixedIdentifier =
-  NamespaceName? '::' 'ident'
-
-
-// String literals
-
-StringLiteral =
-  'string_lit'
+IdentifierPrefix =
+  NamespaceName? '::'
 
 
 // Boolean literals
@@ -36,25 +26,13 @@ BoolLiteral =
   'true' | 'false'
 
 
-// Integer literals
-
-IntegerLiteral =
-  'uint_lit' | 'hex_uint_lit' | 'int_lit'
-
-
-// Float-point literals
-
-FloatLiteral =
-  'float_lit'
-
-
 // Physical type literals
 
 PhysicalLiteral =
   NumberLiteral UnitName
 
 NumberLiteral =
-  FloatLiteral | IntegerLiteral
+  'float_literal' | 'integer_literal'
 
 UnitName =
   QualifiedIdentifier
@@ -88,10 +66,10 @@ ImportReference =
 | StructuredIdentifier
 
 ImportReferenceString =
-  'string'
+  'string_literal'
 
 StructuredIdentifier =
-  'ident' ('.' 'ident')*
+  'identifier' ('.' 'identifier')*
 
 
 // Main statements
@@ -118,7 +96,7 @@ NamespaceName =
 | GlobalNamespaceName
 
 SimpleNamespaceName =
-  'ident'
+  'identifier'
 
 GlobalNamespaceName =
   'null'
@@ -206,7 +184,7 @@ SiBaseExponentList =
   SiBaseExponent (',' SiBaseExponent)*
 
 SiBaseExponent =
-  SiBaseUnitName ':' IntegerLiteral
+  SiBaseUnitName ':' 'integer_literal'
 
 SiUnitSpecifier =
   'SI' '(' SiBaseExponentList TrailingSiFactor? TrailingSiOffset? ')'
@@ -242,7 +220,7 @@ EnumMemberName =
   QualifiedIdentifier
 
 EnumMemberValue =
-  'uint_lit' | 'hex_uint_lit'
+  'integer_literal'
 
 EnumValueReference =
   EnumValueReferencePrefix? EnumMemberName
@@ -667,9 +645,9 @@ LabelName =
 // Composition
 
 Composition =
-  CompositionOperator CompositionArgumentList? 'newline' 'indent' DoMemberList 'dedent' BehaviorWithDeclaration?
+  CompositionOperator CompositionArguments? 'newline' 'indent' DoMemberList 'dedent' BehaviorWithDeclaration?
 
-CompositionArgumentList =
+CompositionArguments =
   '(' UnqualifiedArgumentList ')'
 
 DoMemberList =
@@ -711,9 +689,9 @@ WaitDirective =
 // Emit directive
 
 EmitDirective =
-  'emit' EventName EmitDirectiveArgumentList? 'newline'
+  'emit' EventName EmitArguments? 'newline'
 
-EmitDirectiveArgumentList =
+EmitArguments =
   '(' ArgumentList ')'
 
 
@@ -774,7 +752,7 @@ UnqualifiedNamedArgumentList =
   UnqualifiedNamedArgument (',' UnqualifiedNamedArgument)*
 
 UnqualifiedArgumentName =
-  'ident'
+  'identifier'
 
 UnqualifiedNamedArgument =
   UnqualifiedArgumentName ':' Expression
@@ -843,11 +821,26 @@ ParenthesizedExp =
   '(' Expression ')'
 
 LiteralExp =
-  IntegerLiteral
-| FloatLiteral
-| PhysicalLiteral
-| BoolLiteral
-| StringLiteral
+  IntegerLiteralExp
+| FloatLiteralExp
+| PhysicalLiteralExp
+| BoolLiteralExp
+| StringLiteralExp
+
+IntegerLiteralExp =
+  'integer_literal'
+
+FloatLiteralExp =
+  'float_literal'
+
+PhysicalLiteralExp =
+  PhysicalLiteral
+
+BoolLiteralExp =
+  BoolLiteral
+
+StringLiteralExp =
+  'string_literal'
 
 
 // List and range constructors

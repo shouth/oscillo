@@ -59,7 +59,7 @@ fn do_generate_char_set(ucd_path: &Path, out_path: &Path, var_name: &str, catego
 }
 
 fn generate_dsl_syntax() {
-    let grammar = include_str!("open_scenario_dsl.ungram");
+    let grammar = include_str!("osc_dsl.ungram");
     let grammar = grammar
         .parse::<Grammar>()
         .expect("Failed to parse the grammar");
