@@ -1,9 +1,13 @@
+mod syntax;
+
 use std::{
     env,
     path::{Path, PathBuf},
 };
 
 use clap::{command, Command};
+use quote::{format_ident, quote};
+use syntax::{Tokens, DSL_TOKENS};
 use ungrammar::Grammar;
 use xshell::{cmd, Shell};
 
@@ -63,6 +67,81 @@ fn generate_dsl_syntax() {
     let grammar = grammar
         .parse::<Grammar>()
         .expect("Failed to parse the grammar");
+
+    generate_dsl_syntax_kinds(&DSL_TOKENS, &grammar);
+}
+
+fn generate_dsl_syntax_kinds(tokens: &Tokens, grammer: &Grammar) {
+    let gen_dir = project_root().join("oscelas/src/syntax/generated");
+
+    let sh = Shell::new().expect("Failed to create a shell");
+
+    let puncts = tokens
+        .punct
+        .iter()
+        .map(|(_, name)| format_ident!("{name}"));
+
+    let keywords = tokens
+        .keyword
+        .iter()
+        .map(|kw| kw.to_ascii_uppercase())
+        .map(|kw| format_ident!("{kw}_KW"));
+
+    let literals = tokens
+        .literal
+        .iter()
+        .map(|lit| format_ident!("{lit}"));
+
+    let tokens = tokens
+        .token
+        .iter()
+        .map(|tok| format_ident!("{tok}"));
+
+    let nodes = grammer
+        .iter()
+        .map(|node| to_upper_snake_case(&grammer[node].name))
+        .map(|node| format_ident!("{node}"));
+
+    let code = quote! {
+        #![allow(bad_style, missing_docs, unreachable_pub)]
+        #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+        #[repr(u16)]
+        pub enum SyntaxKind {
+            #[doc(hidden)]
+            TOMBSTONE,
+            EOF,
+            #(#puncts,)*
+            #(#keywords,)*
+            #(#literals,)*
+            #(#tokens,)*
+            #(#nodes,)*
+
+            #[doc(hidden)]
+            __LAST,
+        }
+    };
+
+    let code = cmd!(sh, "rustfmt --emit stdout")
+        .stdin(code.to_string())
+        .read()
+        .expect("Failed to format the code");
+
+    sh.write_file(gen_dir.join("syntax_kind.rs"), code)
+        .expect("Failed to write syntax_kind.rs");
+}
+
+fn to_upper_snake_case(s: &str) -> String {
+    // `s` is expected to be represented in UpperCamelCase
+    let mut result = String::new();
+    let mut first = true;
+    for c in s.chars() {
+        if c.is_ascii_uppercase() && !first {
+            result.push('_');
+        }
+        first = false;
+        result.push(c.to_ascii_uppercase());
+    }
+    result
 }
 
 fn main() {
