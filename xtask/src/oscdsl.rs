@@ -15,7 +15,7 @@ const PUNCTUAIONS: &[(&str, &str)] = &[
     ("[", "l_bracket"),
     ("]", "r_bracket"),
     ("?", "question"),
-    ("!", "excalamation"),
+    ("!", "exclamation"),
     ("=>", "fat_arrow"),
     ("==", "equal"),
     ("!=", "not_equal"),
