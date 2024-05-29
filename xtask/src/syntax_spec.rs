@@ -34,11 +34,11 @@ pub struct RuleSpec(usize);
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct TokenSpecData {
     pub token: String,
-    pub kind: SyntaxTokenSpecKind,
+    pub kind: TokenSpecKind,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub enum SyntaxTokenSpecKind {
+pub enum TokenSpecKind {
     Punct { name: String },
     Keyword,
     Literal,
@@ -132,7 +132,7 @@ impl<'a> SyntaxSpecBuilder<'a> {
             .chain(self.tokens.punctuations.iter().map(|(token, name)| {
                 (
                     token,
-                    SyntaxTokenSpecKind::Punct {
+                    TokenSpecKind::Punct {
                         name: String::from(*name),
                     },
                 )
@@ -141,25 +141,25 @@ impl<'a> SyntaxSpecBuilder<'a> {
                 self.tokens
                     .keywords
                     .iter()
-                    .map(|token| (token, SyntaxTokenSpecKind::Keyword)),
+                    .map(|token| (token, TokenSpecKind::Keyword)),
             )
             .chain(
                 self.tokens
                     .literals
                     .iter()
-                    .map(|token| (token, SyntaxTokenSpecKind::Literal)),
+                    .map(|token| (token, TokenSpecKind::Literal)),
             )
             .chain(
                 self.tokens
                     .tokens
                     .iter()
-                    .map(|token| (token, SyntaxTokenSpecKind::Token)),
+                    .map(|token| (token, TokenSpecKind::Token)),
             )
             .chain(
                 self.tokens
                     .trivials
                     .iter()
-                    .map(|token| (token, SyntaxTokenSpecKind::Trivial)),
+                    .map(|token| (token, TokenSpecKind::Trivial)),
             )
             .map(|(token, kind)| TokenSpecData {
                 token: (*token).to_owned(),
