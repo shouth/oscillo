@@ -1,5 +1,4 @@
 mod oscdsl;
-mod syntax;
 mod syntax_spec;
 
 use std::{
@@ -11,7 +10,6 @@ use clap::{command, Command};
 use quote::{format_ident, quote};
 use std::fmt::Write;
 use syntax_spec::{RuleSpecData, RuleSpecKind, SyntaxSpec, TokenSpecData, TokenSpecKind};
-use ungrammar::Grammar;
 use xshell::{cmd, Shell};
 
 fn project_root() -> PathBuf {
@@ -66,14 +64,9 @@ fn do_generate_char_set(ucd_path: &Path, out_path: &Path, var_name: &str, catego
 }
 
 fn generate_dsl_syntax() {
-    let grammar = include_str!("oscdsl.ungram");
-    let grammar = grammar
-        .parse::<Grammar>()
-        .expect("Failed to parse the grammar");
-
     let spec = oscdsl::load_spec().expect("Failed to load the syntax spec");
     generate_dsl_syntax_kinds(&spec);
-    generate_dsl_syntax_node(&grammar);
+    generate_dsl_syntax_node(&spec);
 }
 
 fn generate_dsl_syntax_kinds(syntax: &SyntaxSpec) {
@@ -153,7 +146,7 @@ fn generate_dsl_syntax_kinds(syntax: &SyntaxSpec) {
         .expect("Failed to write kind.rs");
 }
 
-fn generate_dsl_syntax_node(grammer: &Grammar) {
+fn generate_dsl_syntax_node(spec: &SyntaxSpec) {
     let gen_dir = project_root().join("oscelas/src/syntax/generated");
 
     let sh = Shell::new().expect("Failed to create a shell");
@@ -170,8 +163,7 @@ fn generate_dsl_syntax_node(grammer: &Grammar) {
     )
     .unwrap();
 
-    for node in grammer.iter() {
-        let node = &grammer[node];
+    for node in spec.rules.iter() {
         let name = format_ident!("{}", node.name);
         let kind = format_ident!("{}", to_upper_snake_case(&node.name));
 
