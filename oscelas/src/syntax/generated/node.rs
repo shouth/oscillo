@@ -1685,20 +1685,21 @@ impl AstNode for StructInheritsClause {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct StructBody {
+pub struct StructBodyOrNewline {
     node: SyntaxNode<OscDslLanguage>,
 }
-impl StructBody {
+impl StructBodyOrNewline {
     pub const unsafe fn new_unchecked(node: SyntaxNode<OscDslLanguage>) -> Self {
         Self { node }
     }
 }
-impl AstNode for StructBody {
+impl AstNode for StructBodyOrNewline {
     type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(OscDslSyntaxKind::STRUCT_BODY as u16));
+    const KIND_SET: SyntaxKindSet<Self::Language> = SyntaxKindSet::from_raw(RawSyntaxKind(
+        OscDslSyntaxKind::STRUCT_BODY_OR_NEWLINE as u16,
+    ));
     fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == OscDslSyntaxKind::STRUCT_BODY
+        kind == OscDslSyntaxKind::STRUCT_BODY_OR_NEWLINE
     }
     fn cast(node: SyntaxNode<OscDslLanguage>) -> Option<Self> {
         Self::can_cast(node.kind()).then(|| unsafe { Self::new_unchecked(node) })
@@ -1779,6 +1780,32 @@ impl AstNode for StructInheritsConstant {
     ));
     fn can_cast(kind: OscDslSyntaxKind) -> bool {
         kind == OscDslSyntaxKind::STRUCT_INHERITS_CONSTANT
+    }
+    fn cast(node: SyntaxNode<OscDslLanguage>) -> Option<Self> {
+        Self::can_cast(node.kind()).then(|| unsafe { Self::new_unchecked(node) })
+    }
+    fn syntax(&self) -> &SyntaxNode<OscDslLanguage> {
+        &self.node
+    }
+    fn into_syntax(self) -> SyntaxNode<OscDslLanguage> {
+        self.node
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct StructBody {
+    node: SyntaxNode<OscDslLanguage>,
+}
+impl StructBody {
+    pub const unsafe fn new_unchecked(node: SyntaxNode<OscDslLanguage>) -> Self {
+        Self { node }
+    }
+}
+impl AstNode for StructBody {
+    type Language = OscDslLanguage;
+    const KIND_SET: SyntaxKindSet<Self::Language> =
+        SyntaxKindSet::from_raw(RawSyntaxKind(OscDslSyntaxKind::STRUCT_BODY as u16));
+    fn can_cast(kind: OscDslSyntaxKind) -> bool {
+        kind == OscDslSyntaxKind::STRUCT_BODY
     }
     fn cast(node: SyntaxNode<OscDslLanguage>) -> Option<Self> {
         Self::can_cast(node.kind()).then(|| unsafe { Self::new_unchecked(node) })
@@ -2002,20 +2029,21 @@ impl AstNode for ActorInheritsClause {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ActorBody {
+pub struct ActorBodyOrNewline {
     node: SyntaxNode<OscDslLanguage>,
 }
-impl ActorBody {
+impl ActorBodyOrNewline {
     pub const unsafe fn new_unchecked(node: SyntaxNode<OscDslLanguage>) -> Self {
         Self { node }
     }
 }
-impl AstNode for ActorBody {
+impl AstNode for ActorBodyOrNewline {
     type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(OscDslSyntaxKind::ACTOR_BODY as u16));
+    const KIND_SET: SyntaxKindSet<Self::Language> = SyntaxKindSet::from_raw(RawSyntaxKind(
+        OscDslSyntaxKind::ACTOR_BODY_OR_NEWLINE as u16,
+    ));
     fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == OscDslSyntaxKind::ACTOR_BODY
+        kind == OscDslSyntaxKind::ACTOR_BODY_OR_NEWLINE
     }
     fn cast(node: SyntaxNode<OscDslLanguage>) -> Option<Self> {
         Self::can_cast(node.kind()).then(|| unsafe { Self::new_unchecked(node) })
@@ -2070,6 +2098,32 @@ impl AstNode for ActorInheritsConstant {
     ));
     fn can_cast(kind: OscDslSyntaxKind) -> bool {
         kind == OscDslSyntaxKind::ACTOR_INHERITS_CONSTANT
+    }
+    fn cast(node: SyntaxNode<OscDslLanguage>) -> Option<Self> {
+        Self::can_cast(node.kind()).then(|| unsafe { Self::new_unchecked(node) })
+    }
+    fn syntax(&self) -> &SyntaxNode<OscDslLanguage> {
+        &self.node
+    }
+    fn into_syntax(self) -> SyntaxNode<OscDslLanguage> {
+        self.node
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ActorBody {
+    node: SyntaxNode<OscDslLanguage>,
+}
+impl ActorBody {
+    pub const unsafe fn new_unchecked(node: SyntaxNode<OscDslLanguage>) -> Self {
+        Self { node }
+    }
+}
+impl AstNode for ActorBody {
+    type Language = OscDslLanguage;
+    const KIND_SET: SyntaxKindSet<Self::Language> =
+        SyntaxKindSet::from_raw(RawSyntaxKind(OscDslSyntaxKind::ACTOR_BODY as u16));
+    fn can_cast(kind: OscDslSyntaxKind) -> bool {
+        kind == OscDslSyntaxKind::ACTOR_BODY
     }
     fn cast(node: SyntaxNode<OscDslLanguage>) -> Option<Self> {
         Self::can_cast(node.kind()).then(|| unsafe { Self::new_unchecked(node) })
@@ -2162,20 +2216,21 @@ impl AstNode for ScenarioInheritsClause {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ScenarioBody {
+pub struct ScenarioBodyOrNewline {
     node: SyntaxNode<OscDslLanguage>,
 }
-impl ScenarioBody {
+impl ScenarioBodyOrNewline {
     pub const unsafe fn new_unchecked(node: SyntaxNode<OscDslLanguage>) -> Self {
         Self { node }
     }
 }
-impl AstNode for ScenarioBody {
+impl AstNode for ScenarioBodyOrNewline {
     type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(OscDslSyntaxKind::SCENARIO_BODY as u16));
+    const KIND_SET: SyntaxKindSet<Self::Language> = SyntaxKindSet::from_raw(RawSyntaxKind(
+        OscDslSyntaxKind::SCENARIO_BODY_OR_NEWLINE as u16,
+    ));
     fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == OscDslSyntaxKind::SCENARIO_BODY
+        kind == OscDslSyntaxKind::SCENARIO_BODY_OR_NEWLINE
     }
     fn cast(node: SyntaxNode<OscDslLanguage>) -> Option<Self> {
         Self::can_cast(node.kind()).then(|| unsafe { Self::new_unchecked(node) })
@@ -2230,6 +2285,32 @@ impl AstNode for ScenarioInheritsConstant {
     ));
     fn can_cast(kind: OscDslSyntaxKind) -> bool {
         kind == OscDslSyntaxKind::SCENARIO_INHERITS_CONSTANT
+    }
+    fn cast(node: SyntaxNode<OscDslLanguage>) -> Option<Self> {
+        Self::can_cast(node.kind()).then(|| unsafe { Self::new_unchecked(node) })
+    }
+    fn syntax(&self) -> &SyntaxNode<OscDslLanguage> {
+        &self.node
+    }
+    fn into_syntax(self) -> SyntaxNode<OscDslLanguage> {
+        self.node
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ScenarioBody {
+    node: SyntaxNode<OscDslLanguage>,
+}
+impl ScenarioBody {
+    pub const unsafe fn new_unchecked(node: SyntaxNode<OscDslLanguage>) -> Self {
+        Self { node }
+    }
+}
+impl AstNode for ScenarioBody {
+    type Language = OscDslLanguage;
+    const KIND_SET: SyntaxKindSet<Self::Language> =
+        SyntaxKindSet::from_raw(RawSyntaxKind(OscDslSyntaxKind::SCENARIO_BODY as u16));
+    fn can_cast(kind: OscDslSyntaxKind) -> bool {
+        kind == OscDslSyntaxKind::SCENARIO_BODY
     }
     fn cast(node: SyntaxNode<OscDslLanguage>) -> Option<Self> {
         Self::can_cast(node.kind()).then(|| unsafe { Self::new_unchecked(node) })
@@ -2416,6 +2497,33 @@ impl AstNode for ActionInheritsClause {
     ));
     fn can_cast(kind: OscDslSyntaxKind) -> bool {
         kind == OscDslSyntaxKind::ACTION_INHERITS_CLAUSE
+    }
+    fn cast(node: SyntaxNode<OscDslLanguage>) -> Option<Self> {
+        Self::can_cast(node.kind()).then(|| unsafe { Self::new_unchecked(node) })
+    }
+    fn syntax(&self) -> &SyntaxNode<OscDslLanguage> {
+        &self.node
+    }
+    fn into_syntax(self) -> SyntaxNode<OscDslLanguage> {
+        self.node
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ActionBodyOrNewline {
+    node: SyntaxNode<OscDslLanguage>,
+}
+impl ActionBodyOrNewline {
+    pub const unsafe fn new_unchecked(node: SyntaxNode<OscDslLanguage>) -> Self {
+        Self { node }
+    }
+}
+impl AstNode for ActionBodyOrNewline {
+    type Language = OscDslLanguage;
+    const KIND_SET: SyntaxKindSet<Self::Language> = SyntaxKindSet::from_raw(RawSyntaxKind(
+        OscDslSyntaxKind::ACTION_BODY_OR_NEWLINE as u16,
+    ));
+    fn can_cast(kind: OscDslSyntaxKind) -> bool {
+        kind == OscDslSyntaxKind::ACTION_BODY_OR_NEWLINE
     }
     fn cast(node: SyntaxNode<OscDslLanguage>) -> Option<Self> {
         Self::can_cast(node.kind()).then(|| unsafe { Self::new_unchecked(node) })
@@ -2627,6 +2735,33 @@ impl AstNode for ModifierOfClause {
         SyntaxKindSet::from_raw(RawSyntaxKind(OscDslSyntaxKind::MODIFIER_OF_CLAUSE as u16));
     fn can_cast(kind: OscDslSyntaxKind) -> bool {
         kind == OscDslSyntaxKind::MODIFIER_OF_CLAUSE
+    }
+    fn cast(node: SyntaxNode<OscDslLanguage>) -> Option<Self> {
+        Self::can_cast(node.kind()).then(|| unsafe { Self::new_unchecked(node) })
+    }
+    fn syntax(&self) -> &SyntaxNode<OscDslLanguage> {
+        &self.node
+    }
+    fn into_syntax(self) -> SyntaxNode<OscDslLanguage> {
+        self.node
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ModifierBodyOrNewline {
+    node: SyntaxNode<OscDslLanguage>,
+}
+impl ModifierBodyOrNewline {
+    pub const unsafe fn new_unchecked(node: SyntaxNode<OscDslLanguage>) -> Self {
+        Self { node }
+    }
+}
+impl AstNode for ModifierBodyOrNewline {
+    type Language = OscDslLanguage;
+    const KIND_SET: SyntaxKindSet<Self::Language> = SyntaxKindSet::from_raw(RawSyntaxKind(
+        OscDslSyntaxKind::MODIFIER_BODY_OR_NEWLINE as u16,
+    ));
+    fn can_cast(kind: OscDslSyntaxKind) -> bool {
+        kind == OscDslSyntaxKind::MODIFIER_BODY_OR_NEWLINE
     }
     fn cast(node: SyntaxNode<OscDslLanguage>) -> Option<Self> {
         Self::can_cast(node.kind()).then(|| unsafe { Self::new_unchecked(node) })
@@ -3534,21 +3669,21 @@ impl AstNode for ParameterInitilizerClause {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ParameterWithDeclaration {
+pub struct ParameterWithDeclarationOrNewline {
     node: SyntaxNode<OscDslLanguage>,
 }
-impl ParameterWithDeclaration {
+impl ParameterWithDeclarationOrNewline {
     pub const unsafe fn new_unchecked(node: SyntaxNode<OscDslLanguage>) -> Self {
         Self { node }
     }
 }
-impl AstNode for ParameterWithDeclaration {
+impl AstNode for ParameterWithDeclarationOrNewline {
     type Language = OscDslLanguage;
     const KIND_SET: SyntaxKindSet<Self::Language> = SyntaxKindSet::from_raw(RawSyntaxKind(
-        OscDslSyntaxKind::PARAMETER_WITH_DECLARATION as u16,
+        OscDslSyntaxKind::PARAMETER_WITH_DECLARATION_OR_NEWLINE as u16,
     ));
     fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == OscDslSyntaxKind::PARAMETER_WITH_DECLARATION
+        kind == OscDslSyntaxKind::PARAMETER_WITH_DECLARATION_OR_NEWLINE
     }
     fn cast(node: SyntaxNode<OscDslLanguage>) -> Option<Self> {
         Self::can_cast(node.kind()).then(|| unsafe { Self::new_unchecked(node) })
@@ -3680,6 +3815,33 @@ impl AstNode for SampleDefaultValue {
         SyntaxKindSet::from_raw(RawSyntaxKind(OscDslSyntaxKind::SAMPLE_DEFAULT_VALUE as u16));
     fn can_cast(kind: OscDslSyntaxKind) -> bool {
         kind == OscDslSyntaxKind::SAMPLE_DEFAULT_VALUE
+    }
+    fn cast(node: SyntaxNode<OscDslLanguage>) -> Option<Self> {
+        Self::can_cast(node.kind()).then(|| unsafe { Self::new_unchecked(node) })
+    }
+    fn syntax(&self) -> &SyntaxNode<OscDslLanguage> {
+        &self.node
+    }
+    fn into_syntax(self) -> SyntaxNode<OscDslLanguage> {
+        self.node
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ParameterWithDeclaration {
+    node: SyntaxNode<OscDslLanguage>,
+}
+impl ParameterWithDeclaration {
+    pub const unsafe fn new_unchecked(node: SyntaxNode<OscDslLanguage>) -> Self {
+        Self { node }
+    }
+}
+impl AstNode for ParameterWithDeclaration {
+    type Language = OscDslLanguage;
+    const KIND_SET: SyntaxKindSet<Self::Language> = SyntaxKindSet::from_raw(RawSyntaxKind(
+        OscDslSyntaxKind::PARAMETER_WITH_DECLARATION as u16,
+    ));
+    fn can_cast(kind: OscDslSyntaxKind) -> bool {
+        kind == OscDslSyntaxKind::PARAMETER_WITH_DECLARATION
     }
     fn cast(node: SyntaxNode<OscDslLanguage>) -> Option<Self> {
         Self::can_cast(node.kind()).then(|| unsafe { Self::new_unchecked(node) })
@@ -4115,20 +4277,46 @@ impl AstNode for MethodExternalBody {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Arguments {
+pub struct ArgumentList {
     node: SyntaxNode<OscDslLanguage>,
 }
-impl Arguments {
+impl ArgumentList {
     pub const unsafe fn new_unchecked(node: SyntaxNode<OscDslLanguage>) -> Self {
         Self { node }
     }
 }
-impl AstNode for Arguments {
+impl AstNode for ArgumentList {
     type Language = OscDslLanguage;
     const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(OscDslSyntaxKind::ARGUMENTS as u16));
+        SyntaxKindSet::from_raw(RawSyntaxKind(OscDslSyntaxKind::ARGUMENT_LIST as u16));
     fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == OscDslSyntaxKind::ARGUMENTS
+        kind == OscDslSyntaxKind::ARGUMENT_LIST
+    }
+    fn cast(node: SyntaxNode<OscDslLanguage>) -> Option<Self> {
+        Self::can_cast(node.kind()).then(|| unsafe { Self::new_unchecked(node) })
+    }
+    fn syntax(&self) -> &SyntaxNode<OscDslLanguage> {
+        &self.node
+    }
+    fn into_syntax(self) -> SyntaxNode<OscDslLanguage> {
+        self.node
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct CoverageOperator {
+    node: SyntaxNode<OscDslLanguage>,
+}
+impl CoverageOperator {
+    pub const unsafe fn new_unchecked(node: SyntaxNode<OscDslLanguage>) -> Self {
+        Self { node }
+    }
+}
+impl AstNode for CoverageOperator {
+    type Language = OscDslLanguage;
+    const KIND_SET: SyntaxKindSet<Self::Language> =
+        SyntaxKindSet::from_raw(RawSyntaxKind(OscDslSyntaxKind::COVERAGE_OPERATOR as u16));
+    fn can_cast(kind: OscDslSyntaxKind) -> bool {
+        kind == OscDslSyntaxKind::COVERAGE_OPERATOR
     }
     fn cast(node: SyntaxNode<OscDslLanguage>) -> Option<Self> {
         Self::can_cast(node.kind()).then(|| unsafe { Self::new_unchecked(node) })
@@ -4638,21 +4826,21 @@ impl AstNode for BehaviorWithDeclaration {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct UnqualifiedArguments {
+pub struct UnqualifiedArgumentList {
     node: SyntaxNode<OscDslLanguage>,
 }
-impl UnqualifiedArguments {
+impl UnqualifiedArgumentList {
     pub const unsafe fn new_unchecked(node: SyntaxNode<OscDslLanguage>) -> Self {
         Self { node }
     }
 }
-impl AstNode for UnqualifiedArguments {
+impl AstNode for UnqualifiedArgumentList {
     type Language = OscDslLanguage;
     const KIND_SET: SyntaxKindSet<Self::Language> = SyntaxKindSet::from_raw(RawSyntaxKind(
-        OscDslSyntaxKind::UNQUALIFIED_ARGUMENTS as u16,
+        OscDslSyntaxKind::UNQUALIFIED_ARGUMENT_LIST as u16,
     ));
     fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == OscDslSyntaxKind::UNQUALIFIED_ARGUMENTS
+        kind == OscDslSyntaxKind::UNQUALIFIED_ARGUMENT_LIST
     }
     fn cast(node: SyntaxNode<OscDslLanguage>) -> Option<Self> {
         Self::can_cast(node.kind()).then(|| unsafe { Self::new_unchecked(node) })
@@ -4680,6 +4868,33 @@ impl AstNode for BehaviorInvocationPrefix {
     ));
     fn can_cast(kind: OscDslSyntaxKind) -> bool {
         kind == OscDslSyntaxKind::BEHAVIOR_INVOCATION_PREFIX
+    }
+    fn cast(node: SyntaxNode<OscDslLanguage>) -> Option<Self> {
+        Self::can_cast(node.kind()).then(|| unsafe { Self::new_unchecked(node) })
+    }
+    fn syntax(&self) -> &SyntaxNode<OscDslLanguage> {
+        &self.node
+    }
+    fn into_syntax(self) -> SyntaxNode<OscDslLanguage> {
+        self.node
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct BehaviorWithDeclarationOrNewline {
+    node: SyntaxNode<OscDslLanguage>,
+}
+impl BehaviorWithDeclarationOrNewline {
+    pub const unsafe fn new_unchecked(node: SyntaxNode<OscDslLanguage>) -> Self {
+        Self { node }
+    }
+}
+impl AstNode for BehaviorWithDeclarationOrNewline {
+    type Language = OscDslLanguage;
+    const KIND_SET: SyntaxKindSet<Self::Language> = SyntaxKindSet::from_raw(RawSyntaxKind(
+        OscDslSyntaxKind::BEHAVIOR_WITH_DECLARATION_OR_NEWLINE as u16,
+    ));
+    fn can_cast(kind: OscDslSyntaxKind) -> bool {
+        kind == OscDslSyntaxKind::BEHAVIOR_WITH_DECLARATION_OR_NEWLINE
     }
     fn cast(node: SyntaxNode<OscDslLanguage>) -> Option<Self> {
         Self::can_cast(node.kind()).then(|| unsafe { Self::new_unchecked(node) })
