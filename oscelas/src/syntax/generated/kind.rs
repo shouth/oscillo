@@ -1,7 +1,7 @@
 #![allow(bad_style, missing_docs, unreachable_pub)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[repr(u16)]
-pub enum SyntaxKind {
+pub enum OscDslSyntaxKind {
     #[doc(hidden)]
     TOMBSTONE,
     EOF,
@@ -269,7 +269,7 @@ pub enum SyntaxKind {
     METHOD_EXPRESSION_BODY,
     METHOD_UNDEFINED_BODY,
     METHOD_EXTERNAL_BODY,
-    ARGUMENT_LIST,
+    ARGUMENTS,
     MODIFIER_APPLICATION,
     MODIFIER_APPLICATION_PREFIX,
     ACTOR_EXPRESSION,
@@ -289,7 +289,7 @@ pub enum SyntaxKind {
     COMPOSITION_ARGUMENTS,
     DO_MEMBER_LIST,
     BEHAVIOR_WITH_DECLARATION,
-    UNQUALIFIED_ARGUMENT_LIST,
+    UNQUALIFIED_ARGUMENTS,
     BEHAVIOR_INVOCATION_PREFIX,
     BEHAVIOR_WITH_MEMBER_LIST,
     BEHAVIOR_WITH_MEMBER,
@@ -330,6 +330,140 @@ pub enum SyntaxKind {
     EXPRESSION_LIST,
     PARENTHESES_RANGE_CONSTRUCTOR,
     BRACKETS_RANGE_CONSTRUCTOR,
+    SYNTAX_ELEMENT,
+    BOGUS,
     #[doc(hidden)]
     __LAST,
+}
+use self::OscDslSyntaxKind::*;
+impl OscDslSyntaxKind {
+    pub fn is_list(self) -> bool {
+        matches!(
+            self,
+            PRELUDE_STATEMENT_LIST
+                | MAIN_STATEMENT_LIST
+                | NAMESPACE_LIST
+                | EXPORT_SPECIFICATION_LIST
+                | SI_BASE_EXPONENT_LIST
+                | ENUM_MEMBER_DECL_LIST
+                | STRUCT_MEMBER_DECL_LIST
+                | ACTOR_MEMBER_DECL_LIST
+                | SCENARIO_MEMBER_ITEM_LIST
+                | ACTION_MEMBER_ITEM_LIST
+                | MODIFIER_MEMBER_ITEM_LIST
+                | EXTENDABLE_MEMBER_DECL_LIST
+                | FIELD_NAME_LIST
+                | ON_MEMBER_LIST
+                | DO_MEMBER_LIST
+                | BEHAVIOR_WITH_MEMBER_LIST
+                | POSITIONAL_ARGUMENT_LIST
+                | NAMED_ARGUMENT_LIST
+                | UNQUALIFIED_NAMED_ARGUMENT_LIST
+                | EXPRESSION_LIST
+        )
+    }
+    pub fn to_string(self) -> Option<&'static str> {
+        match self {
+            DOT => Some("."),
+            COMMA => Some(","),
+            COLON => Some(":"),
+            COLON_COLON => Some("::"),
+            ASSIGN => Some("="),
+            AT => Some("@"),
+            ARROW => Some("->"),
+            L_PAREN => Some("("),
+            R_PAREN => Some(")"),
+            L_BRACKET => Some("["),
+            R_BRACKET => Some("]"),
+            QUESTION => Some("?"),
+            EXCLAMATION => Some("!"),
+            FAT_ARROW => Some("=>"),
+            EQUAL => Some("=="),
+            NOT_EQUAL => Some("!="),
+            LESS => Some("<"),
+            LESS_EQ => Some("<="),
+            GREATER => Some(">"),
+            GREATER_EQ => Some(">="),
+            PLUS => Some("+"),
+            MINUS => Some("-"),
+            STAR => Some("*"),
+            SLASH => Some("/"),
+            PERCENT => Some("%"),
+            ACTION_KW => Some("action"),
+            ACTOR_KW => Some("actor"),
+            AND_KW => Some("and"),
+            AS_KW => Some("as"),
+            BOOL_KW => Some("bool"),
+            CALL_KW => Some("call"),
+            CD_KW => Some("cd"),
+            COVER_KW => Some("cover"),
+            DEF_KW => Some("def"),
+            DEFAULT_KW => Some("default"),
+            DO_KW => Some("do"),
+            ELAPSED_KW => Some("elapsed"),
+            EMIT_KW => Some("emit"),
+            ENUM_KW => Some("enum"),
+            EVENT_KW => Some("event"),
+            EVERY_KW => Some("every"),
+            EXPORT_KW => Some("export"),
+            EXPRESSION_KW => Some("expression"),
+            EXTEND_KW => Some("extend"),
+            EXTERNAL_KW => Some("external"),
+            FACTOR_KW => Some("factor"),
+            FALL_KW => Some("fall"),
+            FALSE_KW => Some("false"),
+            FLOAT_KW => Some("float"),
+            GLOBAL_KW => Some("global"),
+            HARD_KW => Some("hard"),
+            IF_KW => Some("if"),
+            IMPORT_KW => Some("import"),
+            IN_KW => Some("in"),
+            INF_KW => Some("inf"),
+            INHERITS_KW => Some("inherits"),
+            INT_KW => Some("int"),
+            IS_KW => Some("is"),
+            IT_KW => Some("it"),
+            K_KW => Some("K"),
+            KEEP_KW => Some("keep"),
+            KG_KW => Some("kg"),
+            LIST_KW => Some("list"),
+            M_KW => Some("m"),
+            MODIFIER_KW => Some("modifier"),
+            MOL_KW => Some("mol"),
+            NAMESPACE_KW => Some("namespace"),
+            NAN_KW => Some("nan"),
+            NOT_KW => Some("not"),
+            NULL_KW => Some("null"),
+            OF_KW => Some("of"),
+            OFFSET_KW => Some("offset"),
+            ON_KW => Some("on"),
+            ONE_OF_KW => Some("one_of"),
+            ONLY_KW => Some("only"),
+            OR_KW => Some("or"),
+            PARALLEL_KW => Some("parallel"),
+            RAD_KW => Some("rad"),
+            RANGE_KW => Some("range"),
+            RECORD_KW => Some("record"),
+            REMOVE_DEFAULT_KW => Some("remove_default"),
+            RISE_KW => Some("rise"),
+            S_KW => Some("s"),
+            SAMPLE_KW => Some("sample"),
+            SCENARIO_KW => Some("scenario"),
+            SERIAL_KW => Some("serial"),
+            SI_KW => Some("SI"),
+            STRING_KW => Some("string"),
+            STRUCT_KW => Some("struct"),
+            TRUE_KW => Some("true"),
+            TYPE_KW => Some("type"),
+            UINT_KW => Some("uint"),
+            UNDEFINED_KW => Some("undefined"),
+            UNIT_KW => Some("unit"),
+            UNTIL_KW => Some("until"),
+            USE_KW => Some("use"),
+            VAR_KW => Some("var"),
+            WAIT_KW => Some("wait"),
+            WITH_KW => Some("with"),
+            _ => None,
+        }
+    }
 }

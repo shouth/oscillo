@@ -1,11 +1,11 @@
-pub struct Tokens<'a> {
+pub struct TokenData<'a> {
     pub punct: &'a [(&'a str, &'a str)],
     pub keyword: &'a [&'a str],
     pub literal: &'a [&'a str],
     pub token: &'a [&'a str],
 }
 
-pub const DSL_TOKENS: Tokens<'_> = Tokens {
+pub const DSL_TOKENS: TokenData<'_> = TokenData {
     punct: &[
         (".", "DOT"),
         (",", "COMMA"),

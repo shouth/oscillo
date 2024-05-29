@@ -582,7 +582,7 @@ MethodUndefinedBody =
   'undefined'
 
 MethodExternalBody =
-  'external' StructuredIdentifier '(' ArgumentList? ')'
+  'external' StructuredIdentifier '(' Arguments? ')'
 
 MethodName =
   QualifiedIdentifier
@@ -591,13 +591,13 @@ MethodName =
 // Coverage
 
 CoverageDeclaration =
-  ('cover' | 'record') '(' ArgumentList ')' 'newline'
+  ('cover' | 'record') '(' Arguments ')' 'newline'
 
 
 // Modifier application
 
 ModifierApplication =
-  ModifierApplicationPrefix? ModifierName '(' ArgumentList? ')' 'newline'
+  ModifierApplicationPrefix? ModifierName '(' Arguments? ')' 'newline'
 
 ModifierApplicationPrefix =
   ActorExpression '.'
@@ -648,7 +648,7 @@ Composition =
   CompositionOperator CompositionArguments? 'newline' 'indent' DoMemberList 'dedent' BehaviorWithDeclaration?
 
 CompositionArguments =
-  '(' UnqualifiedArgumentList ')'
+  '(' UnqualifiedArguments ')'
 
 DoMemberList =
   DoMember*
@@ -660,7 +660,7 @@ CompositionOperator =
 // Behavior invocation
 
 BehaviorInvocation =
-  BehaviorInvocationPrefix? BehaviorName '(' ArgumentList? ')' (BehaviorWithDeclaration | 'newline')
+  BehaviorInvocationPrefix? BehaviorName '(' Arguments? ')' (BehaviorWithDeclaration | 'newline')
 
 BehaviorInvocationPrefix =
   ActorExpression '.'
@@ -692,7 +692,7 @@ EmitDirective =
   'emit' EventName EmitArguments? 'newline'
 
 EmitArguments =
-  '(' ArgumentList ')'
+  '(' Arguments ')'
 
 
 // Call directive
@@ -701,7 +701,7 @@ CallDirective =
   'call' MethodInvocation 'newline'
 
 MethodInvocation =
-  Expression '(' ArgumentList? ')'
+  Expression '(' Arguments? ')'
 
 
 // Until directive
@@ -727,7 +727,7 @@ ArgumentName =
 
 // Argument list
 
-ArgumentList =
+Arguments =
   PositionalArgumentList? NamedArgumentList?
 
 PositionalArgumentList =
@@ -745,7 +745,7 @@ NamedArgument =
 
 // Unqualified argument list
 
-UnqualifiedArgumentList =
+UnqualifiedArguments =
   PositionalArgumentList? UnqualifiedNamedArgumentList?
 
 UnqualifiedNamedArgumentList =
@@ -809,7 +809,7 @@ ElementAccess =
   Expression '[' Expression ']'
 
 FunctionApplication =
-  Expression '(' ArgumentList? ')'
+  Expression '(' Arguments? ')'
 
 FieldAccess =
   Expression '.' FieldName
@@ -860,3 +860,12 @@ ParenthesesRangeConstructor =
 
 BracketsRangeConstructor =
   '[' Expression '..' Expression ']'
+
+
+// Bogus elements
+
+SyntaxElement =
+  SyntaxElement
+
+Bogus =
+  SyntaxElement
