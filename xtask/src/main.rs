@@ -10,8 +10,8 @@ use std::{
 use clap::{command, Command};
 use quote::{format_ident, quote};
 use std::fmt::Write;
-use syntax::{TokenData, DSL_TOKENS};
-use ungrammar::{Grammar, Rule};
+use syntax_spec::{RuleSpecData, RuleSpecKind, SyntaxSpec, TokenSpecData, TokenSpecKind};
+use ungrammar::Grammar;
 use xshell::{cmd, Shell};
 
 fn project_root() -> PathBuf {
@@ -71,58 +71,48 @@ fn generate_dsl_syntax() {
         .parse::<Grammar>()
         .expect("Failed to parse the grammar");
 
-    generate_dsl_syntax_kinds(&DSL_TOKENS, &grammar);
+    let spec = oscdsl::load_spec().expect("Failed to load the syntax spec");
+    generate_dsl_syntax_kinds(&spec);
     generate_dsl_syntax_node(&grammar);
 }
 
-fn generate_dsl_syntax_kinds(data: &TokenData, grammer: &Grammar) {
+fn generate_dsl_syntax_kinds(syntax: &SyntaxSpec) {
     let gen_dir = project_root().join("oscelas/src/syntax/generated");
 
     let sh = Shell::new().expect("Failed to create a shell");
 
-    let puncts = data
-        .punct
+    let token_kinds = syntax
+        .tokens
         .iter()
-        .map(|(_, name)| format_ident!("{name}"))
-        .collect::<Vec<_>>();
+        .map(|TokenSpecData { token, kind }| match kind {
+            TokenSpecKind::Punct { name } => format_ident!("{}", name.to_ascii_uppercase()),
+            TokenSpecKind::Keyword => format_ident!("{}_KW", token.to_ascii_uppercase()),
+            _ => format_ident!("{}", token.to_ascii_uppercase())
+        })
+        .map(|name| format_ident!("{name}"));
 
-    let punct_strs = data
-        .punct
+    let node_kinds = syntax
+        .rules
         .iter()
-        .map(|(punct, _)| punct)
-        .collect::<Vec<_>>();
+        .map(|RuleSpecData { name, .. }| format_ident!("{}", to_upper_snake_case(name)));
 
-    let keywords = data
-        .keyword
+    let list_kinds = syntax
+        .rules
         .iter()
-        .map(|kw| kw.to_ascii_uppercase())
-        .map(|kw| format_ident!("{kw}_KW"))
-        .collect::<Vec<_>>();
+        .filter_map(|RuleSpecData { name, kind }| {
+            matches!(kind, RuleSpecKind::List { .. })
+                .then(|| format_ident!("{}", to_upper_snake_case(name)))
+        });
 
-    let keywords_strs = data.keyword;
-
-    let literals = data
-        .literal
+    let (to_string_keys, to_string_values): (Vec<_>, Vec<_>) = syntax
+        .tokens
         .iter()
-        .map(|lit| format_ident!("{lit}"))
-        .collect::<Vec<_>>();
-
-    let tokens = data
-        .token
-        .iter()
-        .map(|tok| format_ident!("{tok}"))
-        .collect::<Vec<_>>();
-
-    let nodes = grammer
-        .iter()
-        .map(|node| format_ident!("{}", to_upper_snake_case(&grammer[node].name)))
-        .collect::<Vec<_>>();
-
-    let lists = grammer
-        .iter()
-        .filter(|node| grammer[*node].name.ends_with("List"))
-        .map(|node| format_ident!("{}", to_upper_snake_case(&grammer[node].name)))
-        .collect::<Vec<_>>();
+        .filter_map(|TokenSpecData { token, kind }| match kind {
+            TokenSpecKind::Punct { name } => Some((format_ident!("{}", name.to_ascii_uppercase()), token)),
+            TokenSpecKind::Keyword => Some((format_ident!("{}_KW", token.to_ascii_uppercase()), token)),
+            _ => None,
+        })
+        .unzip();
 
     let code = quote! {
         #![allow(bad_style, missing_docs, unreachable_pub)]
@@ -132,11 +122,8 @@ fn generate_dsl_syntax_kinds(data: &TokenData, grammer: &Grammar) {
             #[doc(hidden)]
             TOMBSTONE,
             EOF,
-            #(#puncts,)*
-            #(#keywords,)*
-            #(#literals,)*
-            #(#tokens,)*
-            #(#nodes,)*
+            #(#token_kinds,)*
+            #(#node_kinds,)*
 
             #[doc(hidden)]
             __LAST,
@@ -145,13 +132,12 @@ fn generate_dsl_syntax_kinds(data: &TokenData, grammer: &Grammar) {
         use self::OscDslSyntaxKind::*;
         impl OscDslSyntaxKind {
             pub fn is_list(self) -> bool {
-                matches!(self, #(#lists)|*)
+                matches!(self, #(#list_kinds)|*)
             }
 
             pub fn to_string(self) -> Option<&'static str> {
                 match self {
-                    #(#puncts => Some(#punct_strs),)*
-                    #(#keywords => Some(#keywords_strs),)*
+                    #(#to_string_keys => Some(#to_string_values),)*
                     _ => None,
                 }
             }

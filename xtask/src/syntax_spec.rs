@@ -21,7 +21,7 @@ pub enum RuleSpecKind {
     },
     List {
         separator: Option<TokenSpec>,
-        element: RuleSpec,
+        element: FieldSpecData,
     },
     Variant {
         variants: Vec<FieldSpecData>,
@@ -178,42 +178,16 @@ impl<'a> SyntaxSpecBuilder<'a> {
             let NodeData { name, rule } = &self.grammar[rule];
             let name = name.clone();
             let kind = match rule {
-                Rule::Seq(rules) if name.ends_with("List") => {
-                    let element = match rules.get(0) {
-                        Some(Rule::Node(node)) => node,
-                        _ => return Err(format!("Expected element rule").into()),
-                    };
-
-                    let separator = match rules.get(1) {
-                        Some(Rule::Seq(rules)) => match rules.as_slice() {
-                            [Rule::Token(token), Rule::Node(node)] if node == element => token,
-                            _ => return Err(format!("Expected separator rule").into()),
-                        },
-                        _ => return Err(format!("Expected separator rule").into()),
-                    };
-
-                    match rules.get(2) {
-                        Some(Rule::Token(token)) => {
-                            if token != separator {
-                                return Err(format!("Expected end token").into());
-                            }
+                Rule::Seq(rules) => match self.try_generate_separated_list_rule(rules.as_slice()) {
+                    Ok(kind) => kind,
+                    Err(_) => {
+                        let mut fields = Vec::new();
+                        for rule in rules.iter() {
+                            fields.push(self.generate_field(&rule)?);
                         }
-                        Some(_) => return Err(format!("Expected end token").into()),
-                        None => {}
+                        RuleSpecKind::Aggregate { fields }
                     }
-
-                    RuleSpecKind::List {
-                        separator: Some(self.str_to_spec[&self.grammar[*separator].name]),
-                        element: self.rule_to_spec[element],
-                    }
-                }
-                Rule::Seq(rules) => {
-                    let mut fields = Vec::new();
-                    for rule in rules {
-                        fields.push(self.generate_field(&rule)?);
-                    }
-                    RuleSpecKind::Aggregate { fields }
-                }
+                },
                 Rule::Alt(rules) => {
                     let mut variants = Vec::new();
                     for rule in rules.iter() {
@@ -227,9 +201,9 @@ impl<'a> SyntaxSpecBuilder<'a> {
                     }
                 }
                 Rule::Rep(rule) => match **rule {
-                    Rule::Node(element) => RuleSpecKind::List {
+                    Rule::Node(_) => RuleSpecKind::List {
                         separator: None,
-                        element: self.rule_to_spec[&element],
+                        element: self.generate_field(&rule)?,
                     },
                     _ => return Err(format!("Expected element rule").into()),
                 },
@@ -237,6 +211,47 @@ impl<'a> SyntaxSpecBuilder<'a> {
             rules.push(RuleSpecData { name, kind });
         }
         Ok(rules)
+    }
+
+    fn try_generate_separated_list_rule(
+        &self,
+        rules: &[Rule],
+    ) -> Result<RuleSpecKind, Box<dyn std::error::Error>> {
+        let element = match rules.get(0) {
+            Some(rule @ (Rule::Node(_) | Rule::Token(_))) => rule,
+            _ => return Err(format!("Expected element rule").into()),
+        };
+
+        let separator = match rules.get(1) {
+            Some(Rule::Rep(rule)) => match rule.as_ref() {
+                Rule::Seq(rules) => match rules.as_slice() {
+                    [Rule::Token(token), rule @ (Rule::Node(_) | Rule::Token(_))]
+                        if rule == element =>
+                    {
+                        token
+                    }
+                    _ => return Err(format!("Expected separator rule").into()),
+                },
+                _ => return Err(format!("Expected separator rule").into()),
+            },
+            _ => return Err(format!("Expected separator rule").into()),
+        };
+
+        match rules.get(2) {
+            Some(Rule::Opt(rule)) => match rule.as_ref() {
+                Rule::Token(token) if token != separator => {
+                    return Err(format!("Expected end token").into())
+                }
+                _ => {}
+            },
+            Some(_) => return Err(format!("Expected end token").into()),
+            None => {}
+        }
+
+        Ok(RuleSpecKind::List {
+            separator: Some(self.str_to_spec[&self.grammar[*separator].name]),
+            element: self.generate_field(element)?,
+        })
     }
 
     fn generate_field(&self, rule: &Rule) -> Result<FieldSpecData, Box<dyn std::error::Error>> {
