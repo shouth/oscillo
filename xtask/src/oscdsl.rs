@@ -3,6 +3,7 @@ use ungrammar::Grammar;
 
 const PUNCTUAIONS: &[(&str, &str)] = &[
     (".", "dot"),
+    ("..", "dot_dot"),
     (",", "comma"),
     (":", "colon"),
     ("::", "colon_colon"),
@@ -30,6 +31,7 @@ const PUNCTUAIONS: &[(&str, &str)] = &[
 ];
 
 const KEYWORDS: &[&str] = &[
+    "A",
     "action",
     "actor",
     "and",
@@ -106,7 +108,7 @@ const KEYWORDS: &[&str] = &[
     "with",
 ];
 
-const LITERALS: &[&str] = &["int_literal", "float_literal", "string_literal"];
+const LITERALS: &[&str] = &["integer_literal", "float_literal", "string_literal"];
 
 const TOKENS: &[&str] = &["newline", "indent", "dedent", "identifier"];
 
@@ -126,5 +128,5 @@ pub fn load_spec() -> Result<SyntaxSpec, Box<dyn std::error::Error>> {
         tokens: TOKENS,
         trivials: TRIVIALS,
     };
-    SyntaxSpec::try_from((&grammar, &token_set))
+    (&grammar, &token_set).try_into()
 }
