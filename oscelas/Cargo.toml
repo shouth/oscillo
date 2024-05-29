@@ -4,4 +4,5 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+biome_rowan = "0.5.7"
 ucd-trie = "0.1.6"
