@@ -1,17 +1,20 @@
 use std::{collections::HashMap, ops::Index};
 
-use ungrammar::{Grammar, Node, Rule, Token};
+use ungrammar::{Grammar, Node, NodeData, Rule, TokenData};
 
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct SyntaxSpec {
     pub tokens: Vec<TokenSpecData>,
     pub rules: Vec<RuleSpecData>,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct RuleSpecData {
     pub name: String,
     pub kind: RuleSpecKind,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum RuleSpecKind {
     Aggregate {
         fields: Vec<FieldSpecData>,
@@ -28,11 +31,13 @@ pub enum RuleSpecKind {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct RuleSpec(usize);
 
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct TokenSpecData {
     pub token: String,
     pub kind: SyntaxTokenSpecKind,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum SyntaxTokenSpecKind {
     Punct { name: String },
     Keyword,
@@ -44,12 +49,14 @@ pub enum SyntaxTokenSpecKind {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct TokenSpec(usize);
 
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct FieldSpecData {
     pub label: Option<String>,
     pub mandatory: bool,
     pub kind: FieldSpecKind,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum FieldSpecKind {
     Rule(RuleSpec),
     Token(TokenSpec),
@@ -81,187 +88,179 @@ pub struct TokenSet<'a> {
 
 struct SyntaxSpecBuilder<'a> {
     grammar: &'a Grammar,
-    token_set: &'a TokenSet<'a>,
+    tokens: &'a TokenSet<'a>,
     rule_to_spec: HashMap<Node, RuleSpec>,
     str_to_spec: HashMap<String, TokenSpec>,
 }
 
 impl<'a> SyntaxSpecBuilder<'a> {
     pub fn new(grammar: &'a Grammar, token_set: &'a TokenSet) -> Self {
-        let mut rule_to_spec = HashMap::new();
-        for node in grammar.iter() {
-            rule_to_spec.insert(node, RuleSpec(rule_to_spec.len()));
-        }
-
-        let str_to_spec = std::iter::empty()
-            .chain(
-                token_set
-                    .punctuations
-                    .iter()
-                    .map(|(name, _)| name.to_owned()),
-            )
-            .chain(token_set.keywords.iter().map(|name| name.to_owned()))
-            .chain(token_set.literals.iter().map(|name| name.to_owned()))
-            .chain(token_set.tokens.iter().map(|name| name.to_owned()))
-            .chain(token_set.trivials.iter().map(|name| name.to_owned()))
-            .enumerate()
-            .map(|(i, name)| (name.to_owned(), TokenSpec(i)))
-            .collect::<HashMap<_, _>>();
-
         Self {
             grammar,
-            token_set,
-            rule_to_spec,
-            str_to_spec,
+            tokens: token_set,
+            rule_to_spec: Default::default(),
+            str_to_spec: Default::default(),
         }
     }
 
-    pub fn build(&self) -> Result<SyntaxSpec, Box<dyn std::error::Error>> {
-        let tokens = self.generate_tokens();
+    pub fn build(&mut self) -> Result<SyntaxSpec, Box<dyn std::error::Error>> {
+        let tokens = self.generate_tokens()?;
         let rules = self.generate_rules()?;
         Ok(SyntaxSpec { tokens, rules })
     }
 
-    fn generate_tokens(&self) -> Vec<TokenSpecData> {
-        std::iter::empty()
-            .chain(self.token_set.punctuations.iter().map(|(token, name)| {
+    fn generate_tokens(&mut self) -> Result<Vec<TokenSpecData>, Box<dyn std::error::Error>> {
+        self.str_to_spec.extend(
+            std::iter::empty()
+                .chain(self.tokens.punctuations.iter().map(|(token, _)| token))
+                .chain(self.tokens.keywords.iter())
+                .chain(self.tokens.literals.iter())
+                .chain(self.tokens.tokens.iter())
+                .chain(self.tokens.trivials.iter())
+                .enumerate()
+                .map(|(i, name)| ((*name).to_owned(), TokenSpec(i))),
+        );
+
+        for token in self.grammar.tokens() {
+            let TokenData { name, .. } = &self.grammar[token];
+            self.str_to_spec
+                .get(name)
+                .ok_or(format!("Unknown token {:?}", name))?;
+        }
+
+        Ok(std::iter::empty()
+            .chain(self.tokens.punctuations.iter().map(|(token, name)| {
                 (
-                    String::from(*token),
+                    token,
                     SyntaxTokenSpecKind::Punct {
                         name: String::from(*name),
                     },
                 )
             }))
             .chain(
-                self.token_set
+                self.tokens
                     .keywords
                     .iter()
-                    .map(|token| (String::from(*token), SyntaxTokenSpecKind::Keyword)),
+                    .map(|token| (token, SyntaxTokenSpecKind::Keyword)),
             )
             .chain(
-                self.token_set
+                self.tokens
                     .literals
                     .iter()
-                    .map(|token| (String::from(*token), SyntaxTokenSpecKind::Literal)),
+                    .map(|token| (token, SyntaxTokenSpecKind::Literal)),
             )
             .chain(
-                self.token_set
+                self.tokens
                     .tokens
                     .iter()
-                    .map(|token| (String::from(*token), SyntaxTokenSpecKind::Token)),
+                    .map(|token| (token, SyntaxTokenSpecKind::Token)),
             )
             .chain(
-                self.token_set
+                self.tokens
                     .trivials
                     .iter()
-                    .map(|token| (String::from(*token), SyntaxTokenSpecKind::Trivial)),
+                    .map(|token| (token, SyntaxTokenSpecKind::Trivial)),
             )
-            .map(|(token, kind)| TokenSpecData { token, kind })
-            .collect::<Vec<_>>()
+            .map(|(token, kind)| TokenSpecData {
+                token: (*token).to_owned(),
+                kind,
+            })
+            .collect::<Vec<_>>())
     }
 
-    fn generate_rules(&self) -> Result<Vec<RuleSpecData>, Box<dyn std::error::Error>> {
+    fn generate_rules(&mut self) -> Result<Vec<RuleSpecData>, Box<dyn std::error::Error>> {
+        for (i, node) in self.grammar.iter().enumerate() {
+            self.rule_to_spec.insert(node, RuleSpec(i));
+        }
+
         let mut rules = Vec::new();
         for rule in self.grammar.iter() {
-            let rule_spec = match self.grammar[rule].rule {
-                _ if self.grammar[rule].name.ends_with("List") => self.check_list(rule),
-                Rule::Seq(_) => self.check_aggregate(rule),
-                Rule::Alt(_) => self.check_variant(rule),
-                _ => Err(format!("Unexpected rule {:?}", rule).into()),
-            }?;
-            rules.push(rule_spec);
+            let NodeData { name, rule } = &self.grammar[rule];
+            let name = name.clone();
+            let kind = match rule {
+                Rule::Seq(rules) if name.ends_with("List") => {
+                    let element = match rules.get(0) {
+                        Some(Rule::Node(node)) => node,
+                        _ => return Err(format!("Expected element rule").into()),
+                    };
+
+                    let separator = match rules.get(1) {
+                        Some(Rule::Seq(rules)) => match rules.as_slice() {
+                            [Rule::Token(token), Rule::Node(node)] if node == element => token,
+                            _ => return Err(format!("Expected separator rule").into()),
+                        },
+                        _ => return Err(format!("Expected separator rule").into()),
+                    };
+
+                    match rules.get(2) {
+                        Some(Rule::Token(token)) => {
+                            if token != separator {
+                                return Err(format!("Expected end token").into());
+                            }
+                        }
+                        Some(_) => return Err(format!("Expected end token").into()),
+                        None => {}
+                    }
+
+                    RuleSpecKind::List {
+                        separator: Some(self.str_to_spec[&self.grammar[*separator].name]),
+                        element: self.rule_to_spec[element],
+                    }
+                }
+                Rule::Seq(rules) => {
+                    let mut fields = Vec::new();
+                    for rule in rules {
+                        fields.push(self.generate_field(&rule)?);
+                    }
+                    RuleSpecKind::Aggregate { fields }
+                }
+                Rule::Alt(rules) => {
+                    let mut variants = Vec::new();
+                    for rule in rules.iter() {
+                        variants.push(self.generate_field(&rule)?);
+                    }
+                    RuleSpecKind::Variant { variants }
+                }
+                Rule::Labeled { .. } | Rule::Node(_) | Rule::Token(_) | Rule::Opt(_) => {
+                    RuleSpecKind::Aggregate {
+                        fields: vec![self.generate_field(&rule)?],
+                    }
+                }
+                Rule::Rep(rule) => match **rule {
+                    Rule::Node(element) => RuleSpecKind::List {
+                        separator: None,
+                        element: self.rule_to_spec[&element],
+                    },
+                    _ => return Err(format!("Expected element rule").into()),
+                },
+            };
+            rules.push(RuleSpecData { name, kind });
         }
         Ok(rules)
     }
 
-    fn check_token(&self, token: &Token) -> Result<TokenSpec, Box<dyn std::error::Error>> {
-        let token = &self.grammar[*token];
-        match self.str_to_spec.get(&token.name) {
-            Some(spec) => Ok(*spec),
-            None => Err(format!("Unknown token {:?}", token.name).into()),
-        }
-    }
-
-    fn is_mandatory(&self, rule: &Rule) -> bool {
+    fn generate_field(&self, rule: &Rule) -> Result<FieldSpecData, Box<dyn std::error::Error>> {
         match rule {
-            Rule::Opt(_) => false,
-            _ => true,
-        }
-    }
-
-    fn get_label(&self, rule: &Rule) -> Option<String> {
-        match rule {
-            Rule::Labeled { label, .. } => Some(label.clone()),
-            _ => None,
-        }
-    }
-
-    fn get_field_kind(&self, rule: &Rule) -> Result<FieldSpecKind, Box<dyn std::error::Error>> {
-        match rule {
-            Rule::Node(node) => Ok(FieldSpecKind::Rule(self.rule_to_spec[node])),
-            Rule::Token(token) => Ok(FieldSpecKind::Token(self.check_token(token)?)),
-            Rule::Opt(rule) => self.get_field_kind(&rule),
-            Rule::Labeled { rule, .. } => self.get_field_kind(rule),
+            Rule::Node(node) => Ok(FieldSpecData {
+                label: None,
+                mandatory: true,
+                kind: FieldSpecKind::Rule(self.rule_to_spec[node]),
+            }),
+            Rule::Token(token) => Ok(FieldSpecData {
+                label: None,
+                mandatory: true,
+                kind: FieldSpecKind::Token(self.str_to_spec[&self.grammar[*token].name]),
+            }),
+            Rule::Opt(rule) => Ok(FieldSpecData {
+                mandatory: false,
+                ..self.generate_field(&rule)?
+            }),
+            Rule::Labeled { rule, label } => Ok(FieldSpecData {
+                label: Some(label.clone()),
+                ..self.generate_field(&rule)?
+            }),
             _ => Err(format!("Unexpected rule {:?}", rule).into()),
         }
-    }
-
-    fn check_aggregate(&self, node: Node) -> Result<RuleSpecData, Box<dyn std::error::Error>> {
-        let node = &self.grammar[node];
-        let Rule::Seq(rules) = &node.rule else {
-            unreachable!("Expected sequence of rules");
-        };
-
-        let mut fields = Vec::new();
-        for rule in rules {
-            let label = self.get_label(rule);
-            let mandatory = self.is_mandatory(rule);
-            let kind = self.get_field_kind(rule)?;
-            fields.push(FieldSpecData {
-                label,
-                mandatory,
-                kind,
-            });
-        }
-
-        Ok(RuleSpecData {
-            name: node.name.clone(),
-            kind: RuleSpecKind::Aggregate { fields },
-        })
-    }
-
-    fn check_list(&self, node: Node) -> Result<RuleSpecData, Box<dyn std::error::Error>> {
-        let node = &self.grammar[node];
-
-        if !node.name.ends_with("List") {
-            unreachable!("Expected list node");
-        }
-
-        todo!("Implement list node")
-    }
-
-    fn check_variant(&self, node: Node) -> Result<RuleSpecData, Box<dyn std::error::Error>> {
-        let node = &self.grammar[node];
-        let Rule::Alt(rules) = &node.rule else {
-            unreachable!("Expected alternative of rules");
-        };
-
-        let mut variants = Vec::new();
-        for rule in rules {
-            let label = self.get_label(rule);
-            let mandatory = self.is_mandatory(rule);
-            let kind = self.get_field_kind(rule)?;
-            variants.push(FieldSpecData {
-                label,
-                mandatory,
-                kind,
-            });
-        }
-
-        Ok(RuleSpecData {
-            name: node.name.clone(),
-            kind: RuleSpecKind::Variant { variants },
-        })
     }
 }
 
