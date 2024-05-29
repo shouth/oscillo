@@ -232,7 +232,7 @@ EnumValueReferencePrefix =
 // Structs
 
 StructDeclaration =
-  'struct' StructName StructInheritsClause? (StructBody | 'newline')
+  'struct' StructName StructInheritsClause? StructBodyOrNewline
 
 StructInheritsClause =
   'inherits' StructName StructInheritsCondition?
@@ -243,6 +243,9 @@ StructInheritsCondition =
 StructInheritsConstant =
   EnumValueReference
 | BoolLiteral
+
+StructBodyOrNewline =
+  StructBody | 'newline'
 
 StructBody =
   ':' 'newline' 'indent' StructMemberDeclList 'dedent'
@@ -267,7 +270,7 @@ FieldName =
 // Actors
 
 ActorDeclaration =
-  'actor' ActorName ActorInheritsClause? (ActorBody | 'newline')
+  'actor' ActorName ActorInheritsClause? ActorBodyOrNewline
 
 ActorInheritsClause =
   'inherits' ActorName ActorInheritsCondition?
@@ -278,6 +281,9 @@ ActorInheritsCondition =
 ActorInheritsConstant =
   EnumValueReference
 | BoolLiteral
+
+ActorBodyOrNewline =
+  ActorBody | 'newline'
 
 ActorBody =
   ':' 'newline' 'indent' ActorMemberDeclList 'dedent'
@@ -299,7 +305,7 @@ ActorName =
 // Scenarios
 
 ScenarioDeclaration =
-  'scenario' QualifiedBehaviorName ScenarioInheritsClause? (ScenarioBody | 'newline')
+  'scenario' QualifiedBehaviorName ScenarioInheritsClause? ScenarioBodyOrNewline
 
 ScenarioInheritsClause =
   'inherits' QualifiedBehaviorName ScenarioInheritsCondition?
@@ -310,6 +316,9 @@ ScenarioInheritsCondition =
 ScenarioInheritsConstant =
   EnumValueReference
 | BoolLiteral
+
+ScenarioBodyOrNewline =
+  ScenarioBody | 'newline'
 
 ScenarioBody =
   ':' 'newline' 'indent' ScenarioMemberItemList 'dedent'
@@ -341,7 +350,10 @@ BehaviorName =
 // Actions
 
 ActionDeclaration =
-  'action' QualifiedBehaviorName ActionInheritsClause? (ActionBody | 'newline')
+  'action' QualifiedBehaviorName ActionInheritsClause? ActionBodyOrNewline
+
+ActionBodyOrNewline =
+  ActionBody | 'newline'
 
 ActionInheritsClause =
   'inherits' QualifiedBehaviorName ActionInheritsCondition?
@@ -366,7 +378,7 @@ ActionMemberItem =
 // Modifiers
 
 ModifierDeclaration =
-  'modifier' ModifierNamePrefix? ModifierName ModifierOfClause? (ModifierBody | 'newline')
+  'modifier' ModifierNamePrefix? ModifierName ModifierOfClause? ModifierBodyOrNewline
 
 ModifierNamePrefix =
   ActorName '.'
@@ -376,6 +388,9 @@ ModifierName =
 
 ModifierOfClause =
   'of' QualifiedBehaviorName
+
+ModifierBodyOrNewline =
+  ModifierBody | 'newline'
 
 ModifierBody =
   ':' 'newline' 'indent' ModifierMemberItemList 'dedent'
@@ -496,7 +511,7 @@ FieldDeclaration =
 | VariableDeclaration
 
 ParameterDeclaration =
-  FieldNameList ':' TypeDeclarator ParameterInitilizerClause? (ParameterWithDeclaration | 'newline')
+  FieldNameList ':' TypeDeclarator ParameterInitilizerClause? ParameterWithDeclarationOrNewline
 
 FieldNameList =
   FieldName (',' FieldName)*
@@ -522,6 +537,9 @@ SampleDefaultValue =
 
 DefaultValue =
   Expression
+
+ParameterWithDeclarationOrNewline =
+  ParameterWithDeclaration | 'newline'
 
 ParameterWithDeclaration =
   'with' ':' 'newline' 'indent' ParameterWithMember 'dedent'
@@ -582,7 +600,7 @@ MethodUndefinedBody =
   'undefined'
 
 MethodExternalBody =
-  'external' StructuredIdentifier '(' Arguments? ')'
+  'external' StructuredIdentifier '(' ArgumentList? ')'
 
 MethodName =
   QualifiedIdentifier
@@ -591,13 +609,16 @@ MethodName =
 // Coverage
 
 CoverageDeclaration =
-  ('cover' | 'record') '(' Arguments ')' 'newline'
+  CoverageOperator '(' ArgumentList ')' 'newline'
+
+CoverageOperator =
+  'cover' | 'record'
 
 
 // Modifier application
 
 ModifierApplication =
-  ModifierApplicationPrefix? ModifierName '(' Arguments? ')' 'newline'
+  ModifierApplicationPrefix? ModifierName '(' ArgumentList? ')' 'newline'
 
 ModifierApplicationPrefix =
   ActorExpression '.'
@@ -648,7 +669,7 @@ Composition =
   CompositionOperator CompositionArguments? 'newline' 'indent' DoMemberList 'dedent' BehaviorWithDeclaration?
 
 CompositionArguments =
-  '(' UnqualifiedArguments ')'
+  '(' UnqualifiedArgumentList ')'
 
 DoMemberList =
   DoMember*
@@ -660,10 +681,13 @@ CompositionOperator =
 // Behavior invocation
 
 BehaviorInvocation =
-  BehaviorInvocationPrefix? BehaviorName '(' Arguments? ')' (BehaviorWithDeclaration | 'newline')
+  BehaviorInvocationPrefix? BehaviorName '(' ArgumentList? ')' BehaviorWithDeclarationOrNewline
 
 BehaviorInvocationPrefix =
   ActorExpression '.'
+
+BehaviorWithDeclarationOrNewline =
+  BehaviorWithDeclaration | 'newline'
 
 BehaviorWithDeclaration =
   'with' ':' 'newline' 'indent' BehaviorWithMemberList 'dedent'
@@ -692,7 +716,7 @@ EmitDirective =
   'emit' EventName EmitArguments? 'newline'
 
 EmitArguments =
-  '(' Arguments ')'
+  '(' ArgumentList ')'
 
 
 // Call directive
@@ -701,7 +725,7 @@ CallDirective =
   'call' MethodInvocation 'newline'
 
 MethodInvocation =
-  Expression '(' Arguments? ')'
+  Expression '(' ArgumentList? ')'
 
 
 // Until directive
@@ -727,7 +751,7 @@ ArgumentName =
 
 // Argument list
 
-Arguments =
+ArgumentList =
   PositionalArgumentList? NamedArgumentList?
 
 PositionalArgumentList =
@@ -745,7 +769,7 @@ NamedArgument =
 
 // Unqualified argument list
 
-UnqualifiedArguments =
+UnqualifiedArgumentList =
   PositionalArgumentList? UnqualifiedNamedArgumentList?
 
 UnqualifiedNamedArgumentList =
@@ -809,7 +833,7 @@ ElementAccess =
   Expression '[' Expression ']'
 
 FunctionApplication =
-  Expression '(' Arguments? ')'
+  Expression '(' ArgumentList? ')'
 
 FieldAccess =
   Expression '.' FieldName
