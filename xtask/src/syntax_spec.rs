@@ -14,20 +14,6 @@ pub struct RuleSpecData {
     pub kind: RuleSpecKind,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub enum RuleSpecKind {
-    Aggregate {
-        fields: Vec<FieldSpecData>,
-    },
-    List {
-        separator: Option<TokenSpec>,
-        element: FieldSpecData,
-    },
-    Variant {
-        variants: Vec<FieldSpecData>,
-    },
-}
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct RuleSpec(usize);
 
@@ -50,16 +36,42 @@ pub enum TokenSpecKind {
 pub struct TokenSpec(usize);
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct FieldSpecData {
-    pub label: Option<String>,
-    pub mandatory: bool,
-    pub kind: FieldSpecKind,
+pub enum RuleSpecKind {
+    Aggregate(Vec<AggregateItem>),
+    List {
+        element: RuleSpec,
+    },
+    SeparatedList {
+        separator: TokenSpec,
+        element: RuleSpec,
+    },
+    TokenVariant(Vec<TokenVariantItem>),
+    RuleVariant(Vec<RuleVariantItem>),
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub enum FieldSpecKind {
+pub struct AggregateItem {
+    pub label: Option<String>,
+    pub mandatory: bool,
+    pub inner: RuleOrToken,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub enum RuleOrToken {
     Rule(RuleSpec),
     Token(TokenSpec),
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct TokenVariantItem {
+    pub label: Option<String>,
+    pub token: TokenSpec,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct RuleVariantItem {
+    pub label: Option<String>,
+    pub rule: RuleSpec,
 }
 
 impl Index<RuleSpec> for SyntaxSpec {
@@ -178,32 +190,18 @@ impl<'a> SyntaxSpecBuilder<'a> {
             let NodeData { name, rule } = &self.grammar[rule];
             let name = name.clone();
             let kind = match rule {
-                Rule::Seq(rules) => match self.try_generate_separated_list_rule(rules.as_slice()) {
-                    Ok(kind) => kind,
-                    Err(_) => {
-                        let mut fields = Vec::new();
-                        for rule in rules.iter() {
-                            fields.push(self.generate_field(&rule)?);
-                        }
-                        RuleSpecKind::Aggregate { fields }
-                    }
-                },
-                Rule::Alt(rules) => {
-                    let mut variants = Vec::new();
-                    for rule in rules.iter() {
-                        variants.push(self.generate_field(&rule)?);
-                    }
-                    RuleSpecKind::Variant { variants }
-                }
+                Rule::Seq(rules) => self
+                    .try_generate_separated_list_rule(rules.as_slice())
+                    .or_else(|_| self.try_generate_list_rule(rules.as_slice()))?,
+                Rule::Alt(rules) => self
+                    .try_generate_token_variant(rules.as_slice())
+                    .or_else(|_| self.try_generate_rule_variant(rules.as_slice()))?,
                 Rule::Labeled { .. } | Rule::Node(_) | Rule::Token(_) | Rule::Opt(_) => {
-                    RuleSpecKind::Aggregate {
-                        fields: vec![self.generate_field(&rule)?],
-                    }
+                    RuleSpecKind::Aggregate(vec![self.generate_field(&rule)?])
                 }
-                Rule::Rep(rule) => match **rule {
-                    Rule::Node(_) => RuleSpecKind::List {
-                        separator: None,
-                        element: self.generate_field(&rule)?,
+                Rule::Rep(rule) => match rule.as_ref() {
+                    Rule::Node(rule) => RuleSpecKind::List {
+                        element: self.rule_to_spec[&rule],
                     },
                     _ => return Err(format!("Expected element rule").into()),
                 },
@@ -218,18 +216,14 @@ impl<'a> SyntaxSpecBuilder<'a> {
         rules: &[Rule],
     ) -> Result<RuleSpecKind, Box<dyn std::error::Error>> {
         let element = match rules.get(0) {
-            Some(rule @ (Rule::Node(_) | Rule::Token(_))) => rule,
+            Some(Rule::Node(rule)) => rule,
             _ => return Err(format!("Expected element rule").into()),
         };
 
         let separator = match rules.get(1) {
             Some(Rule::Rep(rule)) => match rule.as_ref() {
                 Rule::Seq(rules) => match rules.as_slice() {
-                    [Rule::Token(token), rule @ (Rule::Node(_) | Rule::Token(_))]
-                        if rule == element =>
-                    {
-                        token
-                    }
+                    [Rule::Token(token), Rule::Node(rule)] if rule == element => token,
                     _ => return Err(format!("Expected separator rule").into()),
                 },
                 _ => return Err(format!("Expected separator rule").into()),
@@ -248,29 +242,88 @@ impl<'a> SyntaxSpecBuilder<'a> {
             None => {}
         }
 
-        Ok(RuleSpecKind::List {
-            separator: Some(self.str_to_spec[&self.grammar[*separator].name]),
-            element: self.generate_field(element)?,
+        Ok(RuleSpecKind::SeparatedList {
+            separator: self.str_to_spec[&self.grammar[*separator].name],
+            element: self.rule_to_spec[element],
         })
     }
 
-    fn generate_field(&self, rule: &Rule) -> Result<FieldSpecData, Box<dyn std::error::Error>> {
+    fn try_generate_list_rule(
+        &self,
+        rules: &[Rule],
+    ) -> Result<RuleSpecKind, Box<dyn std::error::Error>> {
+        let mut fields = Vec::new();
+        for rule in rules.iter() {
+            fields.push(self.generate_field(&rule)?);
+        }
+        Ok(RuleSpecKind::Aggregate(fields))
+    }
+
+    fn try_generate_token_variant(
+        &self,
+        tokens: &[Rule],
+    ) -> Result<RuleSpecKind, Box<dyn std::error::Error>> {
+        let mut variants = Vec::new();
+        for token in tokens.iter() {
+            match token {
+                Rule::Token(token) => variants.push(TokenVariantItem {
+                    label: None,
+                    token: self.str_to_spec[&self.grammar[*token].name],
+                }),
+                Rule::Labeled { rule, label } => match rule.as_ref() {
+                    Rule::Token(token) => variants.push(TokenVariantItem {
+                        label: Some(label.clone()),
+                        token: self.str_to_spec[&self.grammar[*token].name],
+                    }),
+                    _ => return Err(format!("Expected token rule").into()),
+                },
+                _ => return Err(format!("Expected token rule").into()),
+            }
+        }
+        Ok(RuleSpecKind::TokenVariant(variants))
+    }
+
+    fn try_generate_rule_variant(
+        &self,
+        rules: &[Rule],
+    ) -> Result<RuleSpecKind, Box<dyn std::error::Error>> {
+        let mut variants = Vec::new();
+        for rule in rules.iter() {
+            match rule {
+                Rule::Node(rule) => variants.push(RuleVariantItem {
+                    label: None,
+                    rule: self.rule_to_spec[rule],
+                }),
+                Rule::Labeled { rule, label } => match rule.as_ref() {
+                    Rule::Node(rule) => variants.push(RuleVariantItem {
+                        label: Some(label.clone()),
+                        rule: self.rule_to_spec[rule],
+                    }),
+                    _ => return Err(format!("Expected node rule").into()),
+                },
+                _ => return Err(format!("Expected node rule").into()),
+            }
+        }
+        Ok(RuleSpecKind::RuleVariant(variants))
+    }
+
+    fn generate_field(&self, rule: &Rule) -> Result<AggregateItem, Box<dyn std::error::Error>> {
         match rule {
-            Rule::Node(node) => Ok(FieldSpecData {
+            Rule::Node(node) => Ok(AggregateItem {
                 label: None,
                 mandatory: true,
-                kind: FieldSpecKind::Rule(self.rule_to_spec[node]),
+                inner: RuleOrToken::Rule(self.rule_to_spec[node]),
             }),
-            Rule::Token(token) => Ok(FieldSpecData {
+            Rule::Token(token) => Ok(AggregateItem {
                 label: None,
                 mandatory: true,
-                kind: FieldSpecKind::Token(self.str_to_spec[&self.grammar[*token].name]),
+                inner: RuleOrToken::Token(self.str_to_spec[&self.grammar[*token].name]),
             }),
-            Rule::Opt(rule) => Ok(FieldSpecData {
+            Rule::Opt(rule) => Ok(AggregateItem {
                 mandatory: false,
                 ..self.generate_field(&rule)?
             }),
-            Rule::Labeled { rule, label } => Ok(FieldSpecData {
+            Rule::Labeled { rule, label } => Ok(AggregateItem {
                 label: Some(label.clone()),
                 ..self.generate_field(&rule)?
             }),
