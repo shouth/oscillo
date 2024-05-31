@@ -7,6 +7,7 @@ edition = "2021"
 
 [dependencies]
 clap = { version = "4.5.4", features = ["cargo"] }
+convert_case = "0.6.0"
 quote = "1.0.36"
 tempdir = "0.3.7"
 ungrammar = "1.16.1"
