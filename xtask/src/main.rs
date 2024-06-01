@@ -76,44 +76,36 @@ fn generate_dsl_syntax_kinds(syntax: &SyntaxSpec) {
 
     let sh = Shell::new().expect("Failed to create a shell");
 
-    let token_kinds = syntax
+    let token_kind_idents = syntax
         .tokens
         .iter()
         .map(|TokenSpecData { token, kind }| match kind {
-            TokenSpecKind::Punct { name } => format_ident!("{}", name.to_ascii_uppercase()),
-            TokenSpecKind::Keyword => format_ident!("{}_KW", token.to_ascii_uppercase()),
-            _ => format_ident!("{}", token.to_ascii_uppercase()),
-        })
-        .map(|name| format_ident!("{name}"));
+            TokenSpecKind::Punct { name } => format_ident!("{}", name.to_case(Case::UpperSnake)),
+            TokenSpecKind::Keyword => format_ident!("{}_KW", token.to_case(Case::UpperSnake)),
+            _ => format_ident!("{}", token.to_case(Case::UpperSnake)),
+        });
 
-    let node_kinds = syntax
+    let rule_kind_idents = syntax
         .rules
         .iter()
         .map(|RuleSpecData { name, .. }| format_ident!("{}", name.to_case(Case::UpperSnake)));
 
-    let list_kinds = syntax
+    let list_rule_kind_idents = syntax
         .rules
         .iter()
-        .filter_map(|RuleSpecData { name, kind }| {
-            matches!(kind, RuleSpecKind::List { .. })
-                .then(|| format_ident!("{}", name.to_case(Case::UpperSnake)))
+        .zip(rule_kind_idents.clone())
+        .filter_map(|(RuleSpecData { kind, .. }, ident)| {
+            matches!(kind, RuleSpecKind::List { .. }).then(|| ident)
         });
 
-    let to_string_arms =
-        syntax
-            .tokens
-            .iter()
-            .filter_map(|TokenSpecData { token, kind }| match kind {
-                TokenSpecKind::Punct { name } => {
-                    let key = format_ident!("{}", name.to_case(Case::UpperSnake));
-                    Some(quote! { #key => #token })
-                }
-                TokenSpecKind::Keyword => {
-                    let key = format_ident!("{}_KW", token.to_case(Case::UpperSnake));
-                    Some(quote! { #key => #token })
-                }
-                _ => None,
-            });
+    let to_string_arms = syntax
+        .tokens
+        .iter()
+        .zip(token_kind_idents.clone())
+        .filter_map(|(TokenSpecData { token, kind }, ident)| {
+            matches!(kind, TokenSpecKind::Punct { .. } | TokenSpecKind::Keyword)
+                .then(|| quote! { #ident => #token })
+        });
 
     let code = quote! {
         #![allow(bad_style, missing_docs, unreachable_pub)]
@@ -123,8 +115,8 @@ fn generate_dsl_syntax_kinds(syntax: &SyntaxSpec) {
             #[doc(hidden)]
             TOMBSTONE,
             EOF,
-            #(#token_kinds,)*
-            #(#node_kinds,)*
+            #(#token_kind_idents,)*
+            #(#rule_kind_idents,)*
 
             #[doc(hidden)]
             __LAST,
@@ -133,7 +125,7 @@ fn generate_dsl_syntax_kinds(syntax: &SyntaxSpec) {
         use self::OscDslSyntaxKind::*;
         impl OscDslSyntaxKind {
             pub fn is_list(self) -> bool {
-                matches!(self, #(#list_kinds)|*)
+                matches!(self, #(#list_rule_kind_idents)|*)
             }
 
             pub fn to_string(self) -> Option<&'static str> {
@@ -161,12 +153,12 @@ fn generate_dsl_syntax_node(spec: &SyntaxSpec) {
     let sh = Shell::new().expect("Failed to create a shell");
 
     let ast_nodes = spec.rules.iter().map(|rule| {
-        let name = format_ident!("{}", rule.name);
+        let rule_name_ident = format_ident!("{}", rule.name);
 
         match &rule.kind {
             RuleSpecKind::Aggregate(fields) => {
                 let methods = fields.iter().enumerate().map(|(i, item)| {
-                    let name = match &item.label {
+                    let method_name_ident = match &item.label {
                         Some(label) => format_ident!("{}", label),
                         None => match &item.inner {
                             RuleOrToken::Token(token) => {
@@ -220,32 +212,31 @@ fn generate_dsl_syntax_node(spec: &SyntaxSpec) {
                     };
 
                     quote! {
-                        pub fn #name(&self) -> #retern_type {
+                        pub fn #method_name_ident(&self) -> #retern_type {
                             #support_method(&self.syntax, #i)
                         }
                     }
                 });
 
-                let kind = format_ident!("{}", rule.name.to_case(Case::UpperSnake));
-
+                let syntax_kind_ident = format_ident!("{}", rule.name.to_case(Case::UpperSnake));
                 quote! {
                     #[derive(Debug, Clone, PartialEq, Eq)]
-                    pub struct #name {
+                    pub struct #rule_name_ident {
                         syntax: SyntaxNode<OscDslLanguage>,
                     }
 
-                    impl #name {
+                    impl #rule_name_ident {
                         #(#methods)*
                     }
 
-                    impl AstNode for #name {
+                    impl AstNode for #rule_name_ident {
                         type Language = OscDslLanguage;
 
                         const KIND_SET: SyntaxKindSet<Self::Language> =
-                            SyntaxKindSet::from_raw(RawSyntaxKind(#kind as u16));
+                            SyntaxKindSet::from_raw(RawSyntaxKind(#syntax_kind_ident as u16));
 
                         fn can_cast(kind: OscDslSyntaxKind) -> bool {
-                            kind == #kind
+                            kind == #syntax_kind_ident
                         }
 
                         fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
@@ -262,24 +253,29 @@ fn generate_dsl_syntax_node(spec: &SyntaxSpec) {
                     }
                 }
             }
-            RuleSpecKind::List { element } => {
-                let kind = format_ident!("{}", rule.name.to_case(Case::UpperSnake));
-                let element_kind = format_ident!("{}", spec[*element].name.to_case(Case::Pascal));
+            kind @ (RuleSpecKind::List { element } | RuleSpecKind::SeparatedList { element, .. }) => {
+                let syntax_kind_ident = format_ident!("{}", rule.name.to_case(Case::UpperSnake));
+                let element_kind_ident = format_ident!("{}", spec[*element].name.to_case(Case::Pascal));
+                let list_trait_ident = match kind {
+                    RuleSpecKind::List { .. } => quote! { AstNodeList },
+                    RuleSpecKind::SeparatedList { .. } => quote! { AstSeparatedList },
+                    _ => unreachable!(),
+                };
 
                 quote! {
                     #[derive(Debug, Clone, PartialEq, Eq)]
-                    pub struct #name {
+                    pub struct #rule_name_ident {
                         syntax_list: SyntaxList<OscDslLanguage>,
                     }
 
-                    impl AstNode for #name {
+                    impl AstNode for #rule_name_ident {
                         type Language = OscDslLanguage;
 
                         const KIND_SET: SyntaxKindSet<Self::Language> =
-                            SyntaxKindSet::from_raw(RawSyntaxKind(#kind as u16));
+                            SyntaxKindSet::from_raw(RawSyntaxKind(#syntax_kind_ident as u16));
 
                         fn can_cast(kind: OscDslSyntaxKind) -> bool {
-                            kind == #kind
+                            kind == #syntax_kind_ident
                         }
 
                         fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
@@ -295,56 +291,9 @@ fn generate_dsl_syntax_node(spec: &SyntaxSpec) {
                         }
                     }
 
-                    impl AstNodeList for #name {
+                    impl #list_trait_ident for #rule_name_ident {
                         type Language = OscDslLanguage;
-                        type Node = #element_kind;
-
-                        fn syntax_list(&self) -> &SyntaxList<OscDslLanguage> {
-                            &self.syntax_list
-                        }
-
-                        fn into_syntax_list(self) -> SyntaxList<OscDslLanguage> {
-                            self.syntax_list
-                        }
-                    }
-                }
-            }
-            RuleSpecKind::SeparatedList { element, .. } => {
-                let kind = format_ident!("{}", rule.name.to_case(Case::UpperSnake));
-                let element_kind = format_ident!("{}", spec[*element].name.to_case(Case::Pascal));
-
-                quote! {
-                    #[derive(Debug, Clone, PartialEq, Eq)]
-                    pub struct #name {
-                        syntax_list: SyntaxList<OscDslLanguage>,
-                    }
-
-                    impl AstNode for #name {
-                        type Language = OscDslLanguage;
-
-                        const KIND_SET: SyntaxKindSet<Self::Language> =
-                            SyntaxKindSet::from_raw(RawSyntaxKind(#kind as u16));
-
-                        fn can_cast(kind: OscDslSyntaxKind) -> bool {
-                            kind == #kind
-                        }
-
-                        fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-                            Self::can_cast(syntax.kind()).then(|| Self { syntax_list: syntax.into_list() })
-                        }
-
-                        fn syntax(&self) -> &SyntaxNode<Self::Language> {
-                            self.syntax_list.node()
-                        }
-
-                        fn into_syntax(self) -> SyntaxNode<Self::Language> {
-                            self.syntax_list.into_node()
-                        }
-                    }
-
-                    impl AstSeparatedList for #name {
-                        type Language = OscDslLanguage;
-                        type Node = #element_kind;
+                        type Node = #element_kind_ident;
 
                         fn syntax_list(&self) -> &SyntaxList<OscDslLanguage> {
                             &self.syntax_list
@@ -357,88 +306,82 @@ fn generate_dsl_syntax_node(spec: &SyntaxSpec) {
                 }
             }
             RuleSpecKind::RuleVariant(variants) => {
-                let items = variants.iter().map(|item| {
-                    let node_type = format_ident!("{}", spec[item.rule].name.to_case(Case::Pascal));
-                    let name = match &item.label {
-                        Some(label) => format_ident!("{}", label.to_case(Case::Pascal)),
-                        None => node_type.clone(),
-                    };
-                    quote! { #name(#node_type) }
-                });
-
-                let methods = variants.iter().map(|item| {
-                    let method_name = match &item.label {
-                        Some(label) => format_ident!("as_{}", label.to_case(Case::Snake)),
-                        None => format_ident!("as_{}", spec[item.rule].name.to_case(Case::Snake)),
-                    };
-                    let node_type = format_ident!("{}", spec[item.rule].name.to_case(Case::Pascal));
-                    let kind = match &item.label {
+                let variant_item_idents = variants.iter().map(|item| {
+                    match &item.label {
                         Some(label) => format_ident!("{}", label.to_case(Case::Pascal)),
                         None => format_ident!("{}", spec[item.rule].name.to_case(Case::Pascal)),
-                    };
+                    }
+                });
 
-                    quote! {
-                        pub fn #method_name(&self) -> Option<&#node_type> {
-                            match self {
-                                #name::#kind(node) => Some(node),
-                                _ => None,
+                let variant_rule_idents = variants.iter().map(|item| {
+                    format_ident!("{}", spec[item.rule].name.to_case(Case::Pascal))
+                });
+
+                let variant_ident_pairs = variant_item_idents.clone().zip(variant_rule_idents.clone());
+
+                let items = variant_ident_pairs.clone()
+                    .map(|(item, rule)| quote! { #item(#rule) });
+
+                let methods = variants.iter().zip(variant_ident_pairs.clone())
+                    .map(|(item, (item_ident, rule_ident))| {
+                        let method_name = match &item.label {
+                            Some(label) => format_ident!("as_{}", label.to_case(Case::Snake)),
+                            None => format_ident!("as_{}", spec[item.rule].name.to_case(Case::Snake)),
+                        };
+
+                        quote! {
+                            pub fn #method_name(&self) -> Option<&#rule_ident> {
+                                match self {
+                                    #rule_name_ident::#item_ident(node) => Some(node),
+                                    _ => None,
+                                }
                             }
                         }
-                    }
+                    });
+
+                let syntax_kind_idents = variants.iter().map(|item| {
+                    format_ident!("{}", spec[item.rule].name.to_case(Case::UpperSnake))
                 });
 
-                let kinds = variants.iter().map(|item| {
-                    let kind = format_ident!("{}", spec[item.rule].name.to_case(Case::UpperSnake));
-                    quote! { #kind }
-                });
+                let kind_set = variant_rule_idents.clone()
+                    .enumerate()
+                    .map(|(i, rule_ident)| {
+                        if i == 0 {
+                            quote! { #rule_ident::KIND_SET }
+                        } else {
+                            quote! { .union(#rule_ident::KIND_SET) }
+                        }
+                    });
 
-                let kind_set = variants.iter().enumerate().map(|(i, item)| {
-                    let node = format_ident!("{}", spec[item.rule].name.to_case(Case::Pascal));
-                    if i == 0 {
-                        quote! { #node::KIND_SET }
-                    } else {
-                        quote! { .union(#node::KIND_SET) }
-                    }
-                });
+                let cast_arms = syntax_kind_idents.clone()
+                    .zip(variant_ident_pairs.clone())
+                    .map(|(kind_ident, (item_ident, rule_ident))| {
+                        quote! { #kind_ident => Self::#item_ident(#rule_ident::cast(syntax)?) }
+                    });
 
-                let cast_arms = variants.iter().map(|item| {
-                    let kind = format_ident!("{}", spec[item.rule].name.to_case(Case::UpperSnake));
-                    let name = match &item.label {
-                        Some(label) => format_ident!("{}", label.to_case(Case::Pascal)),
-                        None => format_ident!("{}", spec[item.rule].name.to_case(Case::Pascal)),
-                    };
-                    let node = format_ident!("{}", spec[item.rule].name.to_case(Case::Pascal));
+                let syntax_arms = variant_item_idents.clone()
+                    .map(|item_ident| quote! { Self::#item_ident(node) => node.syntax() });
 
-                    quote! { #kind => Self::#name(#node::cast(syntax)?) }
-                });
-
-                let syntax_arms = variants.iter().map(|item| {
-                    let kind = format_ident!("{}", spec[item.rule].name.to_case(Case::Pascal));
-                    quote! { Self::#kind(node) => node.syntax(), }
-                });
-
-                let into_syntax_arms = variants.iter().map(|item| {
-                    let kind = format_ident!("{}", spec[item.rule].name.to_case(Case::Pascal));
-                    quote! { Self::#kind(node) => node.into_syntax(), }
-                });
+                let into_syntax_arms = variant_item_idents.clone()
+                    .map(|item_ident| quote! { Self::#item_ident(node) => node.into_syntax() });
 
                 quote! {
                     #[derive(Debug, Clone, PartialEq, Eq)]
-                    pub enum #name {
-                        #(#items),*
+                    pub enum #rule_name_ident {
+                        #(#items,)*
                     }
 
-                    impl #name {
+                    impl #rule_name_ident {
                         #(#methods)*
                     }
 
-                    impl AstNode for #name {
+                    impl AstNode for #rule_name_ident {
                         type Language = OscDslLanguage;
 
                         const KIND_SET: SyntaxKindSet<Self::Language> = #(#kind_set)*;
 
                         fn can_cast(kind: OscDslSyntaxKind) -> bool {
-                            matches!(kind, #(#kinds)|*)
+                            matches!(kind, #(#syntax_kind_idents)|*)
                         }
 
                         fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
@@ -451,21 +394,21 @@ fn generate_dsl_syntax_node(spec: &SyntaxSpec) {
 
                         fn syntax(&self) -> &SyntaxNode<Self::Language> {
                             match &self {
-                                #(#syntax_arms)*
+                                #(#syntax_arms,)*
                             }
                         }
 
                         fn into_syntax(self) -> SyntaxNode<Self::Language> {
                             match self {
-                                #(#into_syntax_arms)*
+                                #(#into_syntax_arms,)*
                             }
                         }
                     }
                 }
             }
             RuleSpecKind::TokenVariant(variants) => {
-                let items = variants.iter().map(|item| {
-                    let name = match &item.label {
+                let variant_item_idents = variants.iter()
+                    .map(|item| match &item.label {
                         Some(label) => format_ident!("{}", label.to_case(Case::Pascal)),
                         None => match &spec[item.token].kind {
                             TokenSpecKind::Punct { name } => {
@@ -473,42 +416,37 @@ fn generate_dsl_syntax_node(spec: &SyntaxSpec) {
                             }
                             _ => format_ident!("{}", spec[item.token].token.to_case(Case::Pascal)),
                         },
-                    };
-                    quote! { #name }
-                });
-                let kind = format_ident!("{}", rule.name.to_case(Case::UpperSnake));
-                let kind_name = format_ident!("{name}Kind");
-                let kind_arms = variants.iter().map(|item| {
-                    let key = match &spec[item.token].kind {
-                        TokenSpecKind::Punct { name } => format_ident!("{}", name.to_case(Case::UpperSnake)),
-                        TokenSpecKind::Keyword => format_ident!("{}_KW", spec[item.token].token.to_case(Case::UpperSnake)),
-                        _ => format_ident!("{}", spec[item.token].token.to_case(Case::UpperSnake)),
-                    };
-                    let value = match &item.label {
-                        Some(label) => format_ident!("{}", label.to_case(Case::Pascal)),
-                        None => match &spec[item.token].kind {
-                            TokenSpecKind::Punct { name } => {
-                                format_ident!("{}", name.to_case(Case::Pascal))
-                            }
-                            _ => format_ident!("{}", spec[item.token].token.to_case(Case::Pascal)),
-                        },
-                    };
-                    quote! { #key => #kind_name::#value }
-                });
+                    }
+                );
+
+                let syntax_kind_ident = format_ident!("{}", rule.name.to_case(Case::UpperSnake));
+
+                let variant_kind_ident = format_ident!("{rule_name_ident}Kind");
+
+                let kind_arms = variants.iter()
+                    .zip(variant_item_idents.clone())
+                    .map(|(item, item_ident)| {
+                        let key = match &spec[item.token].kind {
+                            TokenSpecKind::Punct { name } => format_ident!("{}", name.to_case(Case::UpperSnake)),
+                            TokenSpecKind::Keyword => format_ident!("{}_KW", spec[item.token].token.to_case(Case::UpperSnake)),
+                            _ => format_ident!("{}", spec[item.token].token.to_case(Case::UpperSnake)),
+                        };
+                        quote! { #key => #variant_kind_ident::#item_ident }
+                    });
 
                 quote! {
                     #[derive(Debug, Copy, Clone, PartialEq, Eq)]
-                    pub enum #kind_name {
-                        #(#items),*
+                    pub enum #variant_kind_ident {
+                        #(#variant_item_idents,)*
                     }
 
                     #[derive(Debug, Clone, PartialEq, Eq)]
-                    pub struct #name {
+                    pub struct #rule_name_ident {
                         syntax: SyntaxNode<OscDslLanguage>,
                     }
 
-                    impl #name {
-                        pub fn kind(&self) -> #kind_name {
+                    impl #rule_name_ident {
+                        pub fn kind(&self) -> #variant_kind_ident {
                             match self.syntax.kind() {
                                 #(#kind_arms,)*
                                 _ => unreachable!(),
@@ -520,13 +458,13 @@ fn generate_dsl_syntax_node(spec: &SyntaxSpec) {
                         }
                     }
 
-                    impl AstNode for #name {
+                    impl AstNode for #rule_name_ident {
                         type Language = OscDslLanguage;
 
-                        const KIND_SET: SyntaxKindSet<Self::Language> = SyntaxKindSet::from_raw(RawSyntaxKind(#kind as u16));
+                        const KIND_SET: SyntaxKindSet<Self::Language> = SyntaxKindSet::from_raw(RawSyntaxKind(#syntax_kind_ident as u16));
 
                         fn can_cast(kind: OscDslSyntaxKind) -> bool {
-                            kind == #kind
+                            kind == #syntax_kind_ident
                         }
 
                         fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
