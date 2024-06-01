@@ -44,6 +44,7 @@ pub enum RuleSpecKind {
     SeparatedList {
         separator: TokenSpec,
         element: RuleSpec,
+        allow_trailing: bool,
     },
     TokenVariant(Vec<TokenVariantItem>),
     RuleVariant(Vec<RuleVariantItem>),
@@ -231,20 +232,21 @@ impl<'a> SyntaxSpecBuilder<'a> {
             _ => return Err(format!("Expected separator rule").into()),
         };
 
-        match rules.get(2) {
+        let allow_trailing = match rules.get(2) {
             Some(Rule::Opt(rule)) => match rule.as_ref() {
                 Rule::Token(token) if token != separator => {
                     return Err(format!("Expected end token").into())
                 }
-                _ => {}
+                _ => true
             },
             Some(_) => return Err(format!("Expected end token").into()),
-            None => {}
-        }
+            None => false,
+        };
 
         Ok(RuleSpecKind::SeparatedList {
             separator: self.str_to_spec[&self.grammar[*separator].name],
             element: self.rule_to_spec[element],
+            allow_trailing,
         })
     }
 
