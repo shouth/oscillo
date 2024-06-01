@@ -9,9 +9,7 @@ use std::{
 use clap::{command, Command};
 use convert_case::{Case, Casing};
 use quote::{format_ident, quote};
-use syntax_spec::{
-    RuleOrToken, RuleSpecData, RuleSpecKind, SyntaxSpec, TokenSpecData, TokenSpecKind,
-};
+use syntax_spec::{RuleOrToken, RuleSpecKind, SyntaxSpec, TokenSpecData, TokenSpecKind};
 use xshell::{cmd, Shell};
 
 fn project_root() -> PathBuf {
@@ -65,10 +63,21 @@ fn do_generate_char_set(ucd_path: &Path, out_path: &Path, var_name: &str, catego
         .expect("Failed to write char set");
 }
 
+impl TokenSpecData {
+    fn syntax_kind_name(&self) -> String {
+        match &self.kind {
+            TokenSpecKind::Punct { name } => format!("{}", name.to_case(Case::UpperSnake)),
+            TokenSpecKind::Keyword => format!("{}_KW", self.token.to_case(Case::UpperSnake)),
+            _ => format!("{}", self.token.to_case(Case::UpperSnake)),
+        }
+    }
+}
+
 fn generate_dsl_syntax() {
     let spec = oscdsl::load_spec().expect("Failed to load the syntax spec");
     generate_dsl_syntax_kinds(&spec);
     generate_dsl_syntax_node(&spec);
+    generate_dsl_syntax_factory(&spec);
 }
 
 fn generate_dsl_syntax_kinds(syntax: &SyntaxSpec) {
@@ -79,24 +88,18 @@ fn generate_dsl_syntax_kinds(syntax: &SyntaxSpec) {
     let token_kind_idents = syntax
         .tokens
         .iter()
-        .map(|TokenSpecData { token, kind }| match kind {
-            TokenSpecKind::Punct { name } => format_ident!("{}", name.to_case(Case::UpperSnake)),
-            TokenSpecKind::Keyword => format_ident!("{}_KW", token.to_case(Case::UpperSnake)),
-            _ => format_ident!("{}", token.to_case(Case::UpperSnake)),
-        });
+        .map(|data| format_ident!("{}", data.syntax_kind_name()));
 
     let rule_kind_idents = syntax
         .rules
         .iter()
-        .map(|RuleSpecData { name, .. }| format_ident!("{}", name.to_case(Case::UpperSnake)));
+        .map(|data| format_ident!("{}", data.name.to_case(Case::UpperSnake)));
 
     let list_rule_kind_idents = syntax
         .rules
         .iter()
         .zip(rule_kind_idents.clone())
-        .filter_map(|(RuleSpecData { kind, .. }, ident)| {
-            matches!(kind, RuleSpecKind::List { .. }).then(|| ident)
-        });
+        .filter_map(|(data, ident)| matches!(data.kind, RuleSpecKind::List { .. }).then(|| ident));
 
     let to_string_arms = syntax
         .tokens
@@ -426,11 +429,7 @@ fn generate_dsl_syntax_node(spec: &SyntaxSpec) {
                 let kind_arms = variants.iter()
                     .zip(variant_item_idents.clone())
                     .map(|(item, item_ident)| {
-                        let key = match &spec[item.token].kind {
-                            TokenSpecKind::Punct { name } => format_ident!("{}", name.to_case(Case::UpperSnake)),
-                            TokenSpecKind::Keyword => format_ident!("{}_KW", spec[item.token].token.to_case(Case::UpperSnake)),
-                            _ => format_ident!("{}", spec[item.token].token.to_case(Case::UpperSnake)),
-                        };
+                        let key = format_ident!("{}", spec[item.token].syntax_kind_name());
                         quote! { #key => #variant_kind_ident::#item_ident }
                     });
 
@@ -500,6 +499,132 @@ fn generate_dsl_syntax_node(spec: &SyntaxSpec) {
         .expect("Failed to format the code");
 
     sh.write_file(gen_dir.join("node.rs"), code)
+        .expect("Failed to write node.rs");
+}
+
+fn generate_dsl_syntax_factory(spec: &SyntaxSpec) {
+    let gen_dir = project_root().join("oscelas/src/syntax/generated");
+
+    let sh = Shell::new().expect("Failed to create a shell");
+
+    let make_syntax_arms = spec.rules.iter()
+        .filter_map(|data| {
+            let syntax_kind_ident = format_ident!("{}", data.name.to_case(Case::UpperSnake));
+            let body = match &data.kind {
+                RuleSpecKind::Aggregate(variants) => {
+                    let slot_size = variants.len();
+                    let slot_checks = variants
+                        .iter()
+                        .map(|item| {
+                            let condition = match &item.inner {
+                                RuleOrToken::Rule(rule) => {
+                                    let rule_ident = format_ident!("{}", spec[*rule].name.to_case(Case::Pascal));
+                                    quote! {
+                                        #rule_ident::can_cast(element.kind())
+                                    }
+                                }
+                                RuleOrToken::Token(token) => {
+                                    let token_kind_ident = format_ident!("{}", spec[*token].syntax_kind_name());
+                                    quote! {
+                                        element.kind() == #token_kind_ident
+                                    }
+                                }
+                            };
+                            quote! {
+                                if let Some(element) = &current_element {
+                                    if #condition {
+                                        slots.mark_present();
+                                        current_element = elements.next();
+                                    }
+                                }
+                                slots.next_slot();
+                            }
+                        });
+
+                    quote! {{
+                        let mut elements = (&children).into_iter();
+                        let mut slots: RawNodeSlots<#slot_size> = RawNodeSlots::default();
+                        let mut current_element = elements.next();
+
+                        #(#slot_checks)*
+
+                        if current_element.is_some() {
+                            return RawSyntaxNode::new(#syntax_kind_ident.to_bogus(), children.into_iter().map(Some));
+                        }
+                        slots.into_node(kind, children)
+                    }}
+                }
+                RuleSpecKind::List { element } => {
+                    let rule_ident = format_ident!("{}", spec[*element].name.to_case(Case::Pascal));
+                    quote! {
+                        Self::make_node_list_syntax(kind, children, #rule_ident::can_cast)
+                    }
+                }
+                RuleSpecKind::SeparatedList { separator, element, allow_trailing } => {
+                    let rule_ident = format_ident!("{}", spec[*element].name.to_case(Case::Pascal));
+                    let separator_kind_ident = format_ident!("{}", spec[*separator].syntax_kind_name());
+                    quote! {
+                        Self::make_separated_list_syntax(kind, children, #rule_ident::can_cast, #separator_kind_ident, #allow_trailing)
+                    }
+                }
+                RuleSpecKind::TokenVariant(variants) => {
+                    let slot_size = variants.len();
+                    let token_kind_idents = variants
+                        .iter()
+                        .map(|item| format_ident!("{}", spec[item.token].syntax_kind_name()));
+
+                    quote! {{
+                        let mut elements = (&children).into_iter();
+                        let mut slots: RawNodeSlots<#slot_size> = RawNodeSlots::default();
+                        let mut current_element = elements.next();
+
+                        if let Some(element) = &current_element {
+                            if matches!(element.kind(), #(#token_kind_idents)|*) {
+                                slots.mark_present();
+                                current_element = elements.next();
+                            }
+                        }
+
+                        if current_element.is_some() {
+                            return RawSyntaxNode::new(#syntax_kind_ident.to_bogus(), children.into_iter().map(Some));
+                        }
+                        slots.into_node(kind, children)
+                    }}
+                }
+                RuleSpecKind::RuleVariant(_) => {
+                    return None;
+                }
+            };
+            Some(quote! { #syntax_kind_ident => #body })
+        });
+
+    let code = quote! {
+        use super::{OscDslSyntaxKind::{self, *},*,};
+        use biome_rowan::{AstNode, ParsedChildren, RawNodeSlots, RawSyntaxNode, SyntaxFactory, SyntaxKind};
+
+        #[derive(Debug)]
+        pub struct OscDslSyntaxFactory;
+
+        impl SyntaxFactory for OscDslSyntaxFactory {
+            type Kind = OscDslSyntaxKind;
+            fn make_syntax(
+                kind: Self::Kind,
+                children: ParsedChildren<Self::Kind>,
+            ) -> RawSyntaxNode<Self::Kind> {
+                match kind {
+                    #(#make_syntax_arms,)*
+                    _ => unreachable!("Is {:?} a token?", kind),
+                }
+            }
+        }
+    };
+
+    let code = cmd!(sh, "rustfmt --emit stdout")
+        .stdin(code.to_string())
+        .read()
+        .expect("Failed to format the code");
+
+    sh.write_file(gen_dir.join("factory.rs"), code)
         .expect("Failed to write node.rs");
 }
 
