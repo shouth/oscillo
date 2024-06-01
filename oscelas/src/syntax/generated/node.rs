@@ -323,11 +323,11 @@ pub struct OscFile {
     syntax: SyntaxNode<OscDslLanguage>,
 }
 impl OscFile {
-    pub fn prelude_statement_list(&self) -> SyntaxResult<PreludeStatementList> {
-        support::required_node(&self.syntax, 0usize)
+    pub fn prelude_statement_list(&self) -> PreludeStatementList {
+        support::list(&self.syntax, 0usize)
     }
-    pub fn main_statement_list(&self) -> SyntaxResult<MainStatementList> {
-        support::required_node(&self.syntax, 1usize)
+    pub fn main_statement_list(&self) -> MainStatementList {
+        support::list(&self.syntax, 1usize)
     }
 }
 impl AstNode for OscFile {
@@ -708,8 +708,8 @@ impl ExportStatement {
     pub fn export_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
         support::required_token(&self.syntax, 0usize)
     }
-    pub fn export_specification_list(&self) -> SyntaxResult<ExportSpecificationList> {
-        support::required_node(&self.syntax, 1usize)
+    pub fn export_specification_list(&self) -> ExportSpecificationList {
+        support::list(&self.syntax, 1usize)
     }
     pub fn newline_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
         support::required_token(&self.syntax, 2usize)
@@ -891,8 +891,8 @@ impl NamespaceUseClause {
     pub fn use_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
         support::required_token(&self.syntax, 0usize)
     }
-    pub fn namespace_list(&self) -> SyntaxResult<NamespaceList> {
-        support::required_node(&self.syntax, 1usize)
+    pub fn namespace_list(&self) -> NamespaceList {
+        support::list(&self.syntax, 1usize)
     }
 }
 impl AstNode for NamespaceUseClause {
@@ -1236,8 +1236,8 @@ impl EnumDeclaration {
     pub fn l_bracket_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
         support::required_token(&self.syntax, 3usize)
     }
-    pub fn enum_member_decl_list(&self) -> SyntaxResult<EnumMemberDeclList> {
-        support::required_node(&self.syntax, 4usize)
+    pub fn enum_member_decl_list(&self) -> EnumMemberDeclList {
+        support::list(&self.syntax, 4usize)
     }
     pub fn r_bracket_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
         support::required_token(&self.syntax, 5usize)
@@ -1972,8 +1972,8 @@ impl SiBaseUnitSpecifier {
     pub fn l_paren_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
         support::required_token(&self.syntax, 1usize)
     }
-    pub fn si_base_exponent_list(&self) -> SyntaxResult<SiBaseExponentList> {
-        support::required_node(&self.syntax, 2usize)
+    pub fn si_base_exponent_list(&self) -> SiBaseExponentList {
+        support::list(&self.syntax, 2usize)
     }
     pub fn r_paren_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
         support::required_token(&self.syntax, 3usize)
@@ -2007,8 +2007,8 @@ impl SiUnitSpecifier {
     pub fn l_paren_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
         support::required_token(&self.syntax, 1usize)
     }
-    pub fn si_base_exponent_list(&self) -> SyntaxResult<SiBaseExponentList> {
-        support::required_node(&self.syntax, 2usize)
+    pub fn si_base_exponent_list(&self) -> SiBaseExponentList {
+        support::list(&self.syntax, 2usize)
     }
     pub fn trailing_si_factor(&self) -> Option<TrailingSiFactor> {
         support::node(&self.syntax, 3usize)
@@ -2624,8 +2624,8 @@ impl StructBody {
     pub fn indent_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
         support::required_token(&self.syntax, 2usize)
     }
-    pub fn struct_member_decl_list(&self) -> SyntaxResult<StructMemberDeclList> {
-        support::required_node(&self.syntax, 3usize)
+    pub fn struct_member_decl_list(&self) -> StructMemberDeclList {
+        support::list(&self.syntax, 3usize)
     }
     pub fn dedent_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
         support::required_token(&self.syntax, 4usize)
@@ -2924,8 +2924,8 @@ impl MethodDeclaration {
     pub fn l_paren_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
         support::required_token(&self.syntax, 2usize)
     }
-    pub fn argument_list_specification(&self) -> Option<ArgumentListSpecification> {
-        support::node(&self.syntax, 3usize)
+    pub fn argument_list_specification(&self) -> ArgumentListSpecification {
+        support::list(&self.syntax, 3usize)
     }
     pub fn r_paren_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
         support::required_token(&self.syntax, 4usize)
@@ -3172,8 +3172,8 @@ impl ActorBody {
     pub fn indent_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
         support::required_token(&self.syntax, 2usize)
     }
-    pub fn actor_member_decl_list(&self) -> SyntaxResult<ActorMemberDeclList> {
-        support::required_node(&self.syntax, 3usize)
+    pub fn actor_member_decl_list(&self) -> ActorMemberDeclList {
+        support::list(&self.syntax, 3usize)
     }
     pub fn dedent_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
         support::required_token(&self.syntax, 4usize)
@@ -3494,8 +3494,8 @@ impl ScenarioBody {
     pub fn indent_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
         support::required_token(&self.syntax, 2usize)
     }
-    pub fn scenario_member_item_list(&self) -> SyntaxResult<ScenarioMemberItemList> {
-        support::required_node(&self.syntax, 3usize)
+    pub fn scenario_member_item_list(&self) -> ScenarioMemberItemList {
+        support::list(&self.syntax, 3usize)
     }
     pub fn dedent_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
         support::required_token(&self.syntax, 4usize)
@@ -3882,8 +3882,8 @@ impl ActionBody {
     pub fn indent_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
         support::required_token(&self.syntax, 2usize)
     }
-    pub fn action_member_item_list(&self) -> SyntaxResult<ActionMemberItemList> {
-        support::required_node(&self.syntax, 3usize)
+    pub fn action_member_item_list(&self) -> ActionMemberItemList {
+        support::list(&self.syntax, 3usize)
     }
     pub fn dedent_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
         support::required_token(&self.syntax, 4usize)
@@ -4216,8 +4216,8 @@ impl ModifierBody {
     pub fn indent_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
         support::required_token(&self.syntax, 2usize)
     }
-    pub fn modifier_member_item_list(&self) -> SyntaxResult<ModifierMemberItemList> {
-        support::required_node(&self.syntax, 3usize)
+    pub fn modifier_member_item_list(&self) -> ModifierMemberItemList {
+        support::list(&self.syntax, 3usize)
     }
     pub fn dedent_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
         support::required_token(&self.syntax, 4usize)
@@ -4339,8 +4339,8 @@ impl OnDirective {
     pub fn indent_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
         support::required_token(&self.syntax, 4usize)
     }
-    pub fn on_member_list(&self) -> SyntaxResult<OnMemberList> {
-        support::required_node(&self.syntax, 5usize)
+    pub fn on_member_list(&self) -> OnMemberList {
+        support::list(&self.syntax, 5usize)
     }
     pub fn dedent_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
         support::required_token(&self.syntax, 6usize)
@@ -4380,8 +4380,8 @@ impl EnumTypeExtension {
     pub fn l_bracket_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
         support::required_token(&self.syntax, 3usize)
     }
-    pub fn enum_member_decl_list(&self) -> SyntaxResult<EnumMemberDeclList> {
-        support::required_node(&self.syntax, 4usize)
+    pub fn enum_member_decl_list(&self) -> EnumMemberDeclList {
+        support::list(&self.syntax, 4usize)
     }
     pub fn r_bracket_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
         support::required_token(&self.syntax, 5usize)
@@ -4427,8 +4427,8 @@ impl StructuredTypeExtension {
     pub fn indent_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
         support::required_token(&self.syntax, 4usize)
     }
-    pub fn extendable_member_decl_list(&self) -> SyntaxResult<ExtendableMemberDeclList> {
-        support::required_node(&self.syntax, 5usize)
+    pub fn extendable_member_decl_list(&self) -> ExtendableMemberDeclList {
+        support::list(&self.syntax, 5usize)
     }
     pub fn dedent_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
         support::required_token(&self.syntax, 6usize)
@@ -4622,8 +4622,8 @@ pub struct ParameterDeclaration {
     syntax: SyntaxNode<OscDslLanguage>,
 }
 impl ParameterDeclaration {
-    pub fn field_name_list(&self) -> SyntaxResult<FieldNameList> {
-        support::required_node(&self.syntax, 0usize)
+    pub fn field_name_list(&self) -> FieldNameList {
+        support::list(&self.syntax, 0usize)
     }
     pub fn colon_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
         support::required_token(&self.syntax, 1usize)
@@ -4691,8 +4691,8 @@ impl EventArgumentListSpecification {
     pub fn l_paren_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
         support::required_token(&self.syntax, 0usize)
     }
-    pub fn argument_list_specification(&self) -> SyntaxResult<ArgumentListSpecification> {
-        support::required_node(&self.syntax, 1usize)
+    pub fn argument_list_specification(&self) -> ArgumentListSpecification {
+        support::list(&self.syntax, 1usize)
     }
     pub fn r_paren_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
         support::required_token(&self.syntax, 2usize)
@@ -5572,8 +5572,8 @@ impl VariableDeclaration {
     pub fn var_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
         support::required_token(&self.syntax, 0usize)
     }
-    pub fn field_name_list(&self) -> SyntaxResult<FieldNameList> {
-        support::required_node(&self.syntax, 1usize)
+    pub fn field_name_list(&self) -> FieldNameList {
+        support::list(&self.syntax, 1usize)
     }
     pub fn colon_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
         support::required_token(&self.syntax, 2usize)
@@ -6444,8 +6444,8 @@ impl MethodExternalBody {
     pub fn external_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
         support::required_token(&self.syntax, 0usize)
     }
-    pub fn structured_identifier(&self) -> SyntaxResult<StructuredIdentifier> {
-        support::required_node(&self.syntax, 1usize)
+    pub fn structured_identifier(&self) -> StructuredIdentifier {
+        support::list(&self.syntax, 1usize)
     }
     pub fn l_paren_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
         support::required_token(&self.syntax, 2usize)
@@ -6479,11 +6479,11 @@ pub struct ArgumentList {
     syntax: SyntaxNode<OscDslLanguage>,
 }
 impl ArgumentList {
-    pub fn positional_argument_list(&self) -> Option<PositionalArgumentList> {
-        support::node(&self.syntax, 0usize)
+    pub fn positional_argument_list(&self) -> PositionalArgumentList {
+        support::list(&self.syntax, 0usize)
     }
-    pub fn named_argument_list(&self) -> Option<NamedArgumentList> {
-        support::node(&self.syntax, 1usize)
+    pub fn named_argument_list(&self) -> NamedArgumentList {
+        support::list(&self.syntax, 1usize)
     }
 }
 impl AstNode for ArgumentList {
@@ -6999,8 +6999,8 @@ impl Composition {
     pub fn indent_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
         support::required_token(&self.syntax, 4usize)
     }
-    pub fn do_member_list(&self) -> SyntaxResult<DoMemberList> {
-        support::required_node(&self.syntax, 5usize)
+    pub fn do_member_list(&self) -> DoMemberList {
+        support::list(&self.syntax, 5usize)
     }
     pub fn dedent_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
         support::required_token(&self.syntax, 6usize)
@@ -7222,8 +7222,8 @@ impl BehaviorWithDeclaration {
     pub fn indent_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
         support::required_token(&self.syntax, 3usize)
     }
-    pub fn behavior_with_member_list(&self) -> SyntaxResult<BehaviorWithMemberList> {
-        support::required_node(&self.syntax, 4usize)
+    pub fn behavior_with_member_list(&self) -> BehaviorWithMemberList {
+        support::list(&self.syntax, 4usize)
     }
     pub fn dedent_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
         support::required_token(&self.syntax, 5usize)
@@ -7251,11 +7251,11 @@ pub struct UnqualifiedArgumentList {
     syntax: SyntaxNode<OscDslLanguage>,
 }
 impl UnqualifiedArgumentList {
-    pub fn positional_argument_list(&self) -> Option<PositionalArgumentList> {
-        support::node(&self.syntax, 0usize)
+    pub fn positional_argument_list(&self) -> PositionalArgumentList {
+        support::list(&self.syntax, 0usize)
     }
-    pub fn unqualified_named_argument_list(&self) -> Option<UnqualifiedNamedArgumentList> {
-        support::node(&self.syntax, 1usize)
+    pub fn unqualified_named_argument_list(&self) -> UnqualifiedNamedArgumentList {
+        support::list(&self.syntax, 1usize)
     }
 }
 impl AstNode for UnqualifiedArgumentList {
@@ -8285,8 +8285,8 @@ impl ListConstructor {
     pub fn l_bracket_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
         support::required_token(&self.syntax, 0usize)
     }
-    pub fn expression_list(&self) -> SyntaxResult<ExpressionList> {
-        support::required_node(&self.syntax, 1usize)
+    pub fn expression_list(&self) -> ExpressionList {
+        support::list(&self.syntax, 1usize)
     }
     pub fn r_bracket_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
         support::required_token(&self.syntax, 2usize)
