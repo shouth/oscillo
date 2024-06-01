@@ -181,20 +181,24 @@ fn generate_dsl_syntax_node(spec: &SyntaxSpec) {
                             }
                         },
                     };
-                    let node_type = match &item.inner {
+                    let retern_type = match &item.inner {
                         RuleOrToken::Token(_) => {
-                            quote! { SyntaxToken<OscDslLanguage> }
+                            if item.mandatory {
+                                quote! { SyntaxResult<SyntaxToken<OscDslLanguage>> }
+                            } else {
+                                quote! { Option<SyntaxToken<OscDslLanguage>> }
+                            }
                         }
                         RuleOrToken::Rule(rule) => {
-                            let node_type =
-                                format_ident!("{}", spec[*rule].name.to_case(Case::Pascal));
-                            quote! { #node_type }
+                            let node = format_ident!("{}", spec[*rule].name.to_case(Case::Pascal));
+                            if matches!(&spec[*rule].kind, RuleSpecKind::List {..} | RuleSpecKind::SeparatedList { .. }) {
+                                quote! { #node }
+                            } else if item.mandatory {
+                                quote! { SyntaxResult<#node> }
+                            } else {
+                                quote! { Option<#node> }
+                            }
                         }
-                    };
-                    let ret_type = if item.mandatory {
-                        quote! { SyntaxResult<#node_type> }
-                    } else {
-                        quote! { Option<#node_type> }
                     };
                     let support_method = match &item.inner {
                         RuleOrToken::Token(_) => {
@@ -204,8 +208,10 @@ fn generate_dsl_syntax_node(spec: &SyntaxSpec) {
                                 quote! { support::token }
                             }
                         }
-                        RuleOrToken::Rule(_) => {
-                            if item.mandatory {
+                        RuleOrToken::Rule(rule) => {
+                            if matches!(&spec[*rule].kind, RuleSpecKind::List {..} | RuleSpecKind::SeparatedList { .. }) {
+                                quote! { support::list }
+                            } else if item.mandatory {
                                 quote! { support::required_node }
                             } else {
                                 quote! { support::node }
@@ -214,7 +220,7 @@ fn generate_dsl_syntax_node(spec: &SyntaxSpec) {
                     };
 
                     quote! {
-                        pub fn #name(&self) -> #ret_type {
+                        pub fn #name(&self) -> #retern_type {
                             #support_method(&self.syntax, #i)
                         }
                     }
