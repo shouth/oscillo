@@ -1,8 +1,8 @@
 use super::OscDslSyntaxKind::{self, *};
 use crate::syntax::OscDslLanguage;
 use biome_rowan::{
-    support, AstNode, RawSyntaxKind, SyntaxKindSet, SyntaxList, SyntaxNode, SyntaxResult,
-    SyntaxToken,
+    support, AstNode, AstNodeList, AstSeparatedList, RawSyntaxKind, SyntaxKindSet, SyntaxList,
+    SyntaxNode, SyntaxResult, SyntaxToken,
 };
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SyntaxElement {
@@ -359,8 +359,9 @@ impl AstNode for PreludeStatementList {
         kind == PRELUDE_STATEMENT_LIST
     }
     fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        let syntax_list = syntax.into_list();
-        Self::can_cast(syntax.kind()).then(|| Self { syntax_list })
+        Self::can_cast(syntax.kind()).then(|| Self {
+            syntax_list: syntax.into_list(),
+        })
     }
     fn syntax(&self) -> &SyntaxNode<Self::Language> {
         self.syntax_list.node()
@@ -391,8 +392,9 @@ impl AstNode for MainStatementList {
         kind == MAIN_STATEMENT_LIST
     }
     fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        let syntax_list = syntax.into_list();
-        Self::can_cast(syntax.kind()).then(|| Self { syntax_list })
+        Self::can_cast(syntax.kind()).then(|| Self {
+            syntax_list: syntax.into_list(),
+        })
     }
     fn syntax(&self) -> &SyntaxNode<Self::Language> {
         self.syntax_list.node()
@@ -619,8 +621,9 @@ impl AstNode for StructuredIdentifier {
         kind == STRUCTURED_IDENTIFIER
     }
     fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        let syntax_list = syntax.into_list();
-        Self::can_cast(syntax.kind()).then(|| Self { syntax_list })
+        Self::can_cast(syntax.kind()).then(|| Self {
+            syntax_list: syntax.into_list(),
+        })
     }
     fn syntax(&self) -> &SyntaxNode<Self::Language> {
         self.syntax_list.node()
@@ -924,8 +927,9 @@ impl AstNode for NamespaceList {
         kind == NAMESPACE_LIST
     }
     fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        let syntax_list = syntax.into_list();
-        Self::can_cast(syntax.kind()).then(|| Self { syntax_list })
+        Self::can_cast(syntax.kind()).then(|| Self {
+            syntax_list: syntax.into_list(),
+        })
     }
     fn syntax(&self) -> &SyntaxNode<Self::Language> {
         self.syntax_list.node()
@@ -1008,8 +1012,9 @@ impl AstNode for ExportSpecificationList {
         kind == EXPORT_SPECIFICATION_LIST
     }
     fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        let syntax_list = syntax.into_list();
-        Self::can_cast(syntax.kind()).then(|| Self { syntax_list })
+        Self::can_cast(syntax.kind()).then(|| Self {
+            syntax_list: syntax.into_list(),
+        })
     }
     fn syntax(&self) -> &SyntaxNode<Self::Language> {
         self.syntax_list.node()
@@ -2049,8 +2054,9 @@ impl AstNode for SiBaseExponentList {
         kind == SI_BASE_EXPONENT_LIST
     }
     fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        let syntax_list = syntax.into_list();
-        Self::can_cast(syntax.kind()).then(|| Self { syntax_list })
+        Self::can_cast(syntax.kind()).then(|| Self {
+            syntax_list: syntax.into_list(),
+        })
     }
     fn syntax(&self) -> &SyntaxNode<Self::Language> {
         self.syntax_list.node()
@@ -2233,8 +2239,9 @@ impl AstNode for EnumMemberDeclList {
         kind == ENUM_MEMBER_DECL_LIST
     }
     fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        let syntax_list = syntax.into_list();
-        Self::can_cast(syntax.kind()).then(|| Self { syntax_list })
+        Self::can_cast(syntax.kind()).then(|| Self {
+            syntax_list: syntax.into_list(),
+        })
     }
     fn syntax(&self) -> &SyntaxNode<Self::Language> {
         self.syntax_list.node()
@@ -2660,8 +2667,9 @@ impl AstNode for StructMemberDeclList {
         kind == STRUCT_MEMBER_DECL_LIST
     }
     fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        let syntax_list = syntax.into_list();
-        Self::can_cast(syntax.kind()).then(|| Self { syntax_list })
+        Self::can_cast(syntax.kind()).then(|| Self {
+            syntax_list: syntax.into_list(),
+        })
     }
     fn syntax(&self) -> &SyntaxNode<Self::Language> {
         self.syntax_list.node()
@@ -3208,8 +3216,9 @@ impl AstNode for ActorMemberDeclList {
         kind == ACTOR_MEMBER_DECL_LIST
     }
     fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        let syntax_list = syntax.into_list();
-        Self::can_cast(syntax.kind()).then(|| Self { syntax_list })
+        Self::can_cast(syntax.kind()).then(|| Self {
+            syntax_list: syntax.into_list(),
+        })
     }
     fn syntax(&self) -> &SyntaxNode<Self::Language> {
         self.syntax_list.node()
@@ -3530,8 +3539,9 @@ impl AstNode for ScenarioMemberItemList {
         kind == SCENARIO_MEMBER_ITEM_LIST
     }
     fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        let syntax_list = syntax.into_list();
-        Self::can_cast(syntax.kind()).then(|| Self { syntax_list })
+        Self::can_cast(syntax.kind()).then(|| Self {
+            syntax_list: syntax.into_list(),
+        })
     }
     fn syntax(&self) -> &SyntaxNode<Self::Language> {
         self.syntax_list.node()
@@ -4003,8 +4013,9 @@ impl AstNode for ActionMemberItemList {
         kind == ACTION_MEMBER_ITEM_LIST
     }
     fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        let syntax_list = syntax.into_list();
-        Self::can_cast(syntax.kind()).then(|| Self { syntax_list })
+        Self::can_cast(syntax.kind()).then(|| Self {
+            syntax_list: syntax.into_list(),
+        })
     }
     fn syntax(&self) -> &SyntaxNode<Self::Language> {
         self.syntax_list.node()
@@ -4252,8 +4263,9 @@ impl AstNode for ModifierMemberItemList {
         kind == MODIFIER_MEMBER_ITEM_LIST
     }
     fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        let syntax_list = syntax.into_list();
-        Self::can_cast(syntax.kind()).then(|| Self { syntax_list })
+        Self::can_cast(syntax.kind()).then(|| Self {
+            syntax_list: syntax.into_list(),
+        })
     }
     fn syntax(&self) -> &SyntaxNode<Self::Language> {
         self.syntax_list.node()
@@ -4523,8 +4535,9 @@ impl AstNode for ExtendableMemberDeclList {
         kind == EXTENDABLE_MEMBER_DECL_LIST
     }
     fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        let syntax_list = syntax.into_list();
-        Self::can_cast(syntax.kind()).then(|| Self { syntax_list })
+        Self::can_cast(syntax.kind()).then(|| Self {
+            syntax_list: syntax.into_list(),
+        })
     }
     fn syntax(&self) -> &SyntaxNode<Self::Language> {
         self.syntax_list.node()
@@ -4756,8 +4769,9 @@ impl AstNode for ArgumentListSpecification {
         kind == ARGUMENT_LIST_SPECIFICATION
     }
     fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        let syntax_list = syntax.into_list();
-        Self::can_cast(syntax.kind()).then(|| Self { syntax_list })
+        Self::can_cast(syntax.kind()).then(|| Self {
+            syntax_list: syntax.into_list(),
+        })
     }
     fn syntax(&self) -> &SyntaxNode<Self::Language> {
         self.syntax_list.node()
@@ -5617,8 +5631,9 @@ impl AstNode for FieldNameList {
         kind == FIELD_NAME_LIST
     }
     fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        let syntax_list = syntax.into_list();
-        Self::can_cast(syntax.kind()).then(|| Self { syntax_list })
+        Self::can_cast(syntax.kind()).then(|| Self {
+            syntax_list: syntax.into_list(),
+        })
     }
     fn syntax(&self) -> &SyntaxNode<Self::Language> {
         self.syntax_list.node()
@@ -6678,8 +6693,9 @@ impl AstNode for OnMemberList {
         kind == ON_MEMBER_LIST
     }
     fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        let syntax_list = syntax.into_list();
-        Self::can_cast(syntax.kind()).then(|| Self { syntax_list })
+        Self::can_cast(syntax.kind()).then(|| Self {
+            syntax_list: syntax.into_list(),
+        })
     }
     fn syntax(&self) -> &SyntaxNode<Self::Language> {
         self.syntax_list.node()
@@ -7185,8 +7201,9 @@ impl AstNode for DoMemberList {
         kind == DO_MEMBER_LIST
     }
     fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        let syntax_list = syntax.into_list();
-        Self::can_cast(syntax.kind()).then(|| Self { syntax_list })
+        Self::can_cast(syntax.kind()).then(|| Self {
+            syntax_list: syntax.into_list(),
+        })
     }
     fn syntax(&self) -> &SyntaxNode<Self::Language> {
         self.syntax_list.node()
@@ -7365,8 +7382,9 @@ impl AstNode for BehaviorWithMemberList {
         kind == BEHAVIOR_WITH_MEMBER_LIST
     }
     fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        let syntax_list = syntax.into_list();
-        Self::can_cast(syntax.kind()).then(|| Self { syntax_list })
+        Self::can_cast(syntax.kind()).then(|| Self {
+            syntax_list: syntax.into_list(),
+        })
     }
     fn syntax(&self) -> &SyntaxNode<Self::Language> {
         self.syntax_list.node()
@@ -7649,8 +7667,9 @@ impl AstNode for PositionalArgumentList {
         kind == POSITIONAL_ARGUMENT_LIST
     }
     fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        let syntax_list = syntax.into_list();
-        Self::can_cast(syntax.kind()).then(|| Self { syntax_list })
+        Self::can_cast(syntax.kind()).then(|| Self {
+            syntax_list: syntax.into_list(),
+        })
     }
     fn syntax(&self) -> &SyntaxNode<Self::Language> {
         self.syntax_list.node()
@@ -7681,8 +7700,9 @@ impl AstNode for NamedArgumentList {
         kind == NAMED_ARGUMENT_LIST
     }
     fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        let syntax_list = syntax.into_list();
-        Self::can_cast(syntax.kind()).then(|| Self { syntax_list })
+        Self::can_cast(syntax.kind()).then(|| Self {
+            syntax_list: syntax.into_list(),
+        })
     }
     fn syntax(&self) -> &SyntaxNode<Self::Language> {
         self.syntax_list.node()
@@ -7771,8 +7791,9 @@ impl AstNode for UnqualifiedNamedArgumentList {
         kind == UNQUALIFIED_NAMED_ARGUMENT_LIST
     }
     fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        let syntax_list = syntax.into_list();
-        Self::can_cast(syntax.kind()).then(|| Self { syntax_list })
+        Self::can_cast(syntax.kind()).then(|| Self {
+            syntax_list: syntax.into_list(),
+        })
     }
     fn syntax(&self) -> &SyntaxNode<Self::Language> {
         self.syntax_list.node()
@@ -8641,8 +8662,9 @@ impl AstNode for ExpressionList {
         kind == EXPRESSION_LIST
     }
     fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        let syntax_list = syntax.into_list();
-        Self::can_cast(syntax.kind()).then(|| Self { syntax_list })
+        Self::can_cast(syntax.kind()).then(|| Self {
+            syntax_list: syntax.into_list(),
+        })
     }
     fn syntax(&self) -> &SyntaxNode<Self::Language> {
         self.syntax_list.node()
