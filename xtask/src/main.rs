@@ -283,8 +283,7 @@ fn generate_dsl_syntax_node(spec: &SyntaxSpec) {
                         }
 
                         fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-                            let syntax_list = syntax.into_list();
-                            Self::can_cast(syntax.kind()).then(|| Self { syntax_list })
+                            Self::can_cast(syntax.kind()).then(|| Self { syntax_list: syntax.into_list() })
                         }
 
                         fn syntax(&self) -> &SyntaxNode<Self::Language> {
@@ -331,8 +330,7 @@ fn generate_dsl_syntax_node(spec: &SyntaxSpec) {
                         }
 
                         fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-                            let syntax_list = syntax.into_list();
-                            Self::can_cast(syntax.kind()).then(|| Self { syntax_list })
+                            Self::can_cast(syntax.kind()).then(|| Self { syntax_list: syntax.into_list() })
                         }
 
                         fn syntax(&self) -> &SyntaxNode<Self::Language> {
@@ -552,7 +550,7 @@ fn generate_dsl_syntax_node(spec: &SyntaxSpec) {
         use super::OscDslSyntaxKind::{self, *};
         use crate::syntax::OscDslLanguage;
         use biome_rowan::{
-            support, AstNode, RawSyntaxKind, SyntaxKindSet, SyntaxList, SyntaxNode, SyntaxResult, SyntaxToken
+            support, AstNode, AstNodeList, AstSeparatedList, RawSyntaxKind, SyntaxKindSet, SyntaxList, SyntaxNode, SyntaxResult, SyntaxToken
         };
 
         #(#ast_nodes)*
