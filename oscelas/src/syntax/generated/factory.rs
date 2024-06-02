@@ -5183,7 +5183,7 @@ impl SyntaxFactory for OscDslSyntaxFactory {
                     if matches!(
                         element.kind(),
                         EQUAL
-                            | NOT_EQUAL
+                            | NOT_EQ
                             | LESS
                             | LESS_EQ
                             | GREATER

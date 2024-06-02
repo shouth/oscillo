@@ -8427,7 +8427,7 @@ impl AstNode for LogicalOp {
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum BinaryOpKind {
     Equal,
-    NotEqual,
+    NotEq,
     Less,
     LessEq,
     Greater,
@@ -8447,7 +8447,7 @@ impl BinaryOp {
     pub fn kind(&self) -> BinaryOpKind {
         match self.syntax.kind() {
             EQUAL => BinaryOpKind::Equal,
-            NOT_EQUAL => BinaryOpKind::NotEqual,
+            NOT_EQ => BinaryOpKind::NotEq,
             LESS => BinaryOpKind::Less,
             LESS_EQ => BinaryOpKind::LessEq,
             GREATER => BinaryOpKind::Greater,
