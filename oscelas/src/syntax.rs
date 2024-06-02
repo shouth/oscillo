@@ -1,4 +1,4 @@
-mod generated;
+pub mod generated;
 
 use biome_rowan::{Language, RawSyntaxKind, SyntaxKind};
 use generated::OscFile;
