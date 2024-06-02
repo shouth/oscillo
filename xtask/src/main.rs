@@ -9,7 +9,9 @@ use std::{
 use clap::{command, Command};
 use convert_case::{Case, Casing};
 use quote::{format_ident, quote};
-use syntax_spec::{RuleOrToken, RuleSpecKind, SyntaxSpec, TokenSpecData, TokenSpecKind};
+use syntax_spec::{
+    RuleOrToken, RuleSpecData, RuleSpecKind, SyntaxSpec, TokenSpecData, TokenSpecKind,
+};
 use xshell::{cmd, Shell};
 
 fn project_root() -> PathBuf {
@@ -63,14 +65,19 @@ fn do_generate_char_set(ucd_path: &Path, out_path: &Path, var_name: &str, catego
         .expect("Failed to write char set");
 }
 
-impl TokenSpecData {
-    fn syntax_kind_name(&self) -> String {
-        match &self.kind {
-            TokenSpecKind::Punct { name } => format!("{}", name.to_case(Case::UpperSnake)),
-            TokenSpecKind::Keyword => format!("{}_KW", self.token.to_case(Case::UpperSnake)),
-            _ => format!("{}", self.token.to_case(Case::UpperSnake)),
-        }
+fn syntax_kind_name(data: &TokenSpecData) -> String {
+    match &data.kind {
+        TokenSpecKind::Punct { name } => format!("{}", name.to_case(Case::UpperSnake)),
+        TokenSpecKind::Keyword => format!("{}_KW", data.token.to_case(Case::UpperSnake)),
+        _ => format!("{}", data.token.to_case(Case::UpperSnake)),
     }
+}
+
+fn is_repitive_rule(data: &RuleSpecData) -> bool {
+    matches!(
+        data.kind,
+        RuleSpecKind::List { .. } | RuleSpecKind::SeparatedList { .. }
+    )
 }
 
 fn generate_dsl_syntax() {
@@ -88,7 +95,7 @@ fn generate_dsl_syntax_kinds(syntax: &SyntaxSpec) {
     let token_kind_idents = syntax
         .tokens
         .iter()
-        .map(|data| format_ident!("{}", data.syntax_kind_name()));
+        .map(|data| format_ident!("{}", syntax_kind_name(&data)));
 
     let rule_kind_idents = syntax
         .rules
@@ -99,7 +106,7 @@ fn generate_dsl_syntax_kinds(syntax: &SyntaxSpec) {
         .rules
         .iter()
         .zip(rule_kind_idents.clone())
-        .filter_map(|(data, ident)| matches!(data.kind, RuleSpecKind::List { .. }).then(|| ident));
+        .filter_map(|(data, ident)| is_repitive_rule(data).then(|| ident));
 
     let to_string_arms = syntax
         .tokens
@@ -186,7 +193,7 @@ fn generate_dsl_syntax_node(spec: &SyntaxSpec) {
                         }
                         RuleOrToken::Rule(rule) => {
                             let node = format_ident!("{}", spec[*rule].name.to_case(Case::Pascal));
-                            if matches!(&spec[*rule].kind, RuleSpecKind::List {..} | RuleSpecKind::SeparatedList { .. }) {
+                            if is_repitive_rule(&spec[*rule]) {
                                 quote! { #node }
                             } else if item.mandatory {
                                 quote! { SyntaxResult<#node> }
@@ -204,7 +211,7 @@ fn generate_dsl_syntax_node(spec: &SyntaxSpec) {
                             }
                         }
                         RuleOrToken::Rule(rule) => {
-                            if matches!(&spec[*rule].kind, RuleSpecKind::List {..} | RuleSpecKind::SeparatedList { .. }) {
+                            if is_repitive_rule(&spec[*rule]) {
                                 quote! { support::list }
                             } else if item.mandatory {
                                 quote! { support::required_node }
@@ -429,7 +436,7 @@ fn generate_dsl_syntax_node(spec: &SyntaxSpec) {
                 let kind_arms = variants.iter()
                     .zip(variant_item_idents.clone())
                     .map(|(item, item_ident)| {
-                        let key = format_ident!("{}", spec[item.token].syntax_kind_name());
+                        let key = format_ident!("{}", syntax_kind_name(&spec[item.token]));
                         quote! { #key => #variant_kind_ident::#item_ident }
                     });
 
@@ -524,7 +531,7 @@ fn generate_dsl_syntax_factory(spec: &SyntaxSpec) {
                                     }
                                 }
                                 RuleOrToken::Token(token) => {
-                                    let token_kind_ident = format_ident!("{}", spec[*token].syntax_kind_name());
+                                    let token_kind_ident = format_ident!("{}", syntax_kind_name(&spec[*token]));
                                     quote! {
                                         element.kind() == #token_kind_ident
                                     }
@@ -562,7 +569,7 @@ fn generate_dsl_syntax_factory(spec: &SyntaxSpec) {
                 }
                 RuleSpecKind::SeparatedList { separator, element, allow_trailing } => {
                     let rule_ident = format_ident!("{}", spec[*element].name.to_case(Case::Pascal));
-                    let separator_kind_ident = format_ident!("{}", spec[*separator].syntax_kind_name());
+                    let separator_kind_ident = format_ident!("{}", syntax_kind_name(&spec[*separator]));
                     quote! {
                         Self::make_separated_list_syntax(kind, children, #rule_ident::can_cast, #separator_kind_ident, #allow_trailing)
                     }
@@ -571,7 +578,7 @@ fn generate_dsl_syntax_factory(spec: &SyntaxSpec) {
                     let slot_size = variants.len();
                     let token_kind_idents = variants
                         .iter()
-                        .map(|item| format_ident!("{}", spec[item.token].syntax_kind_name()));
+                        .map(|item| format_ident!("{}", syntax_kind_name(&spec[item.token])));
 
                     quote! {{
                         let mut elements = (&children).into_iter();
