@@ -356,15 +356,26 @@ impl OscDslSyntaxKind {
             self,
             PRELUDE_STATEMENT_LIST
                 | MAIN_STATEMENT_LIST
+                | STRUCTURED_IDENTIFIER
+                | NAMESPACE_LIST
+                | EXPORT_SPECIFICATION_LIST
+                | SI_BASE_EXPONENT_LIST
+                | ENUM_MEMBER_DECL_LIST
                 | STRUCT_MEMBER_DECL_LIST
                 | ACTOR_MEMBER_DECL_LIST
                 | SCENARIO_MEMBER_ITEM_LIST
                 | ACTION_MEMBER_ITEM_LIST
                 | MODIFIER_MEMBER_ITEM_LIST
                 | EXTENDABLE_MEMBER_DECL_LIST
+                | ARGUMENT_LIST_SPECIFICATION
+                | FIELD_NAME_LIST
                 | ON_MEMBER_LIST
                 | DO_MEMBER_LIST
                 | BEHAVIOR_WITH_MEMBER_LIST
+                | POSITIONAL_ARGUMENT_LIST
+                | NAMED_ARGUMENT_LIST
+                | UNQUALIFIED_NAMED_ARGUMENT_LIST
+                | EXPRESSION_LIST
         )
     }
     pub fn to_string(self) -> Option<&'static str> {
