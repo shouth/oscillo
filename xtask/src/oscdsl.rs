@@ -18,7 +18,7 @@ const PUNCTUAIONS: &[(&str, &str)] = &[
     ("!", "exclamation"),
     ("=>", "fat_arrow"),
     ("==", "equal"),
-    ("!=", "not_equal"),
+    ("!=", "not_eq"),
     ("<", "less"),
     ("<=", "less_eq"),
     (">", "greater"),
@@ -110,7 +110,7 @@ const KEYWORDS: &[&str] = &[
 
 const LITERALS: &[&str] = &["integer_literal", "float_literal", "string_literal"];
 
-const TOKENS: &[&str] = &["newline", "indent", "dedent", "identifier"];
+const TOKENS: &[&str] = &["newline", "indent", "dedent", "identifier", "error"];
 
 const TRIVIALS: &[&str] = &["whitespace", "comment", "nonlogical_newline"];
 
