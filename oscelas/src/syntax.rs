@@ -1,63 +1,41 @@
-pub mod generated;
+mod generated;
 
-use biome_rowan::{Language, RawSyntaxKind, SyntaxKind};
-use generated::OscFile;
+pub use generated::*;
 
-use self::generated::OscDslSyntaxKind;
+pub trait TypedNode: Sized {
+    type Value;
+    type Node;
 
-impl From<u16> for OscDslSyntaxKind {
-    fn from(v: u16) -> Self {
-        assert!(v <= OscDslSyntaxKind::__LAST as u16);
-        unsafe { std::mem::transmute::<u16, OscDslSyntaxKind>(v) }
-    }
+    fn can_cast(value: Self::Value) -> bool;
+    fn cast(node: Self::Node) -> Option<Self>;
+    fn syntax(&self) -> &Self::Node;
 }
 
-impl From<OscDslSyntaxKind> for u16 {
-    fn from(v: OscDslSyntaxKind) -> Self {
-        v as u16
-    }
-}
+pub mod support {
+    use syntree::{pointer::Width, Node};
 
-#[doc(hidden)]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct OscDslLanguage;
+    use super::TypedNode;
 
-impl Language for OscDslLanguage {
-    type Kind = OscDslSyntaxKind;
-
-    type Root = OscFile;
-}
-
-impl SyntaxKind for OscDslSyntaxKind {
-    const TOMBSTONE: Self = OscDslSyntaxKind::TOMBSTONE;
-
-    const EOF: Self = OscDslSyntaxKind::EOF;
-
-    fn is_bogus(&self) -> bool {
-        *self == OscDslSyntaxKind::BOGUS
+    pub fn child<'a, T, I, W, N>(node: &Node<'a, T, I, W>, index: usize) -> Option<N>
+    where
+        T: Copy,
+        W: Width,
+        N: TypedNode<Value = T, Node = Node<'a, T, I, W>>
+    {
+        node.children()
+            .filter(|c| N::can_cast(*c.value()))
+            .nth(index)
+            .and_then(|c| N::cast(c.clone()))
     }
 
-    fn to_bogus(&self) -> Self {
-        OscDslSyntaxKind::BOGUS
-    }
-
-    fn to_raw(&self) -> RawSyntaxKind {
-        RawSyntaxKind(*self as u16)
-    }
-
-    fn from_raw(raw: RawSyntaxKind) -> Self {
-        Self::from(raw.0)
-    }
-
-    fn is_root(&self) -> bool {
-        *self == OscDslSyntaxKind::OSC_FILE
-    }
-
-    fn is_list(&self) -> bool {
-        OscDslSyntaxKind::is_list(*self)
-    }
-
-    fn to_string(&self) -> Option<&'static str> {
-        OscDslSyntaxKind::to_string(*self)
+    pub fn children<'a, T, I, W, N>(node: &Node<'a, T, I, W>) -> impl Iterator<Item = N> + 'a
+    where
+        T: Copy,
+        W: Width + 'a,
+        N: TypedNode<Value = T, Node = Node<'a, T, I, W>>
+    {
+        node.children()
+            .filter(|c| N::can_cast(*c.value()))
+            .filter_map(|c| N::cast(c.clone()))
     }
 }
