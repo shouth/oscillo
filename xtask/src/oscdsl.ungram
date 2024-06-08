@@ -11,16 +11,6 @@
 //   label:A     -- suggested name for field of AST node
 
 
-SyntaxElement =
-  SyntaxElement
-
-Bogus =
-  SyntaxElement
-
-Empty =
-  'newline'
-
-
 // Keywords and identifiers
 
 QualifiedIdentifier =
@@ -79,10 +69,7 @@ ImportReferenceString =
   'string_literal'
 
 StructuredIdentifier =
-  StructuredIdentifierElement ('.' StructuredIdentifierElement)*
-
-StructuredIdentifierElement =
-  'identifier'
+  'identifier' ('.' 'identifier')*
 
 
 // Main statements
@@ -245,7 +232,7 @@ EnumValueReferencePrefix =
 // Structs
 
 StructDeclaration =
-  'struct' StructName StructInheritsClause? StructBodyOrEmpty
+  'struct' StructName StructInheritsClause? StructBodyOrNewline
 
 StructInheritsClause =
   'inherits' StructName StructInheritsCondition?
@@ -257,8 +244,8 @@ StructInheritsConstant =
   EnumValueReference
 | BoolLiteral
 
-StructBodyOrEmpty =
-  StructBody | Empty
+StructBodyOrNewline =
+  StructBody | 'newline'
 
 StructBody =
   ':' 'newline' 'indent' StructMemberDeclList 'dedent'
@@ -283,7 +270,7 @@ FieldName =
 // Actors
 
 ActorDeclaration =
-  'actor' ActorName ActorInheritsClause? ActorBodyOrEmpty
+  'actor' ActorName ActorInheritsClause? ActorBodyOrNewline
 
 ActorInheritsClause =
   'inherits' ActorName ActorInheritsCondition?
@@ -295,8 +282,8 @@ ActorInheritsConstant =
   EnumValueReference
 | BoolLiteral
 
-ActorBodyOrEmpty =
-  ActorBody | Empty
+ActorBodyOrNewline =
+  ActorBody | 'newline'
 
 ActorBody =
   ':' 'newline' 'indent' ActorMemberDeclList 'dedent'
@@ -318,7 +305,7 @@ ActorName =
 // Scenarios
 
 ScenarioDeclaration =
-  'scenario' QualifiedBehaviorName ScenarioInheritsClause? ScenarioBodyOrEmpty
+  'scenario' QualifiedBehaviorName ScenarioInheritsClause? ScenarioBodyOrNewline
 
 ScenarioInheritsClause =
   'inherits' QualifiedBehaviorName ScenarioInheritsCondition?
@@ -330,8 +317,8 @@ ScenarioInheritsConstant =
   EnumValueReference
 | BoolLiteral
 
-ScenarioBodyOrEmpty =
-  ScenarioBody | Empty
+ScenarioBodyOrNewline =
+  ScenarioBody | 'newline'
 
 ScenarioBody =
   ':' 'newline' 'indent' ScenarioMemberItemList 'dedent'
@@ -363,10 +350,10 @@ BehaviorName =
 // Actions
 
 ActionDeclaration =
-  'action' QualifiedBehaviorName ActionInheritsClause? ActionBodyOrEmpty
+  'action' QualifiedBehaviorName ActionInheritsClause? ActionBodyOrNewline
 
-ActionBodyOrEmpty =
-  ActionBody | Empty
+ActionBodyOrNewline =
+  ActionBody | 'newline'
 
 ActionInheritsClause =
   'inherits' QualifiedBehaviorName ActionInheritsCondition?
@@ -391,7 +378,7 @@ ActionMemberItem =
 // Modifiers
 
 ModifierDeclaration =
-  'modifier' ModifierNamePrefix? ModifierName ModifierOfClause? ModifierBodyOrEmpty
+  'modifier' ModifierNamePrefix? ModifierName ModifierOfClause? ModifierBodyOrNewline
 
 ModifierNamePrefix =
   ActorName '.'
@@ -402,8 +389,8 @@ ModifierName =
 ModifierOfClause =
   'of' QualifiedBehaviorName
 
-ModifierBodyOrEmpty =
-  ModifierBody | Empty
+ModifierBodyOrNewline =
+  ModifierBody | 'newline'
 
 ModifierBody =
   ':' 'newline' 'indent' ModifierMemberItemList 'dedent'
@@ -524,7 +511,7 @@ FieldDeclaration =
 | VariableDeclaration
 
 ParameterDeclaration =
-  FieldNameList ':' TypeDeclarator ParameterInitilizerClause? ParameterWithDeclarationOrEmpty
+  FieldNameList ':' TypeDeclarator ParameterInitilizerClause? ParameterWithDeclarationOrNewline
 
 FieldNameList =
   FieldName (',' FieldName)*
@@ -551,8 +538,8 @@ SampleDefaultValue =
 DefaultValue =
   Expression
 
-ParameterWithDeclarationOrEmpty =
-  ParameterWithDeclaration | Empty
+ParameterWithDeclarationOrNewline =
+  ParameterWithDeclaration | 'newline'
 
 ParameterWithDeclaration =
   'with' ':' 'newline' 'indent' ParameterWithMember 'dedent'
@@ -694,13 +681,13 @@ CompositionOperator =
 // Behavior invocation
 
 BehaviorInvocation =
-  BehaviorInvocationPrefix? BehaviorName '(' ArgumentList? ')' BehaviorWithDeclarationOrEmpty
+  BehaviorInvocationPrefix? BehaviorName '(' ArgumentList? ')' BehaviorWithDeclarationOrNewline
 
 BehaviorInvocationPrefix =
   ActorExpression '.'
 
-BehaviorWithDeclarationOrEmpty =
-  BehaviorWithDeclaration | Empty
+BehaviorWithDeclarationOrNewline =
+  BehaviorWithDeclaration | 'newline'
 
 BehaviorWithDeclaration =
   'with' ':' 'newline' 'indent' BehaviorWithMemberList 'dedent'

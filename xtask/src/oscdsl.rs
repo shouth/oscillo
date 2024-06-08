@@ -1,7 +1,8 @@
-use crate::syntax_spec::{SyntaxSpec, TokenSet};
-use ungrammar::Grammar;
+use crate::{grammar::{Grammar, Terminal}, syntax_name::{SyntaxKindName, SyntaxMemberName, SyntaxNodeName}};
+use convert_case::{Case, Casing};
+use ungrammar::Grammar as Ungrammar;
 
-const PUNCTUAIONS: &[(&str, &str)] = &[
+const PUNCTS: &[(&str, &str)] = &[
     (".", "dot"),
     ("..", "dot_dot"),
     (",", "comma"),
@@ -10,19 +11,19 @@ const PUNCTUAIONS: &[(&str, &str)] = &[
     ("=", "assign"),
     ("@", "at"),
     ("->", "arrow"),
-    ("(", "l_paren"),
-    (")", "r_paren"),
-    ("[", "l_bracket"),
-    ("]", "r_bracket"),
+    ("(", "left_paren"),
+    (")", "right_paren"),
+    ("[", "left_bracket"),
+    ("]", "right_bracket"),
     ("?", "question"),
     ("!", "exclamation"),
     ("=>", "fat_arrow"),
     ("==", "equal"),
-    ("!=", "not_eq"),
+    ("!=", "not_equal"),
     ("<", "less"),
-    ("<=", "less_eq"),
+    ("<=", "less_equal"),
     (">", "greater"),
-    (">=", "greater_eq"),
+    (">=", "greater_equal"),
     ("+", "plus"),
     ("-", "minus"),
     ("*", "star"),
@@ -114,19 +115,61 @@ const TOKENS: &[&str] = &["newline", "indent", "dedent", "identifier", "error"];
 
 const TRIVIALS: &[&str] = &["whitespace", "comment", "nonlogical_newline"];
 
-pub fn load_grammar() -> Result<Grammar, Box<dyn std::error::Error>> {
-    let content = include_str!("oscdsl.ungram");
-    content.parse::<Grammar>().map_err(Into::into)
+pub struct Token {
+    name: String,
+    terminal: String,
+    kind: TokenKind,
 }
 
-pub fn load_spec() -> Result<SyntaxSpec, Box<dyn std::error::Error>> {
-    let grammar = load_grammar()?;
-    let token_set = TokenSet {
-        punctuations: PUNCTUAIONS,
-        keywords: KEYWORDS,
-        literals: LITERALS,
-        tokens: TOKENS,
-        trivials: TRIVIALS,
-    };
-    (&grammar, &token_set).try_into()
+impl Terminal for Token {
+    fn terminal(&self) -> &str {
+        &self.terminal
+    }
+}
+
+impl SyntaxKindName for Token {
+    fn syntax_kind_name(&self) -> String {
+        match &self.kind {
+            TokenKind::Keyword => format!("{}_KW", self.name.to_case(Case::UpperSnake)),
+            _ => self.name.to_case(Case::UpperSnake),
+        }
+    }
+}
+
+impl SyntaxNodeName for Token {
+    fn syntax_node_name(&self) -> String {
+        format!("{}Token", self.name.to_case(Case::UpperCamel))
+    }
+}
+
+impl SyntaxMemberName for Token {
+    fn syntax_member_name(&self) -> String {
+        format!("{}_token", self.name.to_case(Case::Snake))
+    }
+}
+
+pub enum TokenKind {
+    Punctuation,
+    Keyword,
+    Literal,
+    Token,
+    Trivial,
+}
+
+pub fn grammar() -> Grammar<Token> {
+    let ungrammar = include_str!("oscdsl.ungram");
+    let ungrammar = ungrammar.parse::<Ungrammar>().unwrap();
+    let tokens = std::iter::empty()
+        .chain(PUNCTS.iter().map(|x| (x.1, x.0, TokenKind::Punctuation)))
+        .chain(KEYWORDS.iter().map(|&x| (x, x, TokenKind::Keyword)))
+        .chain(LITERALS.iter().map(|&x| (x, x, TokenKind::Literal)))
+        .chain(TOKENS.iter().map(|&data| (data, data, TokenKind::Token)))
+        .chain(TRIVIALS.iter().map(|&x| (x, x, TokenKind::Trivial)))
+        .map(|(name, terminal, kind)| Token {
+            name: name.to_string(),
+            terminal: terminal.to_string(),
+            kind,
+        })
+        .collect();
+    Grammar::try_new(&ungrammar, tokens).unwrap()
 }
