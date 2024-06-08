@@ -1,830 +1,2283 @@
 use super::OscDslSyntaxKind::{self, *};
-use crate::syntax::OscDslLanguage;
-use biome_rowan::{
-    support, AstNode, AstNodeList, AstSeparatedList, RawSyntaxKind, SyntaxKindSet, SyntaxList,
-    SyntaxNode, SyntaxResult, SyntaxToken,
-};
+use crate::syntax::{support, TypedNode};
+use syntree::Node;
+type OscDslNode<'a> = Node<'a, OscDslSyntaxKind, u32, u32>;
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct SyntaxElement {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl SyntaxElement {
-    pub fn syntax_element(&self) -> SyntaxResult<SyntaxElement> {
-        support::required_node(&self.syntax, 0usize)
+pub struct DotToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for DotToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == DOT
     }
-}
-impl AstNode for SyntaxElement {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(SYNTAX_ELEMENT as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == SYNTAX_ELEMENT
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
-    }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Bogus {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl Bogus {
-    pub fn syntax_element(&self) -> SyntaxResult<SyntaxElement> {
-        support::required_node(&self.syntax, 0usize)
+pub struct DotDotToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for DotDotToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == DOT_DOT
     }
-}
-impl AstNode for Bogus {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(BOGUS as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == BOGUS
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
-    }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Empty {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl Empty {
-    pub fn newline_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
+pub struct CommaToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for CommaToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == COMMA
     }
-}
-impl AstNode for Empty {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(EMPTY as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == EMPTY
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
-    }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct QualifiedIdentifier {
-    syntax: SyntaxNode<OscDslLanguage>,
+pub struct ColonToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for ColonToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == COLON
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
 }
-impl QualifiedIdentifier {
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ColonColonToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for ColonColonToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == COLON_COLON
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct AssignToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for AssignToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == ASSIGN
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct AtToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for AtToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == AT
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ArrowToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for ArrowToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == ARROW
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct LeftParenToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for LeftParenToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == LEFT_PAREN
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct RightParenToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for RightParenToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == RIGHT_PAREN
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct LeftBracketToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for LeftBracketToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == LEFT_BRACKET
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct RightBracketToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for RightBracketToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == RIGHT_BRACKET
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct QuestionToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for QuestionToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == QUESTION
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ExclamationToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for ExclamationToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == EXCLAMATION
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct FatArrowToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for FatArrowToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == FAT_ARROW
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct EqualToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for EqualToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == EQUAL
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct NotEqualToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for NotEqualToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == NOT_EQUAL
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct LessToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for LessToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == LESS
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct LessEqualToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for LessEqualToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == LESS_EQUAL
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct GreaterToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for GreaterToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == GREATER
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct GreaterEqualToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for GreaterEqualToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == GREATER_EQUAL
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct PlusToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for PlusToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == PLUS
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct MinusToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for MinusToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == MINUS
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct StarToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for StarToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == STAR
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SlashToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for SlashToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == SLASH
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct PercentToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for PercentToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == PERCENT
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct AToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for AToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == A_KW
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ActionToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for ActionToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == ACTION_KW
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ActorToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for ActorToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == ACTOR_KW
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct AndToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for AndToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == AND_KW
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct AsToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for AsToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == AS_KW
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct BoolToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for BoolToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == BOOL_KW
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct CallToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for CallToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == CALL_KW
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct CdToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for CdToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == CD_KW
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct CoverToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for CoverToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == COVER_KW
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct DefToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for DefToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == DEF_KW
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct DefaultToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for DefaultToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == DEFAULT_KW
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct DoToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for DoToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == DO_KW
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ElapsedToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for ElapsedToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == ELAPSED_KW
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct EmitToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for EmitToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == EMIT_KW
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct EnumToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for EnumToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == ENUM_KW
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct EventToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for EventToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == EVENT_KW
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct EveryToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for EveryToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == EVERY_KW
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ExportToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for ExportToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == EXPORT_KW
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ExpressionToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for ExpressionToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == EXPRESSION_KW
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ExtendToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for ExtendToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == EXTEND_KW
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ExternalToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for ExternalToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == EXTERNAL_KW
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct FactorToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for FactorToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == FACTOR_KW
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct FallToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for FallToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == FALL_KW
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct FalseToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for FalseToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == FALSE_KW
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct FloatToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for FloatToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == FLOAT_KW
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct GlobalToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for GlobalToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == GLOBAL_KW
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct HardToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for HardToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == HARD_KW
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct IfToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for IfToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == IF_KW
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ImportToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for ImportToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == IMPORT_KW
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct InToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for InToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == IN_KW
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct InfToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for InfToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == INF_KW
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct InheritsToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for InheritsToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == INHERITS_KW
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct IntToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for IntToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == INT_KW
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct IsToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for IsToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == IS_KW
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ItToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for ItToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == IT_KW
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct KToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for KToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == K_KW
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct KeepToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for KeepToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == KEEP_KW
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct KgToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for KgToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == KG_KW
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ListToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for ListToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == LIST_KW
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct MToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for MToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == M_KW
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ModifierToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for ModifierToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == MODIFIER_KW
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct MolToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for MolToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == MOL_KW
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct NamespaceToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for NamespaceToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == NAMESPACE_KW
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct NanToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for NanToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == NAN_KW
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct NotToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for NotToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == NOT_KW
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct NullToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for NullToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == NULL_KW
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct OfToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for OfToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == OF_KW
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct OffsetToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for OffsetToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == OFFSET_KW
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct OnToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for OnToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == ON_KW
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct OneOfToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for OneOfToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == ONE_OF_KW
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct OnlyToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for OnlyToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == ONLY_KW
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct OrToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for OrToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == OR_KW
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ParallelToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for ParallelToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == PARALLEL_KW
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct RadToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for RadToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == RAD_KW
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct RangeToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for RangeToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == RANGE_KW
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct RecordToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for RecordToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == RECORD_KW
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct RemoveDefaultToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for RemoveDefaultToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == REMOVE_DEFAULT_KW
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct RiseToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for RiseToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == RISE_KW
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for SToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == S_KW
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SampleToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for SampleToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == SAMPLE_KW
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ScenarioToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for ScenarioToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == SCENARIO_KW
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SerialToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for SerialToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == SERIAL_KW
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SiToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for SiToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == SI_KW
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct StringToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for StringToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == STRING_KW
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct StructToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for StructToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == STRUCT_KW
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct TrueToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for TrueToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == TRUE_KW
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct TypeToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for TypeToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == TYPE_KW
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct UintToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for UintToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == UINT_KW
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct UndefinedToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for UndefinedToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == UNDEFINED_KW
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct UnitToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for UnitToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == UNIT_KW
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct UntilToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for UntilToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == UNTIL_KW
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct UseToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for UseToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == USE_KW
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct VarToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for VarToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == VAR_KW
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct WaitToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for WaitToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == WAIT_KW
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct WithToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for WithToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == WITH_KW
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct IntegerLiteralToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for IntegerLiteralToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == INTEGER_LITERAL
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct FloatLiteralToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for FloatLiteralToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == FLOAT_LITERAL
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct StringLiteralToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for StringLiteralToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == STRING_LITERAL
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct NewlineToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for NewlineToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == NEWLINE
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct IndentToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for IndentToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == INDENT
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct DedentToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for DedentToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == DEDENT
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct IdentifierToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for IdentifierToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == IDENTIFIER
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ErrorToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for ErrorToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == ERROR
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct WhitespaceToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for WhitespaceToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == WHITESPACE
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct CommentToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for CommentToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == COMMENT
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct NonlogicalNewlineToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for NonlogicalNewlineToken<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == NONLOGICAL_NEWLINE
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct QualifiedIdentifier<'a>(OscDslNode<'a>);
+impl QualifiedIdentifier<'_> {
     pub fn identifier_prefix(&self) -> Option<IdentifierPrefix> {
-        support::node(&self.syntax, 0usize)
+        support::child(&self.0, 0usize)
     }
-    pub fn identifier_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 1usize)
+    pub fn identifier_token(&self) -> Option<IdentifierToken> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for QualifiedIdentifier {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(QUALIFIED_IDENTIFIER as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == QUALIFIED_IDENTIFIER
+impl<'a> TypedNode for QualifiedIdentifier<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == QUALIFIED_IDENTIFIER
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct IdentifierPrefix {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl IdentifierPrefix {
+pub struct IdentifierPrefix<'a>(OscDslNode<'a>);
+impl IdentifierPrefix<'_> {
     pub fn namespace_name(&self) -> Option<NamespaceName> {
-        support::node(&self.syntax, 0usize)
+        support::child(&self.0, 0usize)
     }
-    pub fn colon_colon_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 1usize)
+    pub fn colon_colon_token(&self) -> Option<ColonColonToken> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for IdentifierPrefix {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(IDENTIFIER_PREFIX as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == IDENTIFIER_PREFIX
+impl<'a> TypedNode for IdentifierPrefix<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == IDENTIFIER_PREFIX
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum NamespaceName {
-    SimpleNamespaceName(SimpleNamespaceName),
-    GlobalNamespaceName(GlobalNamespaceName),
+pub enum NamespaceName<'a> {
+    SimpleNamespaceName(SimpleNamespaceName<'a>),
+    GlobalNamespaceName(GlobalNamespaceName<'a>),
 }
-impl NamespaceName {
-    pub fn as_simple_namespace_name(&self) -> Option<&SimpleNamespaceName> {
+impl NamespaceName<'_> {
+    pub fn as_simple_namespace_name(&self) -> Option<SimpleNamespaceName> {
         match self {
-            NamespaceName::SimpleNamespaceName(node) => Some(node),
+            Self::SimpleNamespaceName(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_global_namespace_name(&self) -> Option<&GlobalNamespaceName> {
+    pub fn as_global_namespace_name(&self) -> Option<GlobalNamespaceName> {
         match self {
-            NamespaceName::GlobalNamespaceName(node) => Some(node),
+            Self::GlobalNamespaceName(node) => Some(node.clone()),
             _ => None,
         }
     }
 }
-impl AstNode for NamespaceName {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SimpleNamespaceName::KIND_SET.union(GlobalNamespaceName::KIND_SET);
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        matches!(kind, SIMPLE_NAMESPACE_NAME | GLOBAL_NAMESPACE_NAME)
+impl<'a> TypedNode for NamespaceName<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        matches!(value, SIMPLE_NAMESPACE_NAME | GLOBAL_NAMESPACE_NAME)
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        let result = match syntax.kind() {
-            SIMPLE_NAMESPACE_NAME => Self::SimpleNamespaceName(SimpleNamespaceName::cast(syntax)?),
-            GLOBAL_NAMESPACE_NAME => Self::GlobalNamespaceName(GlobalNamespaceName::cast(syntax)?),
-            _ => return None,
-        };
-        Some(result)
+    fn cast(node: Self::Node) -> Option<Self> {
+        match *node.value() {
+            SIMPLE_NAMESPACE_NAME => {
+                SimpleNamespaceName::cast(node.clone()).map(Self::SimpleNamespaceName)
+            }
+            GLOBAL_NAMESPACE_NAME => {
+                GlobalNamespaceName::cast(node.clone()).map(Self::GlobalNamespaceName)
+            }
+            _ => None,
+        }
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        match &self {
+    fn syntax(&self) -> &Self::Node {
+        match self {
             Self::SimpleNamespaceName(node) => node.syntax(),
             Self::GlobalNamespaceName(node) => node.syntax(),
         }
     }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum BoolLiteral<'a> {
+    TrueToken(TrueToken<'a>),
+    FalseToken(FalseToken<'a>),
+}
+impl BoolLiteral<'_> {
+    pub fn as_true_token(&self) -> Option<TrueToken> {
         match self {
-            Self::SimpleNamespaceName(node) => node.into_syntax(),
-            Self::GlobalNamespaceName(node) => node.into_syntax(),
-        }
-    }
-}
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
-pub enum BoolLiteralKind {
-    True,
-    False,
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct BoolLiteral {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl BoolLiteral {
-    pub fn kind(&self) -> BoolLiteralKind {
-        match self.syntax.kind() {
-            TRUE_KW => BoolLiteralKind::True,
-            FALSE_KW => BoolLiteralKind::False,
-            _ => unreachable!(),
-        }
-    }
-    pub fn token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
-    }
-}
-impl AstNode for BoolLiteral {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(BOOL_LITERAL as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == BOOL_LITERAL
-    }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
-    }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct PhysicalLiteral {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl PhysicalLiteral {
-    pub fn number_literal(&self) -> SyntaxResult<NumberLiteral> {
-        support::required_node(&self.syntax, 0usize)
-    }
-    pub fn unit_name(&self) -> SyntaxResult<UnitName> {
-        support::required_node(&self.syntax, 1usize)
-    }
-}
-impl AstNode for PhysicalLiteral {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(PHYSICAL_LITERAL as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == PHYSICAL_LITERAL
-    }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
-    }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
-    }
-}
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
-pub enum NumberLiteralKind {
-    FloatLiteral,
-    IntegerLiteral,
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct NumberLiteral {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl NumberLiteral {
-    pub fn kind(&self) -> NumberLiteralKind {
-        match self.syntax.kind() {
-            FLOAT_LITERAL => NumberLiteralKind::FloatLiteral,
-            INTEGER_LITERAL => NumberLiteralKind::IntegerLiteral,
-            _ => unreachable!(),
-        }
-    }
-    pub fn token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
-    }
-}
-impl AstNode for NumberLiteral {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(NUMBER_LITERAL as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == NUMBER_LITERAL
-    }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
-    }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct UnitName {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl UnitName {
-    pub fn qualified_identifier(&self) -> SyntaxResult<QualifiedIdentifier> {
-        support::required_node(&self.syntax, 0usize)
-    }
-}
-impl AstNode for UnitName {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(UNIT_NAME as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == UNIT_NAME
-    }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
-    }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct OscFile {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl OscFile {
-    pub fn prelude_statement_list(&self) -> PreludeStatementList {
-        support::list(&self.syntax, 0usize)
-    }
-    pub fn main_statement_list(&self) -> MainStatementList {
-        support::list(&self.syntax, 1usize)
-    }
-}
-impl AstNode for OscFile {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(OSC_FILE as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == OSC_FILE
-    }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
-    }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct PreludeStatementList {
-    syntax_list: SyntaxList<OscDslLanguage>,
-}
-impl AstNode for PreludeStatementList {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(PRELUDE_STATEMENT_LIST as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == PRELUDE_STATEMENT_LIST
-    }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self {
-            syntax_list: syntax.into_list(),
-        })
-    }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        self.syntax_list.node()
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax_list.into_node()
-    }
-}
-impl AstNodeList for PreludeStatementList {
-    type Language = OscDslLanguage;
-    type Node = PreludeStatement;
-    fn syntax_list(&self) -> &SyntaxList<OscDslLanguage> {
-        &self.syntax_list
-    }
-    fn into_syntax_list(self) -> SyntaxList<OscDslLanguage> {
-        self.syntax_list
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct MainStatementList {
-    syntax_list: SyntaxList<OscDslLanguage>,
-}
-impl AstNode for MainStatementList {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(MAIN_STATEMENT_LIST as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == MAIN_STATEMENT_LIST
-    }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self {
-            syntax_list: syntax.into_list(),
-        })
-    }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        self.syntax_list.node()
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax_list.into_node()
-    }
-}
-impl AstNodeList for MainStatementList {
-    type Language = OscDslLanguage;
-    type Node = MainStatement;
-    fn syntax_list(&self) -> &SyntaxList<OscDslLanguage> {
-        &self.syntax_list
-    }
-    fn into_syntax_list(self) -> SyntaxList<OscDslLanguage> {
-        self.syntax_list
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct PreludeStatement {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl PreludeStatement {
-    pub fn import_statement(&self) -> SyntaxResult<ImportStatement> {
-        support::required_node(&self.syntax, 0usize)
-    }
-}
-impl AstNode for PreludeStatement {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(PRELUDE_STATEMENT as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == PRELUDE_STATEMENT
-    }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
-    }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum MainStatement {
-    NamespaceStatement(NamespaceStatement),
-    ExportStatement(ExportStatement),
-    OscDeclaration(OscDeclaration),
-}
-impl MainStatement {
-    pub fn as_namespace_statement(&self) -> Option<&NamespaceStatement> {
-        match self {
-            MainStatement::NamespaceStatement(node) => Some(node),
+            Self::TrueToken(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_export_statement(&self) -> Option<&ExportStatement> {
+    pub fn as_false_token(&self) -> Option<FalseToken> {
         match self {
-            MainStatement::ExportStatement(node) => Some(node),
-            _ => None,
-        }
-    }
-    pub fn as_osc_declaration(&self) -> Option<&OscDeclaration> {
-        match self {
-            MainStatement::OscDeclaration(node) => Some(node),
+            Self::FalseToken(node) => Some(node.clone()),
             _ => None,
         }
     }
 }
-impl AstNode for MainStatement {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> = NamespaceStatement::KIND_SET
-        .union(ExportStatement::KIND_SET)
-        .union(OscDeclaration::KIND_SET);
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
+impl<'a> TypedNode for BoolLiteral<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        matches!(value, TRUE_KW | FALSE_KW)
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        match *node.value() {
+            TRUE_KW => TrueToken::cast(node.clone()).map(Self::TrueToken),
+            FALSE_KW => FalseToken::cast(node.clone()).map(Self::FalseToken),
+            _ => None,
+        }
+    }
+    fn syntax(&self) -> &Self::Node {
+        match self {
+            Self::TrueToken(node) => node.syntax(),
+            Self::FalseToken(node) => node.syntax(),
+        }
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct PhysicalLiteral<'a>(OscDslNode<'a>);
+impl PhysicalLiteral<'_> {
+    pub fn number_literal(&self) -> Option<NumberLiteral> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn unit_name(&self) -> Option<UnitName> {
+        support::child(&self.0, 0usize)
+    }
+}
+impl<'a> TypedNode for PhysicalLiteral<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == PHYSICAL_LITERAL
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum NumberLiteral<'a> {
+    FloatLiteralToken(FloatLiteralToken<'a>),
+    IntegerLiteralToken(IntegerLiteralToken<'a>),
+}
+impl NumberLiteral<'_> {
+    pub fn as_float_literal_token(&self) -> Option<FloatLiteralToken> {
+        match self {
+            Self::FloatLiteralToken(node) => Some(node.clone()),
+            _ => None,
+        }
+    }
+    pub fn as_integer_literal_token(&self) -> Option<IntegerLiteralToken> {
+        match self {
+            Self::IntegerLiteralToken(node) => Some(node.clone()),
+            _ => None,
+        }
+    }
+}
+impl<'a> TypedNode for NumberLiteral<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        matches!(value, FLOAT_LITERAL | INTEGER_LITERAL)
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        match *node.value() {
+            FLOAT_LITERAL => FloatLiteralToken::cast(node.clone()).map(Self::FloatLiteralToken),
+            INTEGER_LITERAL => {
+                IntegerLiteralToken::cast(node.clone()).map(Self::IntegerLiteralToken)
+            }
+            _ => None,
+        }
+    }
+    fn syntax(&self) -> &Self::Node {
+        match self {
+            Self::FloatLiteralToken(node) => node.syntax(),
+            Self::IntegerLiteralToken(node) => node.syntax(),
+        }
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct UnitName<'a>(OscDslNode<'a>);
+impl UnitName<'_> {
+    pub fn qualified_identifier(&self) -> Option<QualifiedIdentifier> {
+        support::child(&self.0, 0usize)
+    }
+}
+impl<'a> TypedNode for UnitName<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == UNIT_NAME
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct OscFile<'a>(OscDslNode<'a>);
+impl OscFile<'_> {
+    pub fn prelude_statement_list(&self) -> Option<PreludeStatementList> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn main_statement_list(&self) -> Option<MainStatementList> {
+        support::child(&self.0, 0usize)
+    }
+}
+impl<'a> TypedNode for OscFile<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == OSC_FILE
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct PreludeStatementList<'a>(OscDslNode<'a>);
+impl<'a> PreludeStatementList<'a> {
+    pub fn prelude_statement(&self) -> impl Iterator<Item = PreludeStatement<'a>> + 'a {
+        support::children(&self.0)
+    }
+}
+impl<'a> TypedNode for PreludeStatementList<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == PRELUDE_STATEMENT_LIST
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct MainStatementList<'a>(OscDslNode<'a>);
+impl<'a> MainStatementList<'a> {
+    pub fn main_statement(&self) -> impl Iterator<Item = MainStatement<'a>> + 'a {
+        support::children(&self.0)
+    }
+}
+impl<'a> TypedNode for MainStatementList<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == MAIN_STATEMENT_LIST
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct PreludeStatement<'a>(OscDslNode<'a>);
+impl PreludeStatement<'_> {
+    pub fn import_statement(&self) -> Option<ImportStatement> {
+        support::child(&self.0, 0usize)
+    }
+}
+impl<'a> TypedNode for PreludeStatement<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == PRELUDE_STATEMENT
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum MainStatement<'a> {
+    NamespaceStatement(NamespaceStatement<'a>),
+    ExportStatement(ExportStatement<'a>),
+    OscDeclaration(OscDeclaration<'a>),
+}
+impl MainStatement<'_> {
+    pub fn as_namespace_statement(&self) -> Option<NamespaceStatement> {
+        match self {
+            Self::NamespaceStatement(node) => Some(node.clone()),
+            _ => None,
+        }
+    }
+    pub fn as_export_statement(&self) -> Option<ExportStatement> {
+        match self {
+            Self::ExportStatement(node) => Some(node.clone()),
+            _ => None,
+        }
+    }
+    pub fn as_osc_declaration(&self) -> Option<OscDeclaration> {
+        match self {
+            Self::OscDeclaration(node) => Some(node.clone()),
+            _ => None,
+        }
+    }
+}
+impl<'a> TypedNode for MainStatement<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
         matches!(
-            kind,
+            value,
             NAMESPACE_STATEMENT | EXPORT_STATEMENT | OSC_DECLARATION
         )
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        let result = match syntax.kind() {
-            NAMESPACE_STATEMENT => Self::NamespaceStatement(NamespaceStatement::cast(syntax)?),
-            EXPORT_STATEMENT => Self::ExportStatement(ExportStatement::cast(syntax)?),
-            OSC_DECLARATION => Self::OscDeclaration(OscDeclaration::cast(syntax)?),
-            _ => return None,
-        };
-        Some(result)
+    fn cast(node: Self::Node) -> Option<Self> {
+        match *node.value() {
+            NAMESPACE_STATEMENT => {
+                NamespaceStatement::cast(node.clone()).map(Self::NamespaceStatement)
+            }
+            EXPORT_STATEMENT => ExportStatement::cast(node.clone()).map(Self::ExportStatement),
+            OSC_DECLARATION => OscDeclaration::cast(node.clone()).map(Self::OscDeclaration),
+            _ => None,
+        }
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        match &self {
+    fn syntax(&self) -> &Self::Node {
+        match self {
             Self::NamespaceStatement(node) => node.syntax(),
             Self::ExportStatement(node) => node.syntax(),
             Self::OscDeclaration(node) => node.syntax(),
         }
     }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        match self {
-            Self::NamespaceStatement(node) => node.into_syntax(),
-            Self::ExportStatement(node) => node.into_syntax(),
-            Self::OscDeclaration(node) => node.into_syntax(),
-        }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ImportStatement<'a>(OscDslNode<'a>);
+impl ImportStatement<'_> {
+    pub fn import_token(&self) -> Option<ImportToken> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn import_reference(&self) -> Option<ImportReference> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn newline_token(&self) -> Option<NewlineToken> {
+        support::child(&self.0, 0usize)
+    }
+}
+impl<'a> TypedNode for ImportStatement<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == IMPORT_STATEMENT
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ImportStatement {
-    syntax: SyntaxNode<OscDslLanguage>,
+pub enum ImportReference<'a> {
+    ImportReferenceString(ImportReferenceString<'a>),
+    StructuredIdentifier(StructuredIdentifier<'a>),
 }
-impl ImportStatement {
-    pub fn import_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
-    }
-    pub fn import_reference(&self) -> SyntaxResult<ImportReference> {
-        support::required_node(&self.syntax, 1usize)
-    }
-    pub fn newline_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 2usize)
-    }
-}
-impl AstNode for ImportStatement {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(IMPORT_STATEMENT as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == IMPORT_STATEMENT
-    }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
-    }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum ImportReference {
-    ImportReferenceString(ImportReferenceString),
-    StructuredIdentifier(StructuredIdentifier),
-}
-impl ImportReference {
-    pub fn as_import_reference_string(&self) -> Option<&ImportReferenceString> {
+impl ImportReference<'_> {
+    pub fn as_import_reference_string(&self) -> Option<ImportReferenceString> {
         match self {
-            ImportReference::ImportReferenceString(node) => Some(node),
+            Self::ImportReferenceString(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_structured_identifier(&self) -> Option<&StructuredIdentifier> {
+    pub fn as_structured_identifier(&self) -> Option<StructuredIdentifier> {
         match self {
-            ImportReference::StructuredIdentifier(node) => Some(node),
+            Self::StructuredIdentifier(node) => Some(node.clone()),
             _ => None,
         }
     }
 }
-impl AstNode for ImportReference {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        ImportReferenceString::KIND_SET.union(StructuredIdentifier::KIND_SET);
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        matches!(kind, IMPORT_REFERENCE_STRING | STRUCTURED_IDENTIFIER)
+impl<'a> TypedNode for ImportReference<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        matches!(value, IMPORT_REFERENCE_STRING | STRUCTURED_IDENTIFIER)
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        let result = match syntax.kind() {
+    fn cast(node: Self::Node) -> Option<Self> {
+        match *node.value() {
             IMPORT_REFERENCE_STRING => {
-                Self::ImportReferenceString(ImportReferenceString::cast(syntax)?)
+                ImportReferenceString::cast(node.clone()).map(Self::ImportReferenceString)
             }
             STRUCTURED_IDENTIFIER => {
-                Self::StructuredIdentifier(StructuredIdentifier::cast(syntax)?)
+                StructuredIdentifier::cast(node.clone()).map(Self::StructuredIdentifier)
             }
-            _ => return None,
-        };
-        Some(result)
+            _ => None,
+        }
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        match &self {
+    fn syntax(&self) -> &Self::Node {
+        match self {
             Self::ImportReferenceString(node) => node.syntax(),
             Self::StructuredIdentifier(node) => node.syntax(),
         }
     }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        match self {
-            Self::ImportReferenceString(node) => node.into_syntax(),
-            Self::StructuredIdentifier(node) => node.into_syntax(),
-        }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ImportReferenceString<'a>(OscDslNode<'a>);
+impl ImportReferenceString<'_> {
+    pub fn string_literal_token(&self) -> Option<StringLiteralToken> {
+        support::child(&self.0, 0usize)
+    }
+}
+impl<'a> TypedNode for ImportReferenceString<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == IMPORT_REFERENCE_STRING
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ImportReferenceString {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl ImportReferenceString {
-    pub fn string_literal_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
+pub struct StructuredIdentifier<'a>(OscDslNode<'a>);
+impl<'a> StructuredIdentifier<'a> {
+    pub fn dot_token(&self) -> impl Iterator<Item = DotToken<'a>> + 'a {
+        support::children(&self.0)
+    }
+    pub fn identifier_token(&self) -> impl Iterator<Item = IdentifierToken<'a>> + 'a {
+        support::children(&self.0)
     }
 }
-impl AstNode for ImportReferenceString {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(IMPORT_REFERENCE_STRING as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == IMPORT_REFERENCE_STRING
+impl<'a> TypedNode for StructuredIdentifier<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == STRUCTURED_IDENTIFIER
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct StructuredIdentifier {
-    syntax_list: SyntaxList<OscDslLanguage>,
-}
-impl AstNode for StructuredIdentifier {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(STRUCTURED_IDENTIFIER as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == STRUCTURED_IDENTIFIER
+pub struct NamespaceStatement<'a>(OscDslNode<'a>);
+impl NamespaceStatement<'_> {
+    pub fn namespace_token(&self) -> Option<NamespaceToken> {
+        support::child(&self.0, 0usize)
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self {
-            syntax_list: syntax.into_list(),
-        })
-    }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        self.syntax_list.node()
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax_list.into_node()
-    }
-}
-impl AstSeparatedList for StructuredIdentifier {
-    type Language = OscDslLanguage;
-    type Node = StructuredIdentifierElement;
-    fn syntax_list(&self) -> &SyntaxList<OscDslLanguage> {
-        &self.syntax_list
-    }
-    fn into_syntax_list(self) -> SyntaxList<OscDslLanguage> {
-        self.syntax_list
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct StructuredIdentifierElement {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl StructuredIdentifierElement {
-    pub fn identifier_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
-    }
-}
-impl AstNode for StructuredIdentifierElement {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(STRUCTURED_IDENTIFIER_ELEMENT as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == STRUCTURED_IDENTIFIER_ELEMENT
-    }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
-    }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct NamespaceStatement {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl NamespaceStatement {
-    pub fn namespace_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
-    }
-    pub fn namespace_name(&self) -> SyntaxResult<NamespaceName> {
-        support::required_node(&self.syntax, 1usize)
+    pub fn namespace_name(&self) -> Option<NamespaceName> {
+        support::child(&self.0, 0usize)
     }
     pub fn namespace_use_clause(&self) -> Option<NamespaceUseClause> {
-        support::node(&self.syntax, 2usize)
+        support::child(&self.0, 0usize)
     }
-    pub fn newline_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 3usize)
+    pub fn newline_token(&self) -> Option<NewlineToken> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for NamespaceStatement {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(NAMESPACE_STATEMENT as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == NAMESPACE_STATEMENT
+impl<'a> TypedNode for NamespaceStatement<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == NAMESPACE_STATEMENT
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ExportStatement {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl ExportStatement {
-    pub fn export_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
+pub struct ExportStatement<'a>(OscDslNode<'a>);
+impl ExportStatement<'_> {
+    pub fn export_token(&self) -> Option<ExportToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn export_specification_list(&self) -> ExportSpecificationList {
-        support::list(&self.syntax, 1usize)
+    pub fn export_specification_list(&self) -> Option<ExportSpecificationList> {
+        support::child(&self.0, 0usize)
     }
-    pub fn newline_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 2usize)
+    pub fn newline_token(&self) -> Option<NewlineToken> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for ExportStatement {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(EXPORT_STATEMENT as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == EXPORT_STATEMENT
+impl<'a> TypedNode for ExportStatement<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == EXPORT_STATEMENT
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum OscDeclaration {
-    PhysicalTypeDeclaration(PhysicalTypeDeclaration),
-    UnitDeclaration(UnitDeclaration),
-    EnumDeclaration(EnumDeclaration),
-    StructDeclaration(StructDeclaration),
-    ActorDeclaration(ActorDeclaration),
-    ActionDeclaration(ActionDeclaration),
-    ScenarioDeclaration(ScenarioDeclaration),
-    ModifierDeclaration(ModifierDeclaration),
-    TypeExtension(TypeExtension),
-    GlobalParameterDeclaration(GlobalParameterDeclaration),
+pub enum OscDeclaration<'a> {
+    PhysicalTypeDeclaration(PhysicalTypeDeclaration<'a>),
+    UnitDeclaration(UnitDeclaration<'a>),
+    EnumDeclaration(EnumDeclaration<'a>),
+    StructDeclaration(StructDeclaration<'a>),
+    ActorDeclaration(ActorDeclaration<'a>),
+    ActionDeclaration(ActionDeclaration<'a>),
+    ScenarioDeclaration(ScenarioDeclaration<'a>),
+    ModifierDeclaration(ModifierDeclaration<'a>),
+    TypeExtension(TypeExtension<'a>),
+    GlobalParameterDeclaration(GlobalParameterDeclaration<'a>),
 }
-impl OscDeclaration {
-    pub fn as_physical_type_declaration(&self) -> Option<&PhysicalTypeDeclaration> {
+impl OscDeclaration<'_> {
+    pub fn as_physical_type_declaration(&self) -> Option<PhysicalTypeDeclaration> {
         match self {
-            OscDeclaration::PhysicalTypeDeclaration(node) => Some(node),
+            Self::PhysicalTypeDeclaration(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_unit_declaration(&self) -> Option<&UnitDeclaration> {
+    pub fn as_unit_declaration(&self) -> Option<UnitDeclaration> {
         match self {
-            OscDeclaration::UnitDeclaration(node) => Some(node),
+            Self::UnitDeclaration(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_enum_declaration(&self) -> Option<&EnumDeclaration> {
+    pub fn as_enum_declaration(&self) -> Option<EnumDeclaration> {
         match self {
-            OscDeclaration::EnumDeclaration(node) => Some(node),
+            Self::EnumDeclaration(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_struct_declaration(&self) -> Option<&StructDeclaration> {
+    pub fn as_struct_declaration(&self) -> Option<StructDeclaration> {
         match self {
-            OscDeclaration::StructDeclaration(node) => Some(node),
+            Self::StructDeclaration(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_actor_declaration(&self) -> Option<&ActorDeclaration> {
+    pub fn as_actor_declaration(&self) -> Option<ActorDeclaration> {
         match self {
-            OscDeclaration::ActorDeclaration(node) => Some(node),
+            Self::ActorDeclaration(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_action_declaration(&self) -> Option<&ActionDeclaration> {
+    pub fn as_action_declaration(&self) -> Option<ActionDeclaration> {
         match self {
-            OscDeclaration::ActionDeclaration(node) => Some(node),
+            Self::ActionDeclaration(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_scenario_declaration(&self) -> Option<&ScenarioDeclaration> {
+    pub fn as_scenario_declaration(&self) -> Option<ScenarioDeclaration> {
         match self {
-            OscDeclaration::ScenarioDeclaration(node) => Some(node),
+            Self::ScenarioDeclaration(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_modifier_declaration(&self) -> Option<&ModifierDeclaration> {
+    pub fn as_modifier_declaration(&self) -> Option<ModifierDeclaration> {
         match self {
-            OscDeclaration::ModifierDeclaration(node) => Some(node),
+            Self::ModifierDeclaration(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_type_extension(&self) -> Option<&TypeExtension> {
+    pub fn as_type_extension(&self) -> Option<TypeExtension> {
         match self {
-            OscDeclaration::TypeExtension(node) => Some(node),
+            Self::TypeExtension(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_global_parameter_declaration(&self) -> Option<&GlobalParameterDeclaration> {
+    pub fn as_global_parameter_declaration(&self) -> Option<GlobalParameterDeclaration> {
         match self {
-            OscDeclaration::GlobalParameterDeclaration(node) => Some(node),
+            Self::GlobalParameterDeclaration(node) => Some(node.clone()),
             _ => None,
         }
     }
 }
-impl AstNode for OscDeclaration {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> = PhysicalTypeDeclaration::KIND_SET
-        .union(UnitDeclaration::KIND_SET)
-        .union(EnumDeclaration::KIND_SET)
-        .union(StructDeclaration::KIND_SET)
-        .union(ActorDeclaration::KIND_SET)
-        .union(ActionDeclaration::KIND_SET)
-        .union(ScenarioDeclaration::KIND_SET)
-        .union(ModifierDeclaration::KIND_SET)
-        .union(TypeExtension::KIND_SET)
-        .union(GlobalParameterDeclaration::KIND_SET);
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
+impl<'a> TypedNode for OscDeclaration<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
         matches!(
-            kind,
+            value,
             PHYSICAL_TYPE_DECLARATION
                 | UNIT_DECLARATION
                 | ENUM_DECLARATION
@@ -837,28 +2290,35 @@ impl AstNode for OscDeclaration {
                 | GLOBAL_PARAMETER_DECLARATION
         )
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        let result = match syntax.kind() {
+    fn cast(node: Self::Node) -> Option<Self> {
+        match *node.value() {
             PHYSICAL_TYPE_DECLARATION => {
-                Self::PhysicalTypeDeclaration(PhysicalTypeDeclaration::cast(syntax)?)
+                PhysicalTypeDeclaration::cast(node.clone()).map(Self::PhysicalTypeDeclaration)
             }
-            UNIT_DECLARATION => Self::UnitDeclaration(UnitDeclaration::cast(syntax)?),
-            ENUM_DECLARATION => Self::EnumDeclaration(EnumDeclaration::cast(syntax)?),
-            STRUCT_DECLARATION => Self::StructDeclaration(StructDeclaration::cast(syntax)?),
-            ACTOR_DECLARATION => Self::ActorDeclaration(ActorDeclaration::cast(syntax)?),
-            ACTION_DECLARATION => Self::ActionDeclaration(ActionDeclaration::cast(syntax)?),
-            SCENARIO_DECLARATION => Self::ScenarioDeclaration(ScenarioDeclaration::cast(syntax)?),
-            MODIFIER_DECLARATION => Self::ModifierDeclaration(ModifierDeclaration::cast(syntax)?),
-            TYPE_EXTENSION => Self::TypeExtension(TypeExtension::cast(syntax)?),
+            UNIT_DECLARATION => UnitDeclaration::cast(node.clone()).map(Self::UnitDeclaration),
+            ENUM_DECLARATION => EnumDeclaration::cast(node.clone()).map(Self::EnumDeclaration),
+            STRUCT_DECLARATION => {
+                StructDeclaration::cast(node.clone()).map(Self::StructDeclaration)
+            }
+            ACTOR_DECLARATION => ActorDeclaration::cast(node.clone()).map(Self::ActorDeclaration),
+            ACTION_DECLARATION => {
+                ActionDeclaration::cast(node.clone()).map(Self::ActionDeclaration)
+            }
+            SCENARIO_DECLARATION => {
+                ScenarioDeclaration::cast(node.clone()).map(Self::ScenarioDeclaration)
+            }
+            MODIFIER_DECLARATION => {
+                ModifierDeclaration::cast(node.clone()).map(Self::ModifierDeclaration)
+            }
+            TYPE_EXTENSION => TypeExtension::cast(node.clone()).map(Self::TypeExtension),
             GLOBAL_PARAMETER_DECLARATION => {
-                Self::GlobalParameterDeclaration(GlobalParameterDeclaration::cast(syntax)?)
+                GlobalParameterDeclaration::cast(node.clone()).map(Self::GlobalParameterDeclaration)
             }
-            _ => return None,
-        };
-        Some(result)
+            _ => None,
+        }
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        match &self {
+    fn syntax(&self) -> &Self::Node {
+        match self {
             Self::PhysicalTypeDeclaration(node) => node.syntax(),
             Self::UnitDeclaration(node) => node.syntax(),
             Self::EnumDeclaration(node) => node.syntax(),
@@ -871,771 +2331,627 @@ impl AstNode for OscDeclaration {
             Self::GlobalParameterDeclaration(node) => node.syntax(),
         }
     }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct NamespaceUseClause<'a>(OscDslNode<'a>);
+impl NamespaceUseClause<'_> {
+    pub fn use_token(&self) -> Option<UseToken> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn namespace_list(&self) -> Option<NamespaceList> {
+        support::child(&self.0, 0usize)
+    }
+}
+impl<'a> TypedNode for NamespaceUseClause<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == NAMESPACE_USE_CLAUSE
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct NamespaceList<'a>(OscDslNode<'a>);
+impl<'a> NamespaceList<'a> {
+    pub fn comma_token(&self) -> impl Iterator<Item = CommaToken<'a>> + 'a {
+        support::children(&self.0)
+    }
+    pub fn namespace_name(&self) -> impl Iterator<Item = NamespaceName<'a>> + 'a {
+        support::children(&self.0)
+    }
+}
+impl<'a> TypedNode for NamespaceList<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == NAMESPACE_LIST
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SimpleNamespaceName<'a>(OscDslNode<'a>);
+impl SimpleNamespaceName<'_> {
+    pub fn identifier_token(&self) -> Option<IdentifierToken> {
+        support::child(&self.0, 0usize)
+    }
+}
+impl<'a> TypedNode for SimpleNamespaceName<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == SIMPLE_NAMESPACE_NAME
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct GlobalNamespaceName<'a>(OscDslNode<'a>);
+impl GlobalNamespaceName<'_> {
+    pub fn null_token(&self) -> Option<NullToken> {
+        support::child(&self.0, 0usize)
+    }
+}
+impl<'a> TypedNode for GlobalNamespaceName<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == GLOBAL_NAMESPACE_NAME
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ExportSpecificationList<'a>(OscDslNode<'a>);
+impl<'a> ExportSpecificationList<'a> {
+    pub fn comma_token(&self) -> impl Iterator<Item = CommaToken<'a>> + 'a {
+        support::children(&self.0)
+    }
+    pub fn export_specification(&self) -> impl Iterator<Item = ExportSpecification<'a>> + 'a {
+        support::children(&self.0)
+    }
+}
+impl<'a> TypedNode for ExportSpecificationList<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == EXPORT_SPECIFICATION_LIST
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ExportSpecification<'a> {
+    QualifiedIdentifier(QualifiedIdentifier<'a>),
+    ExportWildcardSpecification(ExportWildcardSpecification<'a>),
+}
+impl ExportSpecification<'_> {
+    pub fn as_qualified_identifier(&self) -> Option<QualifiedIdentifier> {
         match self {
-            Self::PhysicalTypeDeclaration(node) => node.into_syntax(),
-            Self::UnitDeclaration(node) => node.into_syntax(),
-            Self::EnumDeclaration(node) => node.into_syntax(),
-            Self::StructDeclaration(node) => node.into_syntax(),
-            Self::ActorDeclaration(node) => node.into_syntax(),
-            Self::ActionDeclaration(node) => node.into_syntax(),
-            Self::ScenarioDeclaration(node) => node.into_syntax(),
-            Self::ModifierDeclaration(node) => node.into_syntax(),
-            Self::TypeExtension(node) => node.into_syntax(),
-            Self::GlobalParameterDeclaration(node) => node.into_syntax(),
-        }
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct NamespaceUseClause {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl NamespaceUseClause {
-    pub fn use_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
-    }
-    pub fn namespace_list(&self) -> NamespaceList {
-        support::list(&self.syntax, 1usize)
-    }
-}
-impl AstNode for NamespaceUseClause {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(NAMESPACE_USE_CLAUSE as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == NAMESPACE_USE_CLAUSE
-    }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
-    }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct NamespaceList {
-    syntax_list: SyntaxList<OscDslLanguage>,
-}
-impl AstNode for NamespaceList {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(NAMESPACE_LIST as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == NAMESPACE_LIST
-    }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self {
-            syntax_list: syntax.into_list(),
-        })
-    }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        self.syntax_list.node()
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax_list.into_node()
-    }
-}
-impl AstSeparatedList for NamespaceList {
-    type Language = OscDslLanguage;
-    type Node = NamespaceName;
-    fn syntax_list(&self) -> &SyntaxList<OscDslLanguage> {
-        &self.syntax_list
-    }
-    fn into_syntax_list(self) -> SyntaxList<OscDslLanguage> {
-        self.syntax_list
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct SimpleNamespaceName {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl SimpleNamespaceName {
-    pub fn identifier_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
-    }
-}
-impl AstNode for SimpleNamespaceName {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(SIMPLE_NAMESPACE_NAME as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == SIMPLE_NAMESPACE_NAME
-    }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
-    }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct GlobalNamespaceName {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl GlobalNamespaceName {
-    pub fn null_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
-    }
-}
-impl AstNode for GlobalNamespaceName {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(GLOBAL_NAMESPACE_NAME as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == GLOBAL_NAMESPACE_NAME
-    }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
-    }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ExportSpecificationList {
-    syntax_list: SyntaxList<OscDslLanguage>,
-}
-impl AstNode for ExportSpecificationList {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(EXPORT_SPECIFICATION_LIST as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == EXPORT_SPECIFICATION_LIST
-    }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self {
-            syntax_list: syntax.into_list(),
-        })
-    }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        self.syntax_list.node()
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax_list.into_node()
-    }
-}
-impl AstSeparatedList for ExportSpecificationList {
-    type Language = OscDslLanguage;
-    type Node = ExportSpecification;
-    fn syntax_list(&self) -> &SyntaxList<OscDslLanguage> {
-        &self.syntax_list
-    }
-    fn into_syntax_list(self) -> SyntaxList<OscDslLanguage> {
-        self.syntax_list
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum ExportSpecification {
-    QualifiedIdentifier(QualifiedIdentifier),
-    ExportWildcardSpecification(ExportWildcardSpecification),
-}
-impl ExportSpecification {
-    pub fn as_qualified_identifier(&self) -> Option<&QualifiedIdentifier> {
-        match self {
-            ExportSpecification::QualifiedIdentifier(node) => Some(node),
+            Self::QualifiedIdentifier(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_export_wildcard_specification(&self) -> Option<&ExportWildcardSpecification> {
+    pub fn as_export_wildcard_specification(&self) -> Option<ExportWildcardSpecification> {
         match self {
-            ExportSpecification::ExportWildcardSpecification(node) => Some(node),
+            Self::ExportWildcardSpecification(node) => Some(node.clone()),
             _ => None,
         }
     }
 }
-impl AstNode for ExportSpecification {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        QualifiedIdentifier::KIND_SET.union(ExportWildcardSpecification::KIND_SET);
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        matches!(kind, QUALIFIED_IDENTIFIER | EXPORT_WILDCARD_SPECIFICATION)
+impl<'a> TypedNode for ExportSpecification<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        matches!(value, QUALIFIED_IDENTIFIER | EXPORT_WILDCARD_SPECIFICATION)
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        let result = match syntax.kind() {
-            QUALIFIED_IDENTIFIER => Self::QualifiedIdentifier(QualifiedIdentifier::cast(syntax)?),
-            EXPORT_WILDCARD_SPECIFICATION => {
-                Self::ExportWildcardSpecification(ExportWildcardSpecification::cast(syntax)?)
+    fn cast(node: Self::Node) -> Option<Self> {
+        match *node.value() {
+            QUALIFIED_IDENTIFIER => {
+                QualifiedIdentifier::cast(node.clone()).map(Self::QualifiedIdentifier)
             }
-            _ => return None,
-        };
-        Some(result)
+            EXPORT_WILDCARD_SPECIFICATION => ExportWildcardSpecification::cast(node.clone())
+                .map(Self::ExportWildcardSpecification),
+            _ => None,
+        }
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        match &self {
+    fn syntax(&self) -> &Self::Node {
+        match self {
             Self::QualifiedIdentifier(node) => node.syntax(),
             Self::ExportWildcardSpecification(node) => node.syntax(),
         }
     }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        match self {
-            Self::QualifiedIdentifier(node) => node.into_syntax(),
-            Self::ExportWildcardSpecification(node) => node.into_syntax(),
-        }
-    }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ExportWildcardSpecification {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl ExportWildcardSpecification {
+pub struct ExportWildcardSpecification<'a>(OscDslNode<'a>);
+impl ExportWildcardSpecification<'_> {
     pub fn export_wildcard_specification_prefix(
         &self,
     ) -> Option<ExportWildcardSpecificationPrefix> {
-        support::node(&self.syntax, 0usize)
+        support::child(&self.0, 0usize)
     }
-    pub fn star_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 1usize)
+    pub fn star_token(&self) -> Option<StarToken> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for ExportWildcardSpecification {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(EXPORT_WILDCARD_SPECIFICATION as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == EXPORT_WILDCARD_SPECIFICATION
+impl<'a> TypedNode for ExportWildcardSpecification<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == EXPORT_WILDCARD_SPECIFICATION
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ExportWildcardSpecificationPrefix {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl ExportWildcardSpecificationPrefix {
+pub struct ExportWildcardSpecificationPrefix<'a>(OscDslNode<'a>);
+impl ExportWildcardSpecificationPrefix<'_> {
     pub fn namespace_name(&self) -> Option<NamespaceName> {
-        support::node(&self.syntax, 0usize)
+        support::child(&self.0, 0usize)
     }
-    pub fn colon_colon_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 1usize)
+    pub fn colon_colon_token(&self) -> Option<ColonColonToken> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for ExportWildcardSpecificationPrefix {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(EXPORT_WILDCARD_SPECIFICATION_PREFIX as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == EXPORT_WILDCARD_SPECIFICATION_PREFIX
+impl<'a> TypedNode for ExportWildcardSpecificationPrefix<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == EXPORT_WILDCARD_SPECIFICATION_PREFIX
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct PhysicalTypeDeclaration {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl PhysicalTypeDeclaration {
-    pub fn type_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
+pub struct PhysicalTypeDeclaration<'a>(OscDslNode<'a>);
+impl PhysicalTypeDeclaration<'_> {
+    pub fn type_token(&self) -> Option<TypeToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn physical_type_name(&self) -> SyntaxResult<PhysicalTypeName> {
-        support::required_node(&self.syntax, 1usize)
+    pub fn physical_type_name(&self) -> Option<PhysicalTypeName> {
+        support::child(&self.0, 0usize)
     }
-    pub fn is_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 2usize)
+    pub fn is_token(&self) -> Option<IsToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn base_unit_specifier(&self) -> SyntaxResult<BaseUnitSpecifier> {
-        support::required_node(&self.syntax, 3usize)
+    pub fn base_unit_specifier(&self) -> Option<BaseUnitSpecifier> {
+        support::child(&self.0, 0usize)
     }
-    pub fn newline_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 4usize)
+    pub fn newline_token(&self) -> Option<NewlineToken> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for PhysicalTypeDeclaration {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(PHYSICAL_TYPE_DECLARATION as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == PHYSICAL_TYPE_DECLARATION
+impl<'a> TypedNode for PhysicalTypeDeclaration<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == PHYSICAL_TYPE_DECLARATION
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct UnitDeclaration {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl UnitDeclaration {
-    pub fn unit_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
+pub struct UnitDeclaration<'a>(OscDslNode<'a>);
+impl UnitDeclaration<'_> {
+    pub fn unit_token(&self) -> Option<UnitToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn unit_name(&self) -> SyntaxResult<UnitName> {
-        support::required_node(&self.syntax, 1usize)
+    pub fn unit_name(&self) -> Option<UnitName> {
+        support::child(&self.0, 0usize)
     }
-    pub fn of_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 2usize)
+    pub fn of_token(&self) -> Option<OfToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn physical_type_name(&self) -> SyntaxResult<PhysicalTypeName> {
-        support::required_node(&self.syntax, 3usize)
+    pub fn physical_type_name(&self) -> Option<PhysicalTypeName> {
+        support::child(&self.0, 0usize)
     }
-    pub fn is_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 4usize)
+    pub fn is_token(&self) -> Option<IsToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn unit_specifier(&self) -> SyntaxResult<UnitSpecifier> {
-        support::required_node(&self.syntax, 5usize)
+    pub fn unit_specifier(&self) -> Option<UnitSpecifier> {
+        support::child(&self.0, 0usize)
     }
-    pub fn newline_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 6usize)
+    pub fn newline_token(&self) -> Option<NewlineToken> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for UnitDeclaration {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(UNIT_DECLARATION as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == UNIT_DECLARATION
+impl<'a> TypedNode for UnitDeclaration<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == UNIT_DECLARATION
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct EnumDeclaration {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl EnumDeclaration {
-    pub fn enum_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
+pub struct EnumDeclaration<'a>(OscDslNode<'a>);
+impl EnumDeclaration<'_> {
+    pub fn enum_token(&self) -> Option<EnumToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn enum_name(&self) -> SyntaxResult<EnumName> {
-        support::required_node(&self.syntax, 1usize)
+    pub fn enum_name(&self) -> Option<EnumName> {
+        support::child(&self.0, 0usize)
     }
-    pub fn colon_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 2usize)
+    pub fn colon_token(&self) -> Option<ColonToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn l_bracket_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 3usize)
+    pub fn left_bracket_token(&self) -> Option<LeftBracketToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn enum_member_decl_list(&self) -> EnumMemberDeclList {
-        support::list(&self.syntax, 4usize)
+    pub fn enum_member_decl_list(&self) -> Option<EnumMemberDeclList> {
+        support::child(&self.0, 0usize)
     }
-    pub fn r_bracket_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 5usize)
+    pub fn right_bracket_token(&self) -> Option<RightBracketToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn newline_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 6usize)
+    pub fn newline_token(&self) -> Option<NewlineToken> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for EnumDeclaration {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(ENUM_DECLARATION as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == ENUM_DECLARATION
+impl<'a> TypedNode for EnumDeclaration<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == ENUM_DECLARATION
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct StructDeclaration {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl StructDeclaration {
-    pub fn struct_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
+pub struct StructDeclaration<'a>(OscDslNode<'a>);
+impl StructDeclaration<'_> {
+    pub fn struct_token(&self) -> Option<StructToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn struct_name(&self) -> SyntaxResult<StructName> {
-        support::required_node(&self.syntax, 1usize)
+    pub fn struct_name(&self) -> Option<StructName> {
+        support::child(&self.0, 0usize)
     }
     pub fn struct_inherits_clause(&self) -> Option<StructInheritsClause> {
-        support::node(&self.syntax, 2usize)
+        support::child(&self.0, 0usize)
     }
-    pub fn struct_body_or_empty(&self) -> SyntaxResult<StructBodyOrEmpty> {
-        support::required_node(&self.syntax, 3usize)
+    pub fn struct_body_or_newline(&self) -> Option<StructBodyOrNewline> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for StructDeclaration {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(STRUCT_DECLARATION as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == STRUCT_DECLARATION
+impl<'a> TypedNode for StructDeclaration<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == STRUCT_DECLARATION
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ActorDeclaration {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl ActorDeclaration {
-    pub fn actor_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
+pub struct ActorDeclaration<'a>(OscDslNode<'a>);
+impl ActorDeclaration<'_> {
+    pub fn actor_token(&self) -> Option<ActorToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn actor_name(&self) -> SyntaxResult<ActorName> {
-        support::required_node(&self.syntax, 1usize)
+    pub fn actor_name(&self) -> Option<ActorName> {
+        support::child(&self.0, 0usize)
     }
     pub fn actor_inherits_clause(&self) -> Option<ActorInheritsClause> {
-        support::node(&self.syntax, 2usize)
+        support::child(&self.0, 0usize)
     }
-    pub fn actor_body_or_empty(&self) -> SyntaxResult<ActorBodyOrEmpty> {
-        support::required_node(&self.syntax, 3usize)
+    pub fn actor_body_or_newline(&self) -> Option<ActorBodyOrNewline> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for ActorDeclaration {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(ACTOR_DECLARATION as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == ACTOR_DECLARATION
+impl<'a> TypedNode for ActorDeclaration<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == ACTOR_DECLARATION
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ActionDeclaration {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl ActionDeclaration {
-    pub fn action_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
+pub struct ActionDeclaration<'a>(OscDslNode<'a>);
+impl ActionDeclaration<'_> {
+    pub fn action_token(&self) -> Option<ActionToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn qualified_behavior_name(&self) -> SyntaxResult<QualifiedBehaviorName> {
-        support::required_node(&self.syntax, 1usize)
+    pub fn qualified_behavior_name(&self) -> Option<QualifiedBehaviorName> {
+        support::child(&self.0, 0usize)
     }
     pub fn action_inherits_clause(&self) -> Option<ActionInheritsClause> {
-        support::node(&self.syntax, 2usize)
+        support::child(&self.0, 0usize)
     }
-    pub fn action_body_or_empty(&self) -> SyntaxResult<ActionBodyOrEmpty> {
-        support::required_node(&self.syntax, 3usize)
+    pub fn action_body_or_newline(&self) -> Option<ActionBodyOrNewline> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for ActionDeclaration {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(ACTION_DECLARATION as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == ACTION_DECLARATION
+impl<'a> TypedNode for ActionDeclaration<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == ACTION_DECLARATION
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ScenarioDeclaration {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl ScenarioDeclaration {
-    pub fn scenario_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
+pub struct ScenarioDeclaration<'a>(OscDslNode<'a>);
+impl ScenarioDeclaration<'_> {
+    pub fn scenario_token(&self) -> Option<ScenarioToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn qualified_behavior_name(&self) -> SyntaxResult<QualifiedBehaviorName> {
-        support::required_node(&self.syntax, 1usize)
+    pub fn qualified_behavior_name(&self) -> Option<QualifiedBehaviorName> {
+        support::child(&self.0, 0usize)
     }
     pub fn scenario_inherits_clause(&self) -> Option<ScenarioInheritsClause> {
-        support::node(&self.syntax, 2usize)
+        support::child(&self.0, 0usize)
     }
-    pub fn scenario_body_or_empty(&self) -> SyntaxResult<ScenarioBodyOrEmpty> {
-        support::required_node(&self.syntax, 3usize)
+    pub fn scenario_body_or_newline(&self) -> Option<ScenarioBodyOrNewline> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for ScenarioDeclaration {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(SCENARIO_DECLARATION as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == SCENARIO_DECLARATION
+impl<'a> TypedNode for ScenarioDeclaration<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == SCENARIO_DECLARATION
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ModifierDeclaration {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl ModifierDeclaration {
-    pub fn modifier_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
+pub struct ModifierDeclaration<'a>(OscDslNode<'a>);
+impl ModifierDeclaration<'_> {
+    pub fn modifier_token(&self) -> Option<ModifierToken> {
+        support::child(&self.0, 0usize)
     }
     pub fn modifier_name_prefix(&self) -> Option<ModifierNamePrefix> {
-        support::node(&self.syntax, 1usize)
+        support::child(&self.0, 0usize)
     }
-    pub fn modifier_name(&self) -> SyntaxResult<ModifierName> {
-        support::required_node(&self.syntax, 2usize)
+    pub fn modifier_name(&self) -> Option<ModifierName> {
+        support::child(&self.0, 0usize)
     }
     pub fn modifier_of_clause(&self) -> Option<ModifierOfClause> {
-        support::node(&self.syntax, 3usize)
+        support::child(&self.0, 0usize)
     }
-    pub fn modifier_body_or_empty(&self) -> SyntaxResult<ModifierBodyOrEmpty> {
-        support::required_node(&self.syntax, 4usize)
+    pub fn modifier_body_or_newline(&self) -> Option<ModifierBodyOrNewline> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for ModifierDeclaration {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(MODIFIER_DECLARATION as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == MODIFIER_DECLARATION
+impl<'a> TypedNode for ModifierDeclaration<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == MODIFIER_DECLARATION
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum TypeExtension {
-    EnumTypeExtension(EnumTypeExtension),
-    StructuredTypeExtension(StructuredTypeExtension),
+pub enum TypeExtension<'a> {
+    EnumTypeExtension(EnumTypeExtension<'a>),
+    StructuredTypeExtension(StructuredTypeExtension<'a>),
 }
-impl TypeExtension {
-    pub fn as_enum_type_extension(&self) -> Option<&EnumTypeExtension> {
+impl TypeExtension<'_> {
+    pub fn as_enum_type_extension(&self) -> Option<EnumTypeExtension> {
         match self {
-            TypeExtension::EnumTypeExtension(node) => Some(node),
+            Self::EnumTypeExtension(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_structured_type_extension(&self) -> Option<&StructuredTypeExtension> {
+    pub fn as_structured_type_extension(&self) -> Option<StructuredTypeExtension> {
         match self {
-            TypeExtension::StructuredTypeExtension(node) => Some(node),
+            Self::StructuredTypeExtension(node) => Some(node.clone()),
             _ => None,
         }
     }
 }
-impl AstNode for TypeExtension {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        EnumTypeExtension::KIND_SET.union(StructuredTypeExtension::KIND_SET);
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        matches!(kind, ENUM_TYPE_EXTENSION | STRUCTURED_TYPE_EXTENSION)
+impl<'a> TypedNode for TypeExtension<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        matches!(value, ENUM_TYPE_EXTENSION | STRUCTURED_TYPE_EXTENSION)
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        let result = match syntax.kind() {
-            ENUM_TYPE_EXTENSION => Self::EnumTypeExtension(EnumTypeExtension::cast(syntax)?),
-            STRUCTURED_TYPE_EXTENSION => {
-                Self::StructuredTypeExtension(StructuredTypeExtension::cast(syntax)?)
+    fn cast(node: Self::Node) -> Option<Self> {
+        match *node.value() {
+            ENUM_TYPE_EXTENSION => {
+                EnumTypeExtension::cast(node.clone()).map(Self::EnumTypeExtension)
             }
-            _ => return None,
-        };
-        Some(result)
+            STRUCTURED_TYPE_EXTENSION => {
+                StructuredTypeExtension::cast(node.clone()).map(Self::StructuredTypeExtension)
+            }
+            _ => None,
+        }
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        match &self {
+    fn syntax(&self) -> &Self::Node {
+        match self {
             Self::EnumTypeExtension(node) => node.syntax(),
             Self::StructuredTypeExtension(node) => node.syntax(),
         }
     }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        match self {
-            Self::EnumTypeExtension(node) => node.into_syntax(),
-            Self::StructuredTypeExtension(node) => node.into_syntax(),
-        }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct GlobalParameterDeclaration<'a>(OscDslNode<'a>);
+impl GlobalParameterDeclaration<'_> {
+    pub fn global_token(&self) -> Option<GlobalToken> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn parameter_declaration(&self) -> Option<ParameterDeclaration> {
+        support::child(&self.0, 0usize)
+    }
+}
+impl<'a> TypedNode for GlobalParameterDeclaration<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == GLOBAL_PARAMETER_DECLARATION
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct GlobalParameterDeclaration {
-    syntax: SyntaxNode<OscDslLanguage>,
+pub enum TypeDeclarator<'a> {
+    NonAggregateTypeDeclarator(NonAggregateTypeDeclarator<'a>),
+    AggregateTypeDeclarator(AggregateTypeDeclarator<'a>),
 }
-impl GlobalParameterDeclaration {
-    pub fn global_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
-    }
-    pub fn parameter_declaration(&self) -> SyntaxResult<ParameterDeclaration> {
-        support::required_node(&self.syntax, 1usize)
-    }
-}
-impl AstNode for GlobalParameterDeclaration {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(GLOBAL_PARAMETER_DECLARATION as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == GLOBAL_PARAMETER_DECLARATION
-    }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
-    }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum TypeDeclarator {
-    NonAggregateTypeDeclarator(NonAggregateTypeDeclarator),
-    AggregateTypeDeclarator(AggregateTypeDeclarator),
-}
-impl TypeDeclarator {
-    pub fn as_non_aggregate_type_declarator(&self) -> Option<&NonAggregateTypeDeclarator> {
+impl TypeDeclarator<'_> {
+    pub fn as_non_aggregate_type_declarator(&self) -> Option<NonAggregateTypeDeclarator> {
         match self {
-            TypeDeclarator::NonAggregateTypeDeclarator(node) => Some(node),
+            Self::NonAggregateTypeDeclarator(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_aggregate_type_declarator(&self) -> Option<&AggregateTypeDeclarator> {
+    pub fn as_aggregate_type_declarator(&self) -> Option<AggregateTypeDeclarator> {
         match self {
-            TypeDeclarator::AggregateTypeDeclarator(node) => Some(node),
+            Self::AggregateTypeDeclarator(node) => Some(node.clone()),
             _ => None,
         }
     }
 }
-impl AstNode for TypeDeclarator {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        NonAggregateTypeDeclarator::KIND_SET.union(AggregateTypeDeclarator::KIND_SET);
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
+impl<'a> TypedNode for TypeDeclarator<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
         matches!(
-            kind,
+            value,
             NON_AGGREGATE_TYPE_DECLARATOR | AGGREGATE_TYPE_DECLARATOR
         )
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        let result = match syntax.kind() {
+    fn cast(node: Self::Node) -> Option<Self> {
+        match *node.value() {
             NON_AGGREGATE_TYPE_DECLARATOR => {
-                Self::NonAggregateTypeDeclarator(NonAggregateTypeDeclarator::cast(syntax)?)
+                NonAggregateTypeDeclarator::cast(node.clone()).map(Self::NonAggregateTypeDeclarator)
             }
             AGGREGATE_TYPE_DECLARATOR => {
-                Self::AggregateTypeDeclarator(AggregateTypeDeclarator::cast(syntax)?)
+                AggregateTypeDeclarator::cast(node.clone()).map(Self::AggregateTypeDeclarator)
             }
-            _ => return None,
-        };
-        Some(result)
+            _ => None,
+        }
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        match &self {
+    fn syntax(&self) -> &Self::Node {
+        match self {
             Self::NonAggregateTypeDeclarator(node) => node.syntax(),
             Self::AggregateTypeDeclarator(node) => node.syntax(),
         }
     }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        match self {
-            Self::NonAggregateTypeDeclarator(node) => node.into_syntax(),
-            Self::AggregateTypeDeclarator(node) => node.into_syntax(),
-        }
-    }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum NonAggregateTypeDeclarator {
-    PrimitiveType(PrimitiveType),
-    PhysicalTypeName(PhysicalTypeName),
-    EnumName(EnumName),
-    StructName(StructName),
-    ActorName(ActorName),
-    QualifiedBehaviorName(QualifiedBehaviorName),
+pub enum NonAggregateTypeDeclarator<'a> {
+    PrimitiveType(PrimitiveType<'a>),
+    PhysicalTypeName(PhysicalTypeName<'a>),
+    EnumName(EnumName<'a>),
+    StructName(StructName<'a>),
+    ActorName(ActorName<'a>),
+    QualifiedBehaviorName(QualifiedBehaviorName<'a>),
 }
-impl NonAggregateTypeDeclarator {
-    pub fn as_primitive_type(&self) -> Option<&PrimitiveType> {
+impl NonAggregateTypeDeclarator<'_> {
+    pub fn as_primitive_type(&self) -> Option<PrimitiveType> {
         match self {
-            NonAggregateTypeDeclarator::PrimitiveType(node) => Some(node),
+            Self::PrimitiveType(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_physical_type_name(&self) -> Option<&PhysicalTypeName> {
+    pub fn as_physical_type_name(&self) -> Option<PhysicalTypeName> {
         match self {
-            NonAggregateTypeDeclarator::PhysicalTypeName(node) => Some(node),
+            Self::PhysicalTypeName(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_enum_name(&self) -> Option<&EnumName> {
+    pub fn as_enum_name(&self) -> Option<EnumName> {
         match self {
-            NonAggregateTypeDeclarator::EnumName(node) => Some(node),
+            Self::EnumName(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_struct_name(&self) -> Option<&StructName> {
+    pub fn as_struct_name(&self) -> Option<StructName> {
         match self {
-            NonAggregateTypeDeclarator::StructName(node) => Some(node),
+            Self::StructName(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_actor_name(&self) -> Option<&ActorName> {
+    pub fn as_actor_name(&self) -> Option<ActorName> {
         match self {
-            NonAggregateTypeDeclarator::ActorName(node) => Some(node),
+            Self::ActorName(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_qualified_behavior_name(&self) -> Option<&QualifiedBehaviorName> {
+    pub fn as_qualified_behavior_name(&self) -> Option<QualifiedBehaviorName> {
         match self {
-            NonAggregateTypeDeclarator::QualifiedBehaviorName(node) => Some(node),
+            Self::QualifiedBehaviorName(node) => Some(node.clone()),
             _ => None,
         }
     }
 }
-impl AstNode for NonAggregateTypeDeclarator {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> = PrimitiveType::KIND_SET
-        .union(PhysicalTypeName::KIND_SET)
-        .union(EnumName::KIND_SET)
-        .union(StructName::KIND_SET)
-        .union(ActorName::KIND_SET)
-        .union(QualifiedBehaviorName::KIND_SET);
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
+impl<'a> TypedNode for NonAggregateTypeDeclarator<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
         matches!(
-            kind,
+            value,
             PRIMITIVE_TYPE
                 | PHYSICAL_TYPE_NAME
                 | ENUM_NAME
@@ -1644,22 +2960,21 @@ impl AstNode for NonAggregateTypeDeclarator {
                 | QUALIFIED_BEHAVIOR_NAME
         )
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        let result = match syntax.kind() {
-            PRIMITIVE_TYPE => Self::PrimitiveType(PrimitiveType::cast(syntax)?),
-            PHYSICAL_TYPE_NAME => Self::PhysicalTypeName(PhysicalTypeName::cast(syntax)?),
-            ENUM_NAME => Self::EnumName(EnumName::cast(syntax)?),
-            STRUCT_NAME => Self::StructName(StructName::cast(syntax)?),
-            ACTOR_NAME => Self::ActorName(ActorName::cast(syntax)?),
+    fn cast(node: Self::Node) -> Option<Self> {
+        match *node.value() {
+            PRIMITIVE_TYPE => PrimitiveType::cast(node.clone()).map(Self::PrimitiveType),
+            PHYSICAL_TYPE_NAME => PhysicalTypeName::cast(node.clone()).map(Self::PhysicalTypeName),
+            ENUM_NAME => EnumName::cast(node.clone()).map(Self::EnumName),
+            STRUCT_NAME => StructName::cast(node.clone()).map(Self::StructName),
+            ACTOR_NAME => ActorName::cast(node.clone()).map(Self::ActorName),
             QUALIFIED_BEHAVIOR_NAME => {
-                Self::QualifiedBehaviorName(QualifiedBehaviorName::cast(syntax)?)
+                QualifiedBehaviorName::cast(node.clone()).map(Self::QualifiedBehaviorName)
             }
-            _ => return None,
-        };
-        Some(result)
+            _ => None,
+        }
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        match &self {
+    fn syntax(&self) -> &Self::Node {
+        match self {
             Self::PrimitiveType(node) => node.syntax(),
             Self::PhysicalTypeName(node) => node.syntax(),
             Self::EnumName(node) => node.syntax(),
@@ -1668,1076 +2983,940 @@ impl AstNode for NonAggregateTypeDeclarator {
             Self::QualifiedBehaviorName(node) => node.syntax(),
         }
     }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct AggregateTypeDeclarator<'a>(OscDslNode<'a>);
+impl AggregateTypeDeclarator<'_> {
+    pub fn list_type_declarator(&self) -> Option<ListTypeDeclarator> {
+        support::child(&self.0, 0usize)
+    }
+}
+impl<'a> TypedNode for AggregateTypeDeclarator<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == AGGREGATE_TYPE_DECLARATOR
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum PrimitiveType<'a> {
+    IntToken(IntToken<'a>),
+    UintToken(UintToken<'a>),
+    FloatToken(FloatToken<'a>),
+    BoolToken(BoolToken<'a>),
+    StringToken(StringToken<'a>),
+}
+impl PrimitiveType<'_> {
+    pub fn as_int_token(&self) -> Option<IntToken> {
         match self {
-            Self::PrimitiveType(node) => node.into_syntax(),
-            Self::PhysicalTypeName(node) => node.into_syntax(),
-            Self::EnumName(node) => node.into_syntax(),
-            Self::StructName(node) => node.into_syntax(),
-            Self::ActorName(node) => node.into_syntax(),
-            Self::QualifiedBehaviorName(node) => node.into_syntax(),
+            Self::IntToken(node) => Some(node.clone()),
+            _ => None,
+        }
+    }
+    pub fn as_uint_token(&self) -> Option<UintToken> {
+        match self {
+            Self::UintToken(node) => Some(node.clone()),
+            _ => None,
+        }
+    }
+    pub fn as_float_token(&self) -> Option<FloatToken> {
+        match self {
+            Self::FloatToken(node) => Some(node.clone()),
+            _ => None,
+        }
+    }
+    pub fn as_bool_token(&self) -> Option<BoolToken> {
+        match self {
+            Self::BoolToken(node) => Some(node.clone()),
+            _ => None,
+        }
+    }
+    pub fn as_string_token(&self) -> Option<StringToken> {
+        match self {
+            Self::StringToken(node) => Some(node.clone()),
+            _ => None,
+        }
+    }
+}
+impl<'a> TypedNode for PrimitiveType<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        matches!(value, INT_KW | UINT_KW | FLOAT_KW | BOOL_KW | STRING_KW)
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        match *node.value() {
+            INT_KW => IntToken::cast(node.clone()).map(Self::IntToken),
+            UINT_KW => UintToken::cast(node.clone()).map(Self::UintToken),
+            FLOAT_KW => FloatToken::cast(node.clone()).map(Self::FloatToken),
+            BOOL_KW => BoolToken::cast(node.clone()).map(Self::BoolToken),
+            STRING_KW => StringToken::cast(node.clone()).map(Self::StringToken),
+            _ => None,
+        }
+    }
+    fn syntax(&self) -> &Self::Node {
+        match self {
+            Self::IntToken(node) => node.syntax(),
+            Self::UintToken(node) => node.syntax(),
+            Self::FloatToken(node) => node.syntax(),
+            Self::BoolToken(node) => node.syntax(),
+            Self::StringToken(node) => node.syntax(),
         }
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct AggregateTypeDeclarator {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl AggregateTypeDeclarator {
-    pub fn list_type_declarator(&self) -> SyntaxResult<ListTypeDeclarator> {
-        support::required_node(&self.syntax, 0usize)
+pub struct PhysicalTypeName<'a>(OscDslNode<'a>);
+impl PhysicalTypeName<'_> {
+    pub fn qualified_identifier(&self) -> Option<QualifiedIdentifier> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for AggregateTypeDeclarator {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(AGGREGATE_TYPE_DECLARATOR as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == AGGREGATE_TYPE_DECLARATOR
+impl<'a> TypedNode for PhysicalTypeName<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == PHYSICAL_TYPE_NAME
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
-    }
-}
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
-pub enum PrimitiveTypeKind {
-    Int,
-    Uint,
-    Float,
-    Bool,
-    String,
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct PrimitiveType {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl PrimitiveType {
-    pub fn kind(&self) -> PrimitiveTypeKind {
-        match self.syntax.kind() {
-            INT_KW => PrimitiveTypeKind::Int,
-            UINT_KW => PrimitiveTypeKind::Uint,
-            FLOAT_KW => PrimitiveTypeKind::Float,
-            BOOL_KW => PrimitiveTypeKind::Bool,
-            STRING_KW => PrimitiveTypeKind::String,
-            _ => unreachable!(),
-        }
-    }
-    pub fn token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
-    }
-}
-impl AstNode for PrimitiveType {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(PRIMITIVE_TYPE as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == PRIMITIVE_TYPE
-    }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
-    }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct PhysicalTypeName {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl PhysicalTypeName {
-    pub fn qualified_identifier(&self) -> SyntaxResult<QualifiedIdentifier> {
-        support::required_node(&self.syntax, 0usize)
+pub struct EnumName<'a>(OscDslNode<'a>);
+impl EnumName<'_> {
+    pub fn qualified_identifier(&self) -> Option<QualifiedIdentifier> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for PhysicalTypeName {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(PHYSICAL_TYPE_NAME as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == PHYSICAL_TYPE_NAME
+impl<'a> TypedNode for EnumName<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == ENUM_NAME
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct EnumName {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl EnumName {
-    pub fn qualified_identifier(&self) -> SyntaxResult<QualifiedIdentifier> {
-        support::required_node(&self.syntax, 0usize)
+pub struct StructName<'a>(OscDslNode<'a>);
+impl StructName<'_> {
+    pub fn qualified_identifier(&self) -> Option<QualifiedIdentifier> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for EnumName {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(ENUM_NAME as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == ENUM_NAME
+impl<'a> TypedNode for StructName<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == STRUCT_NAME
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct StructName {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl StructName {
-    pub fn qualified_identifier(&self) -> SyntaxResult<QualifiedIdentifier> {
-        support::required_node(&self.syntax, 0usize)
+pub struct ActorName<'a>(OscDslNode<'a>);
+impl ActorName<'_> {
+    pub fn qualified_identifier(&self) -> Option<QualifiedIdentifier> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for StructName {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(STRUCT_NAME as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == STRUCT_NAME
+impl<'a> TypedNode for ActorName<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == ACTOR_NAME
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ActorName {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl ActorName {
-    pub fn qualified_identifier(&self) -> SyntaxResult<QualifiedIdentifier> {
-        support::required_node(&self.syntax, 0usize)
-    }
-}
-impl AstNode for ActorName {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(ACTOR_NAME as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == ACTOR_NAME
-    }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
-    }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct QualifiedBehaviorName {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl QualifiedBehaviorName {
+pub struct QualifiedBehaviorName<'a>(OscDslNode<'a>);
+impl QualifiedBehaviorName<'_> {
     pub fn qualified_behavior_name_prefix(&self) -> Option<QualifiedBehaviorNamePrefix> {
-        support::node(&self.syntax, 0usize)
+        support::child(&self.0, 0usize)
     }
-    pub fn behavior_name(&self) -> SyntaxResult<BehaviorName> {
-        support::required_node(&self.syntax, 1usize)
+    pub fn behavior_name(&self) -> Option<BehaviorName> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for QualifiedBehaviorName {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(QUALIFIED_BEHAVIOR_NAME as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == QUALIFIED_BEHAVIOR_NAME
+impl<'a> TypedNode for QualifiedBehaviorName<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == QUALIFIED_BEHAVIOR_NAME
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ListTypeDeclarator {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl ListTypeDeclarator {
-    pub fn list_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
+pub struct ListTypeDeclarator<'a>(OscDslNode<'a>);
+impl ListTypeDeclarator<'_> {
+    pub fn list_token(&self) -> Option<ListToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn of_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 1usize)
+    pub fn of_token(&self) -> Option<OfToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn non_aggregate_type_declarator(&self) -> SyntaxResult<NonAggregateTypeDeclarator> {
-        support::required_node(&self.syntax, 2usize)
+    pub fn non_aggregate_type_declarator(&self) -> Option<NonAggregateTypeDeclarator> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for ListTypeDeclarator {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(LIST_TYPE_DECLARATOR as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == LIST_TYPE_DECLARATOR
+impl<'a> TypedNode for ListTypeDeclarator<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == LIST_TYPE_DECLARATOR
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct BaseUnitSpecifier {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl BaseUnitSpecifier {
-    pub fn si_base_unit_specifier(&self) -> SyntaxResult<SiBaseUnitSpecifier> {
-        support::required_node(&self.syntax, 0usize)
+pub struct BaseUnitSpecifier<'a>(OscDslNode<'a>);
+impl BaseUnitSpecifier<'_> {
+    pub fn si_base_unit_specifier(&self) -> Option<SiBaseUnitSpecifier> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for BaseUnitSpecifier {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(BASE_UNIT_SPECIFIER as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == BASE_UNIT_SPECIFIER
+impl<'a> TypedNode for BaseUnitSpecifier<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == BASE_UNIT_SPECIFIER
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct UnitSpecifier {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl UnitSpecifier {
-    pub fn si_unit_specifier(&self) -> SyntaxResult<SiUnitSpecifier> {
-        support::required_node(&self.syntax, 0usize)
+pub struct UnitSpecifier<'a>(OscDslNode<'a>);
+impl UnitSpecifier<'_> {
+    pub fn si_unit_specifier(&self) -> Option<SiUnitSpecifier> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for UnitSpecifier {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(UNIT_SPECIFIER as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == UNIT_SPECIFIER
+impl<'a> TypedNode for UnitSpecifier<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == UNIT_SPECIFIER
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct SiBaseUnitSpecifier {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl SiBaseUnitSpecifier {
-    pub fn si_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
+pub struct SiBaseUnitSpecifier<'a>(OscDslNode<'a>);
+impl SiBaseUnitSpecifier<'_> {
+    pub fn si_token(&self) -> Option<SiToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn l_paren_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 1usize)
+    pub fn left_paren_token(&self) -> Option<LeftParenToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn si_base_exponent_list(&self) -> SiBaseExponentList {
-        support::list(&self.syntax, 2usize)
+    pub fn si_base_exponent_list(&self) -> Option<SiBaseExponentList> {
+        support::child(&self.0, 0usize)
     }
-    pub fn r_paren_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 3usize)
+    pub fn right_paren_token(&self) -> Option<RightParenToken> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for SiBaseUnitSpecifier {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(SI_BASE_UNIT_SPECIFIER as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == SI_BASE_UNIT_SPECIFIER
+impl<'a> TypedNode for SiBaseUnitSpecifier<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == SI_BASE_UNIT_SPECIFIER
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct SiUnitSpecifier {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl SiUnitSpecifier {
-    pub fn si_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
+pub struct SiUnitSpecifier<'a>(OscDslNode<'a>);
+impl SiUnitSpecifier<'_> {
+    pub fn si_token(&self) -> Option<SiToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn l_paren_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 1usize)
+    pub fn left_paren_token(&self) -> Option<LeftParenToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn si_base_exponent_list(&self) -> SiBaseExponentList {
-        support::list(&self.syntax, 2usize)
+    pub fn si_base_exponent_list(&self) -> Option<SiBaseExponentList> {
+        support::child(&self.0, 0usize)
     }
     pub fn trailing_si_factor(&self) -> Option<TrailingSiFactor> {
-        support::node(&self.syntax, 3usize)
+        support::child(&self.0, 0usize)
     }
     pub fn trailing_si_offset(&self) -> Option<TrailingSiOffset> {
-        support::node(&self.syntax, 4usize)
+        support::child(&self.0, 0usize)
     }
-    pub fn r_paren_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 5usize)
+    pub fn right_paren_token(&self) -> Option<RightParenToken> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for SiUnitSpecifier {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(SI_UNIT_SPECIFIER as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == SI_UNIT_SPECIFIER
+impl<'a> TypedNode for SiUnitSpecifier<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == SI_UNIT_SPECIFIER
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct SiBaseExponentList {
-    syntax_list: SyntaxList<OscDslLanguage>,
-}
-impl AstNode for SiBaseExponentList {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(SI_BASE_EXPONENT_LIST as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == SI_BASE_EXPONENT_LIST
+pub struct SiBaseExponentList<'a>(OscDslNode<'a>);
+impl<'a> SiBaseExponentList<'a> {
+    pub fn comma_token(&self) -> impl Iterator<Item = CommaToken<'a>> + 'a {
+        support::children(&self.0)
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self {
-            syntax_list: syntax.into_list(),
-        })
-    }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        self.syntax_list.node()
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax_list.into_node()
+    pub fn si_base_exponent(&self) -> impl Iterator<Item = SiBaseExponent<'a>> + 'a {
+        support::children(&self.0)
     }
 }
-impl AstSeparatedList for SiBaseExponentList {
-    type Language = OscDslLanguage;
-    type Node = SiBaseExponent;
-    fn syntax_list(&self) -> &SyntaxList<OscDslLanguage> {
-        &self.syntax_list
+impl<'a> TypedNode for SiBaseExponentList<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == SI_BASE_EXPONENT_LIST
     }
-    fn into_syntax_list(self) -> SyntaxList<OscDslLanguage> {
-        self.syntax_list
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct SiBaseExponent {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl SiBaseExponent {
-    pub fn si_base_unit_name(&self) -> SyntaxResult<SiBaseUnitName> {
-        support::required_node(&self.syntax, 0usize)
+pub struct SiBaseExponent<'a>(OscDslNode<'a>);
+impl SiBaseExponent<'_> {
+    pub fn si_base_unit_name(&self) -> Option<SiBaseUnitName> {
+        support::child(&self.0, 0usize)
     }
-    pub fn colon_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 1usize)
+    pub fn colon_token(&self) -> Option<ColonToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn integer_literal_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 2usize)
+    pub fn integer_literal_token(&self) -> Option<IntegerLiteralToken> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for SiBaseExponent {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(SI_BASE_EXPONENT as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == SI_BASE_EXPONENT
+impl<'a> TypedNode for SiBaseExponent<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == SI_BASE_EXPONENT
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
-    }
-}
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
-pub enum SiBaseUnitNameKind {
-    Kg,
-    M,
-    S,
-    A,
-    K,
-    Mol,
-    Cd,
-    Rad,
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct SiBaseUnitName {
-    syntax: SyntaxNode<OscDslLanguage>,
+pub enum SiBaseUnitName<'a> {
+    KgToken(KgToken<'a>),
+    MToken(MToken<'a>),
+    SToken(SToken<'a>),
+    AToken(AToken<'a>),
+    KToken(KToken<'a>),
+    MolToken(MolToken<'a>),
+    CdToken(CdToken<'a>),
+    RadToken(RadToken<'a>),
 }
-impl SiBaseUnitName {
-    pub fn kind(&self) -> SiBaseUnitNameKind {
-        match self.syntax.kind() {
-            KG_KW => SiBaseUnitNameKind::Kg,
-            M_KW => SiBaseUnitNameKind::M,
-            S_KW => SiBaseUnitNameKind::S,
-            A_KW => SiBaseUnitNameKind::A,
-            K_KW => SiBaseUnitNameKind::K,
-            MOL_KW => SiBaseUnitNameKind::Mol,
-            CD_KW => SiBaseUnitNameKind::Cd,
-            RAD_KW => SiBaseUnitNameKind::Rad,
-            _ => unreachable!(),
+impl SiBaseUnitName<'_> {
+    pub fn as_kg_token(&self) -> Option<KgToken> {
+        match self {
+            Self::KgToken(node) => Some(node.clone()),
+            _ => None,
         }
     }
-    pub fn token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
+    pub fn as_m_token(&self) -> Option<MToken> {
+        match self {
+            Self::MToken(node) => Some(node.clone()),
+            _ => None,
+        }
+    }
+    pub fn as_s_token(&self) -> Option<SToken> {
+        match self {
+            Self::SToken(node) => Some(node.clone()),
+            _ => None,
+        }
+    }
+    pub fn as_a_token(&self) -> Option<AToken> {
+        match self {
+            Self::AToken(node) => Some(node.clone()),
+            _ => None,
+        }
+    }
+    pub fn as_k_token(&self) -> Option<KToken> {
+        match self {
+            Self::KToken(node) => Some(node.clone()),
+            _ => None,
+        }
+    }
+    pub fn as_mol_token(&self) -> Option<MolToken> {
+        match self {
+            Self::MolToken(node) => Some(node.clone()),
+            _ => None,
+        }
+    }
+    pub fn as_cd_token(&self) -> Option<CdToken> {
+        match self {
+            Self::CdToken(node) => Some(node.clone()),
+            _ => None,
+        }
+    }
+    pub fn as_rad_token(&self) -> Option<RadToken> {
+        match self {
+            Self::RadToken(node) => Some(node.clone()),
+            _ => None,
+        }
     }
 }
-impl AstNode for SiBaseUnitName {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(SI_BASE_UNIT_NAME as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == SI_BASE_UNIT_NAME
+impl<'a> TypedNode for SiBaseUnitName<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        matches!(
+            value,
+            KG_KW | M_KW | S_KW | A_KW | K_KW | MOL_KW | CD_KW | RAD_KW
+        )
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        match *node.value() {
+            KG_KW => KgToken::cast(node.clone()).map(Self::KgToken),
+            M_KW => MToken::cast(node.clone()).map(Self::MToken),
+            S_KW => SToken::cast(node.clone()).map(Self::SToken),
+            A_KW => AToken::cast(node.clone()).map(Self::AToken),
+            K_KW => KToken::cast(node.clone()).map(Self::KToken),
+            MOL_KW => MolToken::cast(node.clone()).map(Self::MolToken),
+            CD_KW => CdToken::cast(node.clone()).map(Self::CdToken),
+            RAD_KW => RadToken::cast(node.clone()).map(Self::RadToken),
+            _ => None,
+        }
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct TrailingSiFactor {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl TrailingSiFactor {
-    pub fn comma_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
-    }
-    pub fn factor_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 1usize)
-    }
-    pub fn colon_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 2usize)
-    }
-    pub fn number_literal(&self) -> SyntaxResult<NumberLiteral> {
-        support::required_node(&self.syntax, 3usize)
-    }
-}
-impl AstNode for TrailingSiFactor {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(TRAILING_SI_FACTOR as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == TRAILING_SI_FACTOR
-    }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
-    }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct TrailingSiOffset {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl TrailingSiOffset {
-    pub fn comma_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
-    }
-    pub fn offset_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 1usize)
-    }
-    pub fn colon_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 2usize)
-    }
-    pub fn number_literal(&self) -> SyntaxResult<NumberLiteral> {
-        support::required_node(&self.syntax, 3usize)
-    }
-}
-impl AstNode for TrailingSiOffset {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(TRAILING_SI_OFFSET as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == TRAILING_SI_OFFSET
-    }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
-    }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        match self {
+            Self::KgToken(node) => node.syntax(),
+            Self::MToken(node) => node.syntax(),
+            Self::SToken(node) => node.syntax(),
+            Self::AToken(node) => node.syntax(),
+            Self::KToken(node) => node.syntax(),
+            Self::MolToken(node) => node.syntax(),
+            Self::CdToken(node) => node.syntax(),
+            Self::RadToken(node) => node.syntax(),
+        }
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct EnumMemberDeclList {
-    syntax_list: SyntaxList<OscDslLanguage>,
-}
-impl AstNode for EnumMemberDeclList {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(ENUM_MEMBER_DECL_LIST as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == ENUM_MEMBER_DECL_LIST
+pub struct TrailingSiFactor<'a>(OscDslNode<'a>);
+impl TrailingSiFactor<'_> {
+    pub fn comma_token(&self) -> Option<CommaToken> {
+        support::child(&self.0, 0usize)
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self {
-            syntax_list: syntax.into_list(),
-        })
+    pub fn factor_token(&self) -> Option<FactorToken> {
+        support::child(&self.0, 0usize)
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        self.syntax_list.node()
+    pub fn colon_token(&self) -> Option<ColonToken> {
+        support::child(&self.0, 0usize)
     }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax_list.into_node()
+    pub fn number_literal(&self) -> Option<NumberLiteral> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstSeparatedList for EnumMemberDeclList {
-    type Language = OscDslLanguage;
-    type Node = EnumMemberDecl;
-    fn syntax_list(&self) -> &SyntaxList<OscDslLanguage> {
-        &self.syntax_list
+impl<'a> TypedNode for TrailingSiFactor<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == TRAILING_SI_FACTOR
     }
-    fn into_syntax_list(self) -> SyntaxList<OscDslLanguage> {
-        self.syntax_list
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct EnumMemberDecl {
-    syntax: SyntaxNode<OscDslLanguage>,
+pub struct TrailingSiOffset<'a>(OscDslNode<'a>);
+impl TrailingSiOffset<'_> {
+    pub fn comma_token(&self) -> Option<CommaToken> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn offset_token(&self) -> Option<OffsetToken> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn colon_token(&self) -> Option<ColonToken> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn number_literal(&self) -> Option<NumberLiteral> {
+        support::child(&self.0, 0usize)
+    }
 }
-impl EnumMemberDecl {
-    pub fn enum_member_name(&self) -> SyntaxResult<EnumMemberName> {
-        support::required_node(&self.syntax, 0usize)
+impl<'a> TypedNode for TrailingSiOffset<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == TRAILING_SI_OFFSET
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct EnumMemberDeclList<'a>(OscDslNode<'a>);
+impl<'a> EnumMemberDeclList<'a> {
+    pub fn comma_token(&self) -> impl Iterator<Item = CommaToken<'a>> + 'a {
+        support::children(&self.0)
+    }
+    pub fn enum_member_decl(&self) -> impl Iterator<Item = EnumMemberDecl<'a>> + 'a {
+        support::children(&self.0)
+    }
+}
+impl<'a> TypedNode for EnumMemberDeclList<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == ENUM_MEMBER_DECL_LIST
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct EnumMemberDecl<'a>(OscDslNode<'a>);
+impl EnumMemberDecl<'_> {
+    pub fn enum_member_name(&self) -> Option<EnumMemberName> {
+        support::child(&self.0, 0usize)
     }
     pub fn enum_member_initializer(&self) -> Option<EnumMemberInitializer> {
-        support::node(&self.syntax, 1usize)
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for EnumMemberDecl {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(ENUM_MEMBER_DECL as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == ENUM_MEMBER_DECL
+impl<'a> TypedNode for EnumMemberDecl<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == ENUM_MEMBER_DECL
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct EnumMemberName {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl EnumMemberName {
-    pub fn qualified_identifier(&self) -> SyntaxResult<QualifiedIdentifier> {
-        support::required_node(&self.syntax, 0usize)
+pub struct EnumMemberName<'a>(OscDslNode<'a>);
+impl EnumMemberName<'_> {
+    pub fn qualified_identifier(&self) -> Option<QualifiedIdentifier> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for EnumMemberName {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(ENUM_MEMBER_NAME as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == ENUM_MEMBER_NAME
+impl<'a> TypedNode for EnumMemberName<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == ENUM_MEMBER_NAME
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct EnumMemberInitializer {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl EnumMemberInitializer {
-    pub fn assign_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
+pub struct EnumMemberInitializer<'a>(OscDslNode<'a>);
+impl EnumMemberInitializer<'_> {
+    pub fn assign_token(&self) -> Option<AssignToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn enum_member_value(&self) -> SyntaxResult<EnumMemberValue> {
-        support::required_node(&self.syntax, 1usize)
+    pub fn enum_member_value(&self) -> Option<EnumMemberValue> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for EnumMemberInitializer {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(ENUM_MEMBER_INITIALIZER as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == ENUM_MEMBER_INITIALIZER
+impl<'a> TypedNode for EnumMemberInitializer<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == ENUM_MEMBER_INITIALIZER
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct EnumMemberValue {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl EnumMemberValue {
-    pub fn integer_literal_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
+pub struct EnumMemberValue<'a>(OscDslNode<'a>);
+impl EnumMemberValue<'_> {
+    pub fn integer_literal_token(&self) -> Option<IntegerLiteralToken> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for EnumMemberValue {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(ENUM_MEMBER_VALUE as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == ENUM_MEMBER_VALUE
+impl<'a> TypedNode for EnumMemberValue<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == ENUM_MEMBER_VALUE
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct EnumValueReference {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl EnumValueReference {
+pub struct EnumValueReference<'a>(OscDslNode<'a>);
+impl EnumValueReference<'_> {
     pub fn enum_value_reference_prefix(&self) -> Option<EnumValueReferencePrefix> {
-        support::node(&self.syntax, 0usize)
+        support::child(&self.0, 0usize)
     }
-    pub fn enum_member_name(&self) -> SyntaxResult<EnumMemberName> {
-        support::required_node(&self.syntax, 1usize)
+    pub fn enum_member_name(&self) -> Option<EnumMemberName> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for EnumValueReference {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(ENUM_VALUE_REFERENCE as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == ENUM_VALUE_REFERENCE
+impl<'a> TypedNode for EnumValueReference<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == ENUM_VALUE_REFERENCE
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct EnumValueReferencePrefix {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl EnumValueReferencePrefix {
-    pub fn enum_name(&self) -> SyntaxResult<EnumName> {
-        support::required_node(&self.syntax, 0usize)
+pub struct EnumValueReferencePrefix<'a>(OscDslNode<'a>);
+impl EnumValueReferencePrefix<'_> {
+    pub fn enum_name(&self) -> Option<EnumName> {
+        support::child(&self.0, 0usize)
     }
-    pub fn exclamation_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 1usize)
+    pub fn exclamation_token(&self) -> Option<ExclamationToken> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for EnumValueReferencePrefix {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(ENUM_VALUE_REFERENCE_PREFIX as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == ENUM_VALUE_REFERENCE_PREFIX
+impl<'a> TypedNode for EnumValueReferencePrefix<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == ENUM_VALUE_REFERENCE_PREFIX
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct StructInheritsClause {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl StructInheritsClause {
-    pub fn inherits_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
+pub struct StructInheritsClause<'a>(OscDslNode<'a>);
+impl StructInheritsClause<'_> {
+    pub fn inherits_token(&self) -> Option<InheritsToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn struct_name(&self) -> SyntaxResult<StructName> {
-        support::required_node(&self.syntax, 1usize)
+    pub fn struct_name(&self) -> Option<StructName> {
+        support::child(&self.0, 0usize)
     }
     pub fn struct_inherits_condition(&self) -> Option<StructInheritsCondition> {
-        support::node(&self.syntax, 2usize)
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for StructInheritsClause {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(STRUCT_INHERITS_CLAUSE as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == STRUCT_INHERITS_CLAUSE
+impl<'a> TypedNode for StructInheritsClause<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == STRUCT_INHERITS_CLAUSE
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum StructBodyOrEmpty {
-    StructBody(StructBody),
-    Empty(Empty),
+pub enum StructBodyOrNewline<'a> {
+    StructBody(StructBody<'a>),
+    NewlineToken(NewlineToken<'a>),
 }
-impl StructBodyOrEmpty {
-    pub fn as_struct_body(&self) -> Option<&StructBody> {
+impl StructBodyOrNewline<'_> {
+    pub fn as_struct_body(&self) -> Option<StructBody> {
         match self {
-            StructBodyOrEmpty::StructBody(node) => Some(node),
+            Self::StructBody(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_empty(&self) -> Option<&Empty> {
+    pub fn as_newline_token(&self) -> Option<NewlineToken> {
         match self {
-            StructBodyOrEmpty::Empty(node) => Some(node),
+            Self::NewlineToken(node) => Some(node.clone()),
             _ => None,
         }
     }
 }
-impl AstNode for StructBodyOrEmpty {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> = StructBody::KIND_SET.union(Empty::KIND_SET);
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        matches!(kind, STRUCT_BODY | EMPTY)
+impl<'a> TypedNode for StructBodyOrNewline<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        matches!(value, STRUCT_BODY | NEWLINE)
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        let result = match syntax.kind() {
-            STRUCT_BODY => Self::StructBody(StructBody::cast(syntax)?),
-            EMPTY => Self::Empty(Empty::cast(syntax)?),
-            _ => return None,
-        };
-        Some(result)
+    fn cast(node: Self::Node) -> Option<Self> {
+        match *node.value() {
+            STRUCT_BODY => StructBody::cast(node.clone()).map(Self::StructBody),
+            NEWLINE => NewlineToken::cast(node.clone()).map(Self::NewlineToken),
+            _ => None,
+        }
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        match &self {
+    fn syntax(&self) -> &Self::Node {
+        match self {
             Self::StructBody(node) => node.syntax(),
-            Self::Empty(node) => node.syntax(),
-        }
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        match self {
-            Self::StructBody(node) => node.into_syntax(),
-            Self::Empty(node) => node.into_syntax(),
+            Self::NewlineToken(node) => node.syntax(),
         }
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct StructInheritsCondition {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl StructInheritsCondition {
-    pub fn l_paren_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
+pub struct StructInheritsCondition<'a>(OscDslNode<'a>);
+impl StructInheritsCondition<'_> {
+    pub fn left_paren_token(&self) -> Option<LeftParenToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn field_name(&self) -> SyntaxResult<FieldName> {
-        support::required_node(&self.syntax, 1usize)
+    pub fn field_name(&self) -> Option<FieldName> {
+        support::child(&self.0, 0usize)
     }
-    pub fn equal_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 2usize)
+    pub fn equal_token(&self) -> Option<EqualToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn struct_inherits_constant(&self) -> SyntaxResult<StructInheritsConstant> {
-        support::required_node(&self.syntax, 3usize)
+    pub fn struct_inherits_constant(&self) -> Option<StructInheritsConstant> {
+        support::child(&self.0, 0usize)
     }
-    pub fn r_paren_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 4usize)
+    pub fn right_paren_token(&self) -> Option<RightParenToken> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for StructInheritsCondition {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(STRUCT_INHERITS_CONDITION as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == STRUCT_INHERITS_CONDITION
+impl<'a> TypedNode for StructInheritsCondition<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == STRUCT_INHERITS_CONDITION
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct FieldName {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl FieldName {
-    pub fn qualified_identifier(&self) -> SyntaxResult<QualifiedIdentifier> {
-        support::required_node(&self.syntax, 0usize)
+pub struct FieldName<'a>(OscDslNode<'a>);
+impl FieldName<'_> {
+    pub fn qualified_identifier(&self) -> Option<QualifiedIdentifier> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for FieldName {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(FIELD_NAME as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == FIELD_NAME
+impl<'a> TypedNode for FieldName<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == FIELD_NAME
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum StructInheritsConstant {
-    EnumValueReference(EnumValueReference),
-    BoolLiteral(BoolLiteral),
+pub enum StructInheritsConstant<'a> {
+    EnumValueReference(EnumValueReference<'a>),
+    BoolLiteral(BoolLiteral<'a>),
 }
-impl StructInheritsConstant {
-    pub fn as_enum_value_reference(&self) -> Option<&EnumValueReference> {
+impl StructInheritsConstant<'_> {
+    pub fn as_enum_value_reference(&self) -> Option<EnumValueReference> {
         match self {
-            StructInheritsConstant::EnumValueReference(node) => Some(node),
+            Self::EnumValueReference(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_bool_literal(&self) -> Option<&BoolLiteral> {
+    pub fn as_bool_literal(&self) -> Option<BoolLiteral> {
         match self {
-            StructInheritsConstant::BoolLiteral(node) => Some(node),
+            Self::BoolLiteral(node) => Some(node.clone()),
             _ => None,
         }
     }
 }
-impl AstNode for StructInheritsConstant {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        EnumValueReference::KIND_SET.union(BoolLiteral::KIND_SET);
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        matches!(kind, ENUM_VALUE_REFERENCE | BOOL_LITERAL)
+impl<'a> TypedNode for StructInheritsConstant<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        matches!(value, ENUM_VALUE_REFERENCE | BOOL_LITERAL)
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        let result = match syntax.kind() {
-            ENUM_VALUE_REFERENCE => Self::EnumValueReference(EnumValueReference::cast(syntax)?),
-            BOOL_LITERAL => Self::BoolLiteral(BoolLiteral::cast(syntax)?),
-            _ => return None,
-        };
-        Some(result)
+    fn cast(node: Self::Node) -> Option<Self> {
+        match *node.value() {
+            ENUM_VALUE_REFERENCE => {
+                EnumValueReference::cast(node.clone()).map(Self::EnumValueReference)
+            }
+            BOOL_LITERAL => BoolLiteral::cast(node.clone()).map(Self::BoolLiteral),
+            _ => None,
+        }
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        match &self {
+    fn syntax(&self) -> &Self::Node {
+        match self {
             Self::EnumValueReference(node) => node.syntax(),
             Self::BoolLiteral(node) => node.syntax(),
         }
     }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        match self {
-            Self::EnumValueReference(node) => node.into_syntax(),
-            Self::BoolLiteral(node) => node.into_syntax(),
-        }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct StructBody<'a>(OscDslNode<'a>);
+impl StructBody<'_> {
+    pub fn colon_token(&self) -> Option<ColonToken> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn newline_token(&self) -> Option<NewlineToken> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn indent_token(&self) -> Option<IndentToken> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn struct_member_decl_list(&self) -> Option<StructMemberDeclList> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn dedent_token(&self) -> Option<DedentToken> {
+        support::child(&self.0, 0usize)
+    }
+}
+impl<'a> TypedNode for StructBody<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == STRUCT_BODY
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct StructBody {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl StructBody {
-    pub fn colon_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
-    }
-    pub fn newline_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 1usize)
-    }
-    pub fn indent_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 2usize)
-    }
-    pub fn struct_member_decl_list(&self) -> StructMemberDeclList {
-        support::list(&self.syntax, 3usize)
-    }
-    pub fn dedent_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 4usize)
+pub struct StructMemberDeclList<'a>(OscDslNode<'a>);
+impl<'a> StructMemberDeclList<'a> {
+    pub fn struct_member_decl(&self) -> impl Iterator<Item = StructMemberDecl<'a>> + 'a {
+        support::children(&self.0)
     }
 }
-impl AstNode for StructBody {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(STRUCT_BODY as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == STRUCT_BODY
+impl<'a> TypedNode for StructMemberDeclList<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == STRUCT_MEMBER_DECL_LIST
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct StructMemberDeclList {
-    syntax_list: SyntaxList<OscDslLanguage>,
+pub enum StructMemberDecl<'a> {
+    EventDeclaration(EventDeclaration<'a>),
+    FieldDeclaration(FieldDeclaration<'a>),
+    ConstraintDeclaration(ConstraintDeclaration<'a>),
+    MethodDeclaration(MethodDeclaration<'a>),
+    CoverageDeclaration(CoverageDeclaration<'a>),
 }
-impl AstNode for StructMemberDeclList {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(STRUCT_MEMBER_DECL_LIST as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == STRUCT_MEMBER_DECL_LIST
-    }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self {
-            syntax_list: syntax.into_list(),
-        })
-    }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        self.syntax_list.node()
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax_list.into_node()
-    }
-}
-impl AstNodeList for StructMemberDeclList {
-    type Language = OscDslLanguage;
-    type Node = StructMemberDecl;
-    fn syntax_list(&self) -> &SyntaxList<OscDslLanguage> {
-        &self.syntax_list
-    }
-    fn into_syntax_list(self) -> SyntaxList<OscDslLanguage> {
-        self.syntax_list
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum StructMemberDecl {
-    EventDeclaration(EventDeclaration),
-    FieldDeclaration(FieldDeclaration),
-    ConstraintDeclaration(ConstraintDeclaration),
-    MethodDeclaration(MethodDeclaration),
-    CoverageDeclaration(CoverageDeclaration),
-}
-impl StructMemberDecl {
-    pub fn as_event_declaration(&self) -> Option<&EventDeclaration> {
+impl StructMemberDecl<'_> {
+    pub fn as_event_declaration(&self) -> Option<EventDeclaration> {
         match self {
-            StructMemberDecl::EventDeclaration(node) => Some(node),
+            Self::EventDeclaration(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_field_declaration(&self) -> Option<&FieldDeclaration> {
+    pub fn as_field_declaration(&self) -> Option<FieldDeclaration> {
         match self {
-            StructMemberDecl::FieldDeclaration(node) => Some(node),
+            Self::FieldDeclaration(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_constraint_declaration(&self) -> Option<&ConstraintDeclaration> {
+    pub fn as_constraint_declaration(&self) -> Option<ConstraintDeclaration> {
         match self {
-            StructMemberDecl::ConstraintDeclaration(node) => Some(node),
+            Self::ConstraintDeclaration(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_method_declaration(&self) -> Option<&MethodDeclaration> {
+    pub fn as_method_declaration(&self) -> Option<MethodDeclaration> {
         match self {
-            StructMemberDecl::MethodDeclaration(node) => Some(node),
+            Self::MethodDeclaration(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_coverage_declaration(&self) -> Option<&CoverageDeclaration> {
+    pub fn as_coverage_declaration(&self) -> Option<CoverageDeclaration> {
         match self {
-            StructMemberDecl::CoverageDeclaration(node) => Some(node),
+            Self::CoverageDeclaration(node) => Some(node.clone()),
             _ => None,
         }
     }
 }
-impl AstNode for StructMemberDecl {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> = EventDeclaration::KIND_SET
-        .union(FieldDeclaration::KIND_SET)
-        .union(ConstraintDeclaration::KIND_SET)
-        .union(MethodDeclaration::KIND_SET)
-        .union(CoverageDeclaration::KIND_SET);
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
+impl<'a> TypedNode for StructMemberDecl<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
         matches!(
-            kind,
+            value,
             EVENT_DECLARATION
                 | FIELD_DECLARATION
                 | CONSTRAINT_DECLARATION
@@ -2745,21 +3924,24 @@ impl AstNode for StructMemberDecl {
                 | COVERAGE_DECLARATION
         )
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        let result = match syntax.kind() {
-            EVENT_DECLARATION => Self::EventDeclaration(EventDeclaration::cast(syntax)?),
-            FIELD_DECLARATION => Self::FieldDeclaration(FieldDeclaration::cast(syntax)?),
+    fn cast(node: Self::Node) -> Option<Self> {
+        match *node.value() {
+            EVENT_DECLARATION => EventDeclaration::cast(node.clone()).map(Self::EventDeclaration),
+            FIELD_DECLARATION => FieldDeclaration::cast(node.clone()).map(Self::FieldDeclaration),
             CONSTRAINT_DECLARATION => {
-                Self::ConstraintDeclaration(ConstraintDeclaration::cast(syntax)?)
+                ConstraintDeclaration::cast(node.clone()).map(Self::ConstraintDeclaration)
             }
-            METHOD_DECLARATION => Self::MethodDeclaration(MethodDeclaration::cast(syntax)?),
-            COVERAGE_DECLARATION => Self::CoverageDeclaration(CoverageDeclaration::cast(syntax)?),
-            _ => return None,
-        };
-        Some(result)
+            METHOD_DECLARATION => {
+                MethodDeclaration::cast(node.clone()).map(Self::MethodDeclaration)
+            }
+            COVERAGE_DECLARATION => {
+                CoverageDeclaration::cast(node.clone()).map(Self::CoverageDeclaration)
+            }
+            _ => None,
+        }
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        match &self {
+    fn syntax(&self) -> &Self::Node {
+        match self {
             Self::EventDeclaration(node) => node.syntax(),
             Self::FieldDeclaration(node) => node.syntax(),
             Self::ConstraintDeclaration(node) => node.syntax(),
@@ -2767,526 +3949,437 @@ impl AstNode for StructMemberDecl {
             Self::CoverageDeclaration(node) => node.syntax(),
         }
     }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        match self {
-            Self::EventDeclaration(node) => node.into_syntax(),
-            Self::FieldDeclaration(node) => node.into_syntax(),
-            Self::ConstraintDeclaration(node) => node.into_syntax(),
-            Self::MethodDeclaration(node) => node.into_syntax(),
-            Self::CoverageDeclaration(node) => node.into_syntax(),
-        }
-    }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct EventDeclaration {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl EventDeclaration {
-    pub fn event_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
+pub struct EventDeclaration<'a>(OscDslNode<'a>);
+impl EventDeclaration<'_> {
+    pub fn event_token(&self) -> Option<EventToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn event_name(&self) -> SyntaxResult<EventName> {
-        support::required_node(&self.syntax, 1usize)
+    pub fn event_name(&self) -> Option<EventName> {
+        support::child(&self.0, 0usize)
     }
     pub fn event_argument_list_specification(&self) -> Option<EventArgumentListSpecification> {
-        support::node(&self.syntax, 2usize)
+        support::child(&self.0, 0usize)
     }
     pub fn event_is_clause(&self) -> Option<EventIsClause> {
-        support::node(&self.syntax, 3usize)
+        support::child(&self.0, 0usize)
     }
-    pub fn newline_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 4usize)
+    pub fn newline_token(&self) -> Option<NewlineToken> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for EventDeclaration {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(EVENT_DECLARATION as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == EVENT_DECLARATION
+impl<'a> TypedNode for EventDeclaration<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == EVENT_DECLARATION
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum FieldDeclaration {
-    ParameterDeclaration(ParameterDeclaration),
-    VariableDeclaration(VariableDeclaration),
+pub enum FieldDeclaration<'a> {
+    ParameterDeclaration(ParameterDeclaration<'a>),
+    VariableDeclaration(VariableDeclaration<'a>),
 }
-impl FieldDeclaration {
-    pub fn as_parameter_declaration(&self) -> Option<&ParameterDeclaration> {
+impl FieldDeclaration<'_> {
+    pub fn as_parameter_declaration(&self) -> Option<ParameterDeclaration> {
         match self {
-            FieldDeclaration::ParameterDeclaration(node) => Some(node),
+            Self::ParameterDeclaration(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_variable_declaration(&self) -> Option<&VariableDeclaration> {
+    pub fn as_variable_declaration(&self) -> Option<VariableDeclaration> {
         match self {
-            FieldDeclaration::VariableDeclaration(node) => Some(node),
+            Self::VariableDeclaration(node) => Some(node.clone()),
             _ => None,
         }
     }
 }
-impl AstNode for FieldDeclaration {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        ParameterDeclaration::KIND_SET.union(VariableDeclaration::KIND_SET);
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        matches!(kind, PARAMETER_DECLARATION | VARIABLE_DECLARATION)
+impl<'a> TypedNode for FieldDeclaration<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        matches!(value, PARAMETER_DECLARATION | VARIABLE_DECLARATION)
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        let result = match syntax.kind() {
+    fn cast(node: Self::Node) -> Option<Self> {
+        match *node.value() {
             PARAMETER_DECLARATION => {
-                Self::ParameterDeclaration(ParameterDeclaration::cast(syntax)?)
+                ParameterDeclaration::cast(node.clone()).map(Self::ParameterDeclaration)
             }
-            VARIABLE_DECLARATION => Self::VariableDeclaration(VariableDeclaration::cast(syntax)?),
-            _ => return None,
-        };
-        Some(result)
+            VARIABLE_DECLARATION => {
+                VariableDeclaration::cast(node.clone()).map(Self::VariableDeclaration)
+            }
+            _ => None,
+        }
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        match &self {
+    fn syntax(&self) -> &Self::Node {
+        match self {
             Self::ParameterDeclaration(node) => node.syntax(),
             Self::VariableDeclaration(node) => node.syntax(),
         }
     }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        match self {
-            Self::ParameterDeclaration(node) => node.into_syntax(),
-            Self::VariableDeclaration(node) => node.into_syntax(),
-        }
-    }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum ConstraintDeclaration {
-    KeepConstraintDeclaration(KeepConstraintDeclaration),
-    RemoveDefaultDeclaration(RemoveDefaultDeclaration),
+pub enum ConstraintDeclaration<'a> {
+    KeepConstraintDeclaration(KeepConstraintDeclaration<'a>),
+    RemoveDefaultDeclaration(RemoveDefaultDeclaration<'a>),
 }
-impl ConstraintDeclaration {
-    pub fn as_keep_constraint_declaration(&self) -> Option<&KeepConstraintDeclaration> {
+impl ConstraintDeclaration<'_> {
+    pub fn as_keep_constraint_declaration(&self) -> Option<KeepConstraintDeclaration> {
         match self {
-            ConstraintDeclaration::KeepConstraintDeclaration(node) => Some(node),
+            Self::KeepConstraintDeclaration(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_remove_default_declaration(&self) -> Option<&RemoveDefaultDeclaration> {
+    pub fn as_remove_default_declaration(&self) -> Option<RemoveDefaultDeclaration> {
         match self {
-            ConstraintDeclaration::RemoveDefaultDeclaration(node) => Some(node),
+            Self::RemoveDefaultDeclaration(node) => Some(node.clone()),
             _ => None,
         }
     }
 }
-impl AstNode for ConstraintDeclaration {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        KeepConstraintDeclaration::KIND_SET.union(RemoveDefaultDeclaration::KIND_SET);
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
+impl<'a> TypedNode for ConstraintDeclaration<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
         matches!(
-            kind,
+            value,
             KEEP_CONSTRAINT_DECLARATION | REMOVE_DEFAULT_DECLARATION
         )
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        let result = match syntax.kind() {
+    fn cast(node: Self::Node) -> Option<Self> {
+        match *node.value() {
             KEEP_CONSTRAINT_DECLARATION => {
-                Self::KeepConstraintDeclaration(KeepConstraintDeclaration::cast(syntax)?)
+                KeepConstraintDeclaration::cast(node.clone()).map(Self::KeepConstraintDeclaration)
             }
             REMOVE_DEFAULT_DECLARATION => {
-                Self::RemoveDefaultDeclaration(RemoveDefaultDeclaration::cast(syntax)?)
+                RemoveDefaultDeclaration::cast(node.clone()).map(Self::RemoveDefaultDeclaration)
             }
-            _ => return None,
-        };
-        Some(result)
+            _ => None,
+        }
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        match &self {
+    fn syntax(&self) -> &Self::Node {
+        match self {
             Self::KeepConstraintDeclaration(node) => node.syntax(),
             Self::RemoveDefaultDeclaration(node) => node.syntax(),
         }
     }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        match self {
-            Self::KeepConstraintDeclaration(node) => node.into_syntax(),
-            Self::RemoveDefaultDeclaration(node) => node.into_syntax(),
-        }
-    }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct MethodDeclaration {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl MethodDeclaration {
-    pub fn def_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
+pub struct MethodDeclaration<'a>(OscDslNode<'a>);
+impl MethodDeclaration<'_> {
+    pub fn def_token(&self) -> Option<DefToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn method_name(&self) -> SyntaxResult<MethodName> {
-        support::required_node(&self.syntax, 1usize)
+    pub fn method_name(&self) -> Option<MethodName> {
+        support::child(&self.0, 0usize)
     }
-    pub fn l_paren_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 2usize)
+    pub fn left_paren_token(&self) -> Option<LeftParenToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn argument_list_specification(&self) -> ArgumentListSpecification {
-        support::list(&self.syntax, 3usize)
+    pub fn argument_list_specification(&self) -> Option<ArgumentListSpecification> {
+        support::child(&self.0, 0usize)
     }
-    pub fn r_paren_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 4usize)
+    pub fn right_paren_token(&self) -> Option<RightParenToken> {
+        support::child(&self.0, 0usize)
     }
     pub fn method_return_type(&self) -> Option<MethodReturnType> {
-        support::node(&self.syntax, 5usize)
+        support::child(&self.0, 0usize)
     }
-    pub fn method_implementation(&self) -> SyntaxResult<MethodImplementation> {
-        support::required_node(&self.syntax, 6usize)
+    pub fn method_implementation(&self) -> Option<MethodImplementation> {
+        support::child(&self.0, 0usize)
     }
-    pub fn newline_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 7usize)
+    pub fn newline_token(&self) -> Option<NewlineToken> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for MethodDeclaration {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(METHOD_DECLARATION as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == METHOD_DECLARATION
+impl<'a> TypedNode for MethodDeclaration<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == METHOD_DECLARATION
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct CoverageDeclaration {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl CoverageDeclaration {
-    pub fn coverage_operator(&self) -> SyntaxResult<CoverageOperator> {
-        support::required_node(&self.syntax, 0usize)
+pub struct CoverageDeclaration<'a>(OscDslNode<'a>);
+impl CoverageDeclaration<'_> {
+    pub fn coverage_operator(&self) -> Option<CoverageOperator> {
+        support::child(&self.0, 0usize)
     }
-    pub fn l_paren_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 1usize)
+    pub fn left_paren_token(&self) -> Option<LeftParenToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn argument_list(&self) -> SyntaxResult<ArgumentList> {
-        support::required_node(&self.syntax, 2usize)
+    pub fn argument_list(&self) -> Option<ArgumentList> {
+        support::child(&self.0, 0usize)
     }
-    pub fn r_paren_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 3usize)
+    pub fn right_paren_token(&self) -> Option<RightParenToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn newline_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 4usize)
+    pub fn newline_token(&self) -> Option<NewlineToken> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for CoverageDeclaration {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(COVERAGE_DECLARATION as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == COVERAGE_DECLARATION
+impl<'a> TypedNode for CoverageDeclaration<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == COVERAGE_DECLARATION
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ActorInheritsClause {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl ActorInheritsClause {
-    pub fn inherits_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
+pub struct ActorInheritsClause<'a>(OscDslNode<'a>);
+impl ActorInheritsClause<'_> {
+    pub fn inherits_token(&self) -> Option<InheritsToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn actor_name(&self) -> SyntaxResult<ActorName> {
-        support::required_node(&self.syntax, 1usize)
+    pub fn actor_name(&self) -> Option<ActorName> {
+        support::child(&self.0, 0usize)
     }
     pub fn actor_inherits_condition(&self) -> Option<ActorInheritsCondition> {
-        support::node(&self.syntax, 2usize)
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for ActorInheritsClause {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(ACTOR_INHERITS_CLAUSE as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == ACTOR_INHERITS_CLAUSE
+impl<'a> TypedNode for ActorInheritsClause<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == ACTOR_INHERITS_CLAUSE
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum ActorBodyOrEmpty {
-    ActorBody(ActorBody),
-    Empty(Empty),
+pub enum ActorBodyOrNewline<'a> {
+    ActorBody(ActorBody<'a>),
+    NewlineToken(NewlineToken<'a>),
 }
-impl ActorBodyOrEmpty {
-    pub fn as_actor_body(&self) -> Option<&ActorBody> {
+impl ActorBodyOrNewline<'_> {
+    pub fn as_actor_body(&self) -> Option<ActorBody> {
         match self {
-            ActorBodyOrEmpty::ActorBody(node) => Some(node),
+            Self::ActorBody(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_empty(&self) -> Option<&Empty> {
+    pub fn as_newline_token(&self) -> Option<NewlineToken> {
         match self {
-            ActorBodyOrEmpty::Empty(node) => Some(node),
+            Self::NewlineToken(node) => Some(node.clone()),
             _ => None,
         }
     }
 }
-impl AstNode for ActorBodyOrEmpty {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> = ActorBody::KIND_SET.union(Empty::KIND_SET);
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        matches!(kind, ACTOR_BODY | EMPTY)
+impl<'a> TypedNode for ActorBodyOrNewline<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        matches!(value, ACTOR_BODY | NEWLINE)
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        let result = match syntax.kind() {
-            ACTOR_BODY => Self::ActorBody(ActorBody::cast(syntax)?),
-            EMPTY => Self::Empty(Empty::cast(syntax)?),
-            _ => return None,
-        };
-        Some(result)
+    fn cast(node: Self::Node) -> Option<Self> {
+        match *node.value() {
+            ACTOR_BODY => ActorBody::cast(node.clone()).map(Self::ActorBody),
+            NEWLINE => NewlineToken::cast(node.clone()).map(Self::NewlineToken),
+            _ => None,
+        }
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        match &self {
+    fn syntax(&self) -> &Self::Node {
+        match self {
             Self::ActorBody(node) => node.syntax(),
-            Self::Empty(node) => node.syntax(),
-        }
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        match self {
-            Self::ActorBody(node) => node.into_syntax(),
-            Self::Empty(node) => node.into_syntax(),
+            Self::NewlineToken(node) => node.syntax(),
         }
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ActorInheritsCondition {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl ActorInheritsCondition {
-    pub fn l_paren_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
+pub struct ActorInheritsCondition<'a>(OscDslNode<'a>);
+impl ActorInheritsCondition<'_> {
+    pub fn left_paren_token(&self) -> Option<LeftParenToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn field_name(&self) -> SyntaxResult<FieldName> {
-        support::required_node(&self.syntax, 1usize)
+    pub fn field_name(&self) -> Option<FieldName> {
+        support::child(&self.0, 0usize)
     }
-    pub fn equal_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 2usize)
+    pub fn equal_token(&self) -> Option<EqualToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn actor_inherits_constant(&self) -> SyntaxResult<ActorInheritsConstant> {
-        support::required_node(&self.syntax, 3usize)
+    pub fn actor_inherits_constant(&self) -> Option<ActorInheritsConstant> {
+        support::child(&self.0, 0usize)
     }
-    pub fn r_paren_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 4usize)
+    pub fn right_paren_token(&self) -> Option<RightParenToken> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for ActorInheritsCondition {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(ACTOR_INHERITS_CONDITION as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == ACTOR_INHERITS_CONDITION
+impl<'a> TypedNode for ActorInheritsCondition<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == ACTOR_INHERITS_CONDITION
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum ActorInheritsConstant {
-    EnumValueReference(EnumValueReference),
-    BoolLiteral(BoolLiteral),
+pub enum ActorInheritsConstant<'a> {
+    EnumValueReference(EnumValueReference<'a>),
+    BoolLiteral(BoolLiteral<'a>),
 }
-impl ActorInheritsConstant {
-    pub fn as_enum_value_reference(&self) -> Option<&EnumValueReference> {
+impl ActorInheritsConstant<'_> {
+    pub fn as_enum_value_reference(&self) -> Option<EnumValueReference> {
         match self {
-            ActorInheritsConstant::EnumValueReference(node) => Some(node),
+            Self::EnumValueReference(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_bool_literal(&self) -> Option<&BoolLiteral> {
+    pub fn as_bool_literal(&self) -> Option<BoolLiteral> {
         match self {
-            ActorInheritsConstant::BoolLiteral(node) => Some(node),
+            Self::BoolLiteral(node) => Some(node.clone()),
             _ => None,
         }
     }
 }
-impl AstNode for ActorInheritsConstant {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        EnumValueReference::KIND_SET.union(BoolLiteral::KIND_SET);
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        matches!(kind, ENUM_VALUE_REFERENCE | BOOL_LITERAL)
+impl<'a> TypedNode for ActorInheritsConstant<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        matches!(value, ENUM_VALUE_REFERENCE | BOOL_LITERAL)
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        let result = match syntax.kind() {
-            ENUM_VALUE_REFERENCE => Self::EnumValueReference(EnumValueReference::cast(syntax)?),
-            BOOL_LITERAL => Self::BoolLiteral(BoolLiteral::cast(syntax)?),
-            _ => return None,
-        };
-        Some(result)
+    fn cast(node: Self::Node) -> Option<Self> {
+        match *node.value() {
+            ENUM_VALUE_REFERENCE => {
+                EnumValueReference::cast(node.clone()).map(Self::EnumValueReference)
+            }
+            BOOL_LITERAL => BoolLiteral::cast(node.clone()).map(Self::BoolLiteral),
+            _ => None,
+        }
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        match &self {
+    fn syntax(&self) -> &Self::Node {
+        match self {
             Self::EnumValueReference(node) => node.syntax(),
             Self::BoolLiteral(node) => node.syntax(),
         }
     }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        match self {
-            Self::EnumValueReference(node) => node.into_syntax(),
-            Self::BoolLiteral(node) => node.into_syntax(),
-        }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ActorBody<'a>(OscDslNode<'a>);
+impl ActorBody<'_> {
+    pub fn colon_token(&self) -> Option<ColonToken> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn newline_token(&self) -> Option<NewlineToken> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn indent_token(&self) -> Option<IndentToken> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn actor_member_decl_list(&self) -> Option<ActorMemberDeclList> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn dedent_token(&self) -> Option<DedentToken> {
+        support::child(&self.0, 0usize)
+    }
+}
+impl<'a> TypedNode for ActorBody<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == ACTOR_BODY
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ActorBody {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl ActorBody {
-    pub fn colon_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
-    }
-    pub fn newline_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 1usize)
-    }
-    pub fn indent_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 2usize)
-    }
-    pub fn actor_member_decl_list(&self) -> ActorMemberDeclList {
-        support::list(&self.syntax, 3usize)
-    }
-    pub fn dedent_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 4usize)
+pub struct ActorMemberDeclList<'a>(OscDslNode<'a>);
+impl<'a> ActorMemberDeclList<'a> {
+    pub fn actor_member_decl(&self) -> impl Iterator<Item = ActorMemberDecl<'a>> + 'a {
+        support::children(&self.0)
     }
 }
-impl AstNode for ActorBody {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(ACTOR_BODY as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == ACTOR_BODY
+impl<'a> TypedNode for ActorMemberDeclList<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == ACTOR_MEMBER_DECL_LIST
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ActorMemberDeclList {
-    syntax_list: SyntaxList<OscDslLanguage>,
+pub enum ActorMemberDecl<'a> {
+    EventDeclaration(EventDeclaration<'a>),
+    FieldDeclaration(FieldDeclaration<'a>),
+    ConstraintDeclaration(ConstraintDeclaration<'a>),
+    MethodDeclaration(MethodDeclaration<'a>),
+    CoverageDeclaration(CoverageDeclaration<'a>),
 }
-impl AstNode for ActorMemberDeclList {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(ACTOR_MEMBER_DECL_LIST as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == ACTOR_MEMBER_DECL_LIST
-    }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self {
-            syntax_list: syntax.into_list(),
-        })
-    }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        self.syntax_list.node()
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax_list.into_node()
-    }
-}
-impl AstNodeList for ActorMemberDeclList {
-    type Language = OscDslLanguage;
-    type Node = ActorMemberDecl;
-    fn syntax_list(&self) -> &SyntaxList<OscDslLanguage> {
-        &self.syntax_list
-    }
-    fn into_syntax_list(self) -> SyntaxList<OscDslLanguage> {
-        self.syntax_list
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum ActorMemberDecl {
-    EventDeclaration(EventDeclaration),
-    FieldDeclaration(FieldDeclaration),
-    ConstraintDeclaration(ConstraintDeclaration),
-    MethodDeclaration(MethodDeclaration),
-    CoverageDeclaration(CoverageDeclaration),
-}
-impl ActorMemberDecl {
-    pub fn as_event_declaration(&self) -> Option<&EventDeclaration> {
+impl ActorMemberDecl<'_> {
+    pub fn as_event_declaration(&self) -> Option<EventDeclaration> {
         match self {
-            ActorMemberDecl::EventDeclaration(node) => Some(node),
+            Self::EventDeclaration(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_field_declaration(&self) -> Option<&FieldDeclaration> {
+    pub fn as_field_declaration(&self) -> Option<FieldDeclaration> {
         match self {
-            ActorMemberDecl::FieldDeclaration(node) => Some(node),
+            Self::FieldDeclaration(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_constraint_declaration(&self) -> Option<&ConstraintDeclaration> {
+    pub fn as_constraint_declaration(&self) -> Option<ConstraintDeclaration> {
         match self {
-            ActorMemberDecl::ConstraintDeclaration(node) => Some(node),
+            Self::ConstraintDeclaration(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_method_declaration(&self) -> Option<&MethodDeclaration> {
+    pub fn as_method_declaration(&self) -> Option<MethodDeclaration> {
         match self {
-            ActorMemberDecl::MethodDeclaration(node) => Some(node),
+            Self::MethodDeclaration(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_coverage_declaration(&self) -> Option<&CoverageDeclaration> {
+    pub fn as_coverage_declaration(&self) -> Option<CoverageDeclaration> {
         match self {
-            ActorMemberDecl::CoverageDeclaration(node) => Some(node),
+            Self::CoverageDeclaration(node) => Some(node.clone()),
             _ => None,
         }
     }
 }
-impl AstNode for ActorMemberDecl {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> = EventDeclaration::KIND_SET
-        .union(FieldDeclaration::KIND_SET)
-        .union(ConstraintDeclaration::KIND_SET)
-        .union(MethodDeclaration::KIND_SET)
-        .union(CoverageDeclaration::KIND_SET);
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
+impl<'a> TypedNode for ActorMemberDecl<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
         matches!(
-            kind,
+            value,
             EVENT_DECLARATION
                 | FIELD_DECLARATION
                 | CONSTRAINT_DECLARATION
@@ -3294,21 +4387,24 @@ impl AstNode for ActorMemberDecl {
                 | COVERAGE_DECLARATION
         )
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        let result = match syntax.kind() {
-            EVENT_DECLARATION => Self::EventDeclaration(EventDeclaration::cast(syntax)?),
-            FIELD_DECLARATION => Self::FieldDeclaration(FieldDeclaration::cast(syntax)?),
+    fn cast(node: Self::Node) -> Option<Self> {
+        match *node.value() {
+            EVENT_DECLARATION => EventDeclaration::cast(node.clone()).map(Self::EventDeclaration),
+            FIELD_DECLARATION => FieldDeclaration::cast(node.clone()).map(Self::FieldDeclaration),
             CONSTRAINT_DECLARATION => {
-                Self::ConstraintDeclaration(ConstraintDeclaration::cast(syntax)?)
+                ConstraintDeclaration::cast(node.clone()).map(Self::ConstraintDeclaration)
             }
-            METHOD_DECLARATION => Self::MethodDeclaration(MethodDeclaration::cast(syntax)?),
-            COVERAGE_DECLARATION => Self::CoverageDeclaration(CoverageDeclaration::cast(syntax)?),
-            _ => return None,
-        };
-        Some(result)
+            METHOD_DECLARATION => {
+                MethodDeclaration::cast(node.clone()).map(Self::MethodDeclaration)
+            }
+            COVERAGE_DECLARATION => {
+                CoverageDeclaration::cast(node.clone()).map(Self::CoverageDeclaration)
+            }
+            _ => None,
+        }
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        match &self {
+    fn syntax(&self) -> &Self::Node {
+        match self {
             Self::EventDeclaration(node) => node.syntax(),
             Self::FieldDeclaration(node) => node.syntax(),
             Self::ConstraintDeclaration(node) => node.syntax(),
@@ -3316,349 +4412,286 @@ impl AstNode for ActorMemberDecl {
             Self::CoverageDeclaration(node) => node.syntax(),
         }
     }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        match self {
-            Self::EventDeclaration(node) => node.into_syntax(),
-            Self::FieldDeclaration(node) => node.into_syntax(),
-            Self::ConstraintDeclaration(node) => node.into_syntax(),
-            Self::MethodDeclaration(node) => node.into_syntax(),
-            Self::CoverageDeclaration(node) => node.into_syntax(),
-        }
-    }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ScenarioInheritsClause {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl ScenarioInheritsClause {
-    pub fn inherits_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
+pub struct ScenarioInheritsClause<'a>(OscDslNode<'a>);
+impl ScenarioInheritsClause<'_> {
+    pub fn inherits_token(&self) -> Option<InheritsToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn qualified_behavior_name(&self) -> SyntaxResult<QualifiedBehaviorName> {
-        support::required_node(&self.syntax, 1usize)
+    pub fn qualified_behavior_name(&self) -> Option<QualifiedBehaviorName> {
+        support::child(&self.0, 0usize)
     }
     pub fn scenario_inherits_condition(&self) -> Option<ScenarioInheritsCondition> {
-        support::node(&self.syntax, 2usize)
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for ScenarioInheritsClause {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(SCENARIO_INHERITS_CLAUSE as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == SCENARIO_INHERITS_CLAUSE
+impl<'a> TypedNode for ScenarioInheritsClause<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == SCENARIO_INHERITS_CLAUSE
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum ScenarioBodyOrEmpty {
-    ScenarioBody(ScenarioBody),
-    Empty(Empty),
+pub enum ScenarioBodyOrNewline<'a> {
+    ScenarioBody(ScenarioBody<'a>),
+    NewlineToken(NewlineToken<'a>),
 }
-impl ScenarioBodyOrEmpty {
-    pub fn as_scenario_body(&self) -> Option<&ScenarioBody> {
+impl ScenarioBodyOrNewline<'_> {
+    pub fn as_scenario_body(&self) -> Option<ScenarioBody> {
         match self {
-            ScenarioBodyOrEmpty::ScenarioBody(node) => Some(node),
+            Self::ScenarioBody(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_empty(&self) -> Option<&Empty> {
+    pub fn as_newline_token(&self) -> Option<NewlineToken> {
         match self {
-            ScenarioBodyOrEmpty::Empty(node) => Some(node),
+            Self::NewlineToken(node) => Some(node.clone()),
             _ => None,
         }
     }
 }
-impl AstNode for ScenarioBodyOrEmpty {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> = ScenarioBody::KIND_SET.union(Empty::KIND_SET);
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        matches!(kind, SCENARIO_BODY | EMPTY)
+impl<'a> TypedNode for ScenarioBodyOrNewline<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        matches!(value, SCENARIO_BODY | NEWLINE)
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        let result = match syntax.kind() {
-            SCENARIO_BODY => Self::ScenarioBody(ScenarioBody::cast(syntax)?),
-            EMPTY => Self::Empty(Empty::cast(syntax)?),
-            _ => return None,
-        };
-        Some(result)
+    fn cast(node: Self::Node) -> Option<Self> {
+        match *node.value() {
+            SCENARIO_BODY => ScenarioBody::cast(node.clone()).map(Self::ScenarioBody),
+            NEWLINE => NewlineToken::cast(node.clone()).map(Self::NewlineToken),
+            _ => None,
+        }
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        match &self {
+    fn syntax(&self) -> &Self::Node {
+        match self {
             Self::ScenarioBody(node) => node.syntax(),
-            Self::Empty(node) => node.syntax(),
-        }
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        match self {
-            Self::ScenarioBody(node) => node.into_syntax(),
-            Self::Empty(node) => node.into_syntax(),
+            Self::NewlineToken(node) => node.syntax(),
         }
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ScenarioInheritsCondition {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl ScenarioInheritsCondition {
-    pub fn l_paren_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
+pub struct ScenarioInheritsCondition<'a>(OscDslNode<'a>);
+impl ScenarioInheritsCondition<'_> {
+    pub fn left_paren_token(&self) -> Option<LeftParenToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn field_name(&self) -> SyntaxResult<FieldName> {
-        support::required_node(&self.syntax, 1usize)
+    pub fn field_name(&self) -> Option<FieldName> {
+        support::child(&self.0, 0usize)
     }
-    pub fn equal_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 2usize)
+    pub fn equal_token(&self) -> Option<EqualToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn scenario_inherits_constant(&self) -> SyntaxResult<ScenarioInheritsConstant> {
-        support::required_node(&self.syntax, 3usize)
+    pub fn scenario_inherits_constant(&self) -> Option<ScenarioInheritsConstant> {
+        support::child(&self.0, 0usize)
     }
-    pub fn r_paren_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 4usize)
+    pub fn right_paren_token(&self) -> Option<RightParenToken> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for ScenarioInheritsCondition {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(SCENARIO_INHERITS_CONDITION as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == SCENARIO_INHERITS_CONDITION
+impl<'a> TypedNode for ScenarioInheritsCondition<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == SCENARIO_INHERITS_CONDITION
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum ScenarioInheritsConstant {
-    EnumValueReference(EnumValueReference),
-    BoolLiteral(BoolLiteral),
+pub enum ScenarioInheritsConstant<'a> {
+    EnumValueReference(EnumValueReference<'a>),
+    BoolLiteral(BoolLiteral<'a>),
 }
-impl ScenarioInheritsConstant {
-    pub fn as_enum_value_reference(&self) -> Option<&EnumValueReference> {
+impl ScenarioInheritsConstant<'_> {
+    pub fn as_enum_value_reference(&self) -> Option<EnumValueReference> {
         match self {
-            ScenarioInheritsConstant::EnumValueReference(node) => Some(node),
+            Self::EnumValueReference(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_bool_literal(&self) -> Option<&BoolLiteral> {
+    pub fn as_bool_literal(&self) -> Option<BoolLiteral> {
         match self {
-            ScenarioInheritsConstant::BoolLiteral(node) => Some(node),
+            Self::BoolLiteral(node) => Some(node.clone()),
             _ => None,
         }
     }
 }
-impl AstNode for ScenarioInheritsConstant {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        EnumValueReference::KIND_SET.union(BoolLiteral::KIND_SET);
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        matches!(kind, ENUM_VALUE_REFERENCE | BOOL_LITERAL)
+impl<'a> TypedNode for ScenarioInheritsConstant<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        matches!(value, ENUM_VALUE_REFERENCE | BOOL_LITERAL)
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        let result = match syntax.kind() {
-            ENUM_VALUE_REFERENCE => Self::EnumValueReference(EnumValueReference::cast(syntax)?),
-            BOOL_LITERAL => Self::BoolLiteral(BoolLiteral::cast(syntax)?),
-            _ => return None,
-        };
-        Some(result)
+    fn cast(node: Self::Node) -> Option<Self> {
+        match *node.value() {
+            ENUM_VALUE_REFERENCE => {
+                EnumValueReference::cast(node.clone()).map(Self::EnumValueReference)
+            }
+            BOOL_LITERAL => BoolLiteral::cast(node.clone()).map(Self::BoolLiteral),
+            _ => None,
+        }
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        match &self {
+    fn syntax(&self) -> &Self::Node {
+        match self {
             Self::EnumValueReference(node) => node.syntax(),
             Self::BoolLiteral(node) => node.syntax(),
         }
     }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ScenarioBody<'a>(OscDslNode<'a>);
+impl ScenarioBody<'_> {
+    pub fn colon_token(&self) -> Option<ColonToken> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn newline_token(&self) -> Option<NewlineToken> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn indent_token(&self) -> Option<IndentToken> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn scenario_member_item_list(&self) -> Option<ScenarioMemberItemList> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn dedent_token(&self) -> Option<DedentToken> {
+        support::child(&self.0, 0usize)
+    }
+}
+impl<'a> TypedNode for ScenarioBody<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == SCENARIO_BODY
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ScenarioMemberItemList<'a>(OscDslNode<'a>);
+impl<'a> ScenarioMemberItemList<'a> {
+    pub fn scenario_member_item(&self) -> impl Iterator<Item = ScenarioMemberItem<'a>> + 'a {
+        support::children(&self.0)
+    }
+}
+impl<'a> TypedNode for ScenarioMemberItemList<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == SCENARIO_MEMBER_ITEM_LIST
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ScenarioMemberItem<'a> {
+    ScenarioMemberDecl(ScenarioMemberDecl<'a>),
+    BehaviorSpecification(BehaviorSpecification<'a>),
+}
+impl ScenarioMemberItem<'_> {
+    pub fn as_scenario_member_decl(&self) -> Option<ScenarioMemberDecl> {
         match self {
-            Self::EnumValueReference(node) => node.into_syntax(),
-            Self::BoolLiteral(node) => node.into_syntax(),
-        }
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ScenarioBody {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl ScenarioBody {
-    pub fn colon_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
-    }
-    pub fn newline_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 1usize)
-    }
-    pub fn indent_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 2usize)
-    }
-    pub fn scenario_member_item_list(&self) -> ScenarioMemberItemList {
-        support::list(&self.syntax, 3usize)
-    }
-    pub fn dedent_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 4usize)
-    }
-}
-impl AstNode for ScenarioBody {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(SCENARIO_BODY as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == SCENARIO_BODY
-    }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
-    }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ScenarioMemberItemList {
-    syntax_list: SyntaxList<OscDslLanguage>,
-}
-impl AstNode for ScenarioMemberItemList {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(SCENARIO_MEMBER_ITEM_LIST as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == SCENARIO_MEMBER_ITEM_LIST
-    }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self {
-            syntax_list: syntax.into_list(),
-        })
-    }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        self.syntax_list.node()
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax_list.into_node()
-    }
-}
-impl AstNodeList for ScenarioMemberItemList {
-    type Language = OscDslLanguage;
-    type Node = ScenarioMemberItem;
-    fn syntax_list(&self) -> &SyntaxList<OscDslLanguage> {
-        &self.syntax_list
-    }
-    fn into_syntax_list(self) -> SyntaxList<OscDslLanguage> {
-        self.syntax_list
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum ScenarioMemberItem {
-    ScenarioMemberDecl(ScenarioMemberDecl),
-    BehaviorSpecification(BehaviorSpecification),
-}
-impl ScenarioMemberItem {
-    pub fn as_scenario_member_decl(&self) -> Option<&ScenarioMemberDecl> {
-        match self {
-            ScenarioMemberItem::ScenarioMemberDecl(node) => Some(node),
+            Self::ScenarioMemberDecl(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_behavior_specification(&self) -> Option<&BehaviorSpecification> {
+    pub fn as_behavior_specification(&self) -> Option<BehaviorSpecification> {
         match self {
-            ScenarioMemberItem::BehaviorSpecification(node) => Some(node),
+            Self::BehaviorSpecification(node) => Some(node.clone()),
             _ => None,
         }
     }
 }
-impl AstNode for ScenarioMemberItem {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        ScenarioMemberDecl::KIND_SET.union(BehaviorSpecification::KIND_SET);
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        matches!(kind, SCENARIO_MEMBER_DECL | BEHAVIOR_SPECIFICATION)
+impl<'a> TypedNode for ScenarioMemberItem<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        matches!(value, SCENARIO_MEMBER_DECL | BEHAVIOR_SPECIFICATION)
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        let result = match syntax.kind() {
-            SCENARIO_MEMBER_DECL => Self::ScenarioMemberDecl(ScenarioMemberDecl::cast(syntax)?),
-            BEHAVIOR_SPECIFICATION => {
-                Self::BehaviorSpecification(BehaviorSpecification::cast(syntax)?)
+    fn cast(node: Self::Node) -> Option<Self> {
+        match *node.value() {
+            SCENARIO_MEMBER_DECL => {
+                ScenarioMemberDecl::cast(node.clone()).map(Self::ScenarioMemberDecl)
             }
-            _ => return None,
-        };
-        Some(result)
+            BEHAVIOR_SPECIFICATION => {
+                BehaviorSpecification::cast(node.clone()).map(Self::BehaviorSpecification)
+            }
+            _ => None,
+        }
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        match &self {
+    fn syntax(&self) -> &Self::Node {
+        match self {
             Self::ScenarioMemberDecl(node) => node.syntax(),
             Self::BehaviorSpecification(node) => node.syntax(),
         }
     }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        match self {
-            Self::ScenarioMemberDecl(node) => node.into_syntax(),
-            Self::BehaviorSpecification(node) => node.into_syntax(),
-        }
-    }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum ScenarioMemberDecl {
-    EventDeclaration(EventDeclaration),
-    FieldDeclaration(FieldDeclaration),
-    ConstraintDeclaration(ConstraintDeclaration),
-    MethodDeclaration(MethodDeclaration),
-    CoverageDeclaration(CoverageDeclaration),
+pub enum ScenarioMemberDecl<'a> {
+    EventDeclaration(EventDeclaration<'a>),
+    FieldDeclaration(FieldDeclaration<'a>),
+    ConstraintDeclaration(ConstraintDeclaration<'a>),
+    MethodDeclaration(MethodDeclaration<'a>),
+    CoverageDeclaration(CoverageDeclaration<'a>),
 }
-impl ScenarioMemberDecl {
-    pub fn as_event_declaration(&self) -> Option<&EventDeclaration> {
+impl ScenarioMemberDecl<'_> {
+    pub fn as_event_declaration(&self) -> Option<EventDeclaration> {
         match self {
-            ScenarioMemberDecl::EventDeclaration(node) => Some(node),
+            Self::EventDeclaration(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_field_declaration(&self) -> Option<&FieldDeclaration> {
+    pub fn as_field_declaration(&self) -> Option<FieldDeclaration> {
         match self {
-            ScenarioMemberDecl::FieldDeclaration(node) => Some(node),
+            Self::FieldDeclaration(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_constraint_declaration(&self) -> Option<&ConstraintDeclaration> {
+    pub fn as_constraint_declaration(&self) -> Option<ConstraintDeclaration> {
         match self {
-            ScenarioMemberDecl::ConstraintDeclaration(node) => Some(node),
+            Self::ConstraintDeclaration(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_method_declaration(&self) -> Option<&MethodDeclaration> {
+    pub fn as_method_declaration(&self) -> Option<MethodDeclaration> {
         match self {
-            ScenarioMemberDecl::MethodDeclaration(node) => Some(node),
+            Self::MethodDeclaration(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_coverage_declaration(&self) -> Option<&CoverageDeclaration> {
+    pub fn as_coverage_declaration(&self) -> Option<CoverageDeclaration> {
         match self {
-            ScenarioMemberDecl::CoverageDeclaration(node) => Some(node),
+            Self::CoverageDeclaration(node) => Some(node.clone()),
             _ => None,
         }
     }
 }
-impl AstNode for ScenarioMemberDecl {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> = EventDeclaration::KIND_SET
-        .union(FieldDeclaration::KIND_SET)
-        .union(ConstraintDeclaration::KIND_SET)
-        .union(MethodDeclaration::KIND_SET)
-        .union(CoverageDeclaration::KIND_SET);
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
+impl<'a> TypedNode for ScenarioMemberDecl<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
         matches!(
-            kind,
+            value,
             EVENT_DECLARATION
                 | FIELD_DECLARATION
                 | CONSTRAINT_DECLARATION
@@ -3666,21 +4699,24 @@ impl AstNode for ScenarioMemberDecl {
                 | COVERAGE_DECLARATION
         )
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        let result = match syntax.kind() {
-            EVENT_DECLARATION => Self::EventDeclaration(EventDeclaration::cast(syntax)?),
-            FIELD_DECLARATION => Self::FieldDeclaration(FieldDeclaration::cast(syntax)?),
+    fn cast(node: Self::Node) -> Option<Self> {
+        match *node.value() {
+            EVENT_DECLARATION => EventDeclaration::cast(node.clone()).map(Self::EventDeclaration),
+            FIELD_DECLARATION => FieldDeclaration::cast(node.clone()).map(Self::FieldDeclaration),
             CONSTRAINT_DECLARATION => {
-                Self::ConstraintDeclaration(ConstraintDeclaration::cast(syntax)?)
+                ConstraintDeclaration::cast(node.clone()).map(Self::ConstraintDeclaration)
             }
-            METHOD_DECLARATION => Self::MethodDeclaration(MethodDeclaration::cast(syntax)?),
-            COVERAGE_DECLARATION => Self::CoverageDeclaration(CoverageDeclaration::cast(syntax)?),
-            _ => return None,
-        };
-        Some(result)
+            METHOD_DECLARATION => {
+                MethodDeclaration::cast(node.clone()).map(Self::MethodDeclaration)
+            }
+            COVERAGE_DECLARATION => {
+                CoverageDeclaration::cast(node.clone()).map(Self::CoverageDeclaration)
+            }
+            _ => None,
+        }
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        match &self {
+    fn syntax(&self) -> &Self::Node {
+        match self {
             Self::EventDeclaration(node) => node.syntax(),
             Self::FieldDeclaration(node) => node.syntax(),
             Self::ConstraintDeclaration(node) => node.syntax(),
@@ -3688,1236 +4724,1003 @@ impl AstNode for ScenarioMemberDecl {
             Self::CoverageDeclaration(node) => node.syntax(),
         }
     }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        match self {
-            Self::EventDeclaration(node) => node.into_syntax(),
-            Self::FieldDeclaration(node) => node.into_syntax(),
-            Self::ConstraintDeclaration(node) => node.into_syntax(),
-            Self::MethodDeclaration(node) => node.into_syntax(),
-            Self::CoverageDeclaration(node) => node.into_syntax(),
-        }
-    }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum BehaviorSpecification {
-    OnDirective(OnDirective),
-    DoDirective(DoDirective),
+pub enum BehaviorSpecification<'a> {
+    OnDirective(OnDirective<'a>),
+    DoDirective(DoDirective<'a>),
 }
-impl BehaviorSpecification {
-    pub fn as_on_directive(&self) -> Option<&OnDirective> {
+impl BehaviorSpecification<'_> {
+    pub fn as_on_directive(&self) -> Option<OnDirective> {
         match self {
-            BehaviorSpecification::OnDirective(node) => Some(node),
+            Self::OnDirective(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_do_directive(&self) -> Option<&DoDirective> {
+    pub fn as_do_directive(&self) -> Option<DoDirective> {
         match self {
-            BehaviorSpecification::DoDirective(node) => Some(node),
+            Self::DoDirective(node) => Some(node.clone()),
             _ => None,
         }
     }
 }
-impl AstNode for BehaviorSpecification {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        OnDirective::KIND_SET.union(DoDirective::KIND_SET);
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        matches!(kind, ON_DIRECTIVE | DO_DIRECTIVE)
+impl<'a> TypedNode for BehaviorSpecification<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        matches!(value, ON_DIRECTIVE | DO_DIRECTIVE)
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        let result = match syntax.kind() {
-            ON_DIRECTIVE => Self::OnDirective(OnDirective::cast(syntax)?),
-            DO_DIRECTIVE => Self::DoDirective(DoDirective::cast(syntax)?),
-            _ => return None,
-        };
-        Some(result)
+    fn cast(node: Self::Node) -> Option<Self> {
+        match *node.value() {
+            ON_DIRECTIVE => OnDirective::cast(node.clone()).map(Self::OnDirective),
+            DO_DIRECTIVE => DoDirective::cast(node.clone()).map(Self::DoDirective),
+            _ => None,
+        }
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        match &self {
+    fn syntax(&self) -> &Self::Node {
+        match self {
             Self::OnDirective(node) => node.syntax(),
             Self::DoDirective(node) => node.syntax(),
         }
     }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        match self {
-            Self::OnDirective(node) => node.into_syntax(),
-            Self::DoDirective(node) => node.into_syntax(),
-        }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct QualifiedBehaviorNamePrefix<'a>(OscDslNode<'a>);
+impl QualifiedBehaviorNamePrefix<'_> {
+    pub fn actor_name(&self) -> Option<ActorName> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn dot_token(&self) -> Option<DotToken> {
+        support::child(&self.0, 0usize)
+    }
+}
+impl<'a> TypedNode for QualifiedBehaviorNamePrefix<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == QUALIFIED_BEHAVIOR_NAME_PREFIX
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct QualifiedBehaviorNamePrefix {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl QualifiedBehaviorNamePrefix {
-    pub fn actor_name(&self) -> SyntaxResult<ActorName> {
-        support::required_node(&self.syntax, 0usize)
-    }
-    pub fn dot_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 1usize)
+pub struct BehaviorName<'a>(OscDslNode<'a>);
+impl BehaviorName<'_> {
+    pub fn qualified_identifier(&self) -> Option<QualifiedIdentifier> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for QualifiedBehaviorNamePrefix {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(QUALIFIED_BEHAVIOR_NAME_PREFIX as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == QUALIFIED_BEHAVIOR_NAME_PREFIX
+impl<'a> TypedNode for BehaviorName<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == BEHAVIOR_NAME
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct BehaviorName {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl BehaviorName {
-    pub fn qualified_identifier(&self) -> SyntaxResult<QualifiedIdentifier> {
-        support::required_node(&self.syntax, 0usize)
+pub struct ActionInheritsClause<'a>(OscDslNode<'a>);
+impl ActionInheritsClause<'_> {
+    pub fn inherits_token(&self) -> Option<InheritsToken> {
+        support::child(&self.0, 0usize)
     }
-}
-impl AstNode for BehaviorName {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(BEHAVIOR_NAME as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == BEHAVIOR_NAME
-    }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
-    }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ActionInheritsClause {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl ActionInheritsClause {
-    pub fn inherits_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
-    }
-    pub fn qualified_behavior_name(&self) -> SyntaxResult<QualifiedBehaviorName> {
-        support::required_node(&self.syntax, 1usize)
+    pub fn qualified_behavior_name(&self) -> Option<QualifiedBehaviorName> {
+        support::child(&self.0, 0usize)
     }
     pub fn action_inherits_condition(&self) -> Option<ActionInheritsCondition> {
-        support::node(&self.syntax, 2usize)
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for ActionInheritsClause {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(ACTION_INHERITS_CLAUSE as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == ACTION_INHERITS_CLAUSE
+impl<'a> TypedNode for ActionInheritsClause<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == ACTION_INHERITS_CLAUSE
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum ActionBodyOrEmpty {
-    ActionBody(ActionBody),
-    Empty(Empty),
+pub enum ActionBodyOrNewline<'a> {
+    ActionBody(ActionBody<'a>),
+    NewlineToken(NewlineToken<'a>),
 }
-impl ActionBodyOrEmpty {
-    pub fn as_action_body(&self) -> Option<&ActionBody> {
+impl ActionBodyOrNewline<'_> {
+    pub fn as_action_body(&self) -> Option<ActionBody> {
         match self {
-            ActionBodyOrEmpty::ActionBody(node) => Some(node),
+            Self::ActionBody(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_empty(&self) -> Option<&Empty> {
+    pub fn as_newline_token(&self) -> Option<NewlineToken> {
         match self {
-            ActionBodyOrEmpty::Empty(node) => Some(node),
+            Self::NewlineToken(node) => Some(node.clone()),
             _ => None,
         }
     }
 }
-impl AstNode for ActionBodyOrEmpty {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> = ActionBody::KIND_SET.union(Empty::KIND_SET);
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        matches!(kind, ACTION_BODY | EMPTY)
+impl<'a> TypedNode for ActionBodyOrNewline<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        matches!(value, ACTION_BODY | NEWLINE)
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        let result = match syntax.kind() {
-            ACTION_BODY => Self::ActionBody(ActionBody::cast(syntax)?),
-            EMPTY => Self::Empty(Empty::cast(syntax)?),
-            _ => return None,
-        };
-        Some(result)
+    fn cast(node: Self::Node) -> Option<Self> {
+        match *node.value() {
+            ACTION_BODY => ActionBody::cast(node.clone()).map(Self::ActionBody),
+            NEWLINE => NewlineToken::cast(node.clone()).map(Self::NewlineToken),
+            _ => None,
+        }
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        match &self {
+    fn syntax(&self) -> &Self::Node {
+        match self {
             Self::ActionBody(node) => node.syntax(),
-            Self::Empty(node) => node.syntax(),
-        }
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        match self {
-            Self::ActionBody(node) => node.into_syntax(),
-            Self::Empty(node) => node.into_syntax(),
+            Self::NewlineToken(node) => node.syntax(),
         }
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ActionBody {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl ActionBody {
-    pub fn colon_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
+pub struct ActionBody<'a>(OscDslNode<'a>);
+impl ActionBody<'_> {
+    pub fn colon_token(&self) -> Option<ColonToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn newline_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 1usize)
+    pub fn newline_token(&self) -> Option<NewlineToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn indent_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 2usize)
+    pub fn indent_token(&self) -> Option<IndentToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn action_member_item_list(&self) -> ActionMemberItemList {
-        support::list(&self.syntax, 3usize)
+    pub fn action_member_item_list(&self) -> Option<ActionMemberItemList> {
+        support::child(&self.0, 0usize)
     }
-    pub fn dedent_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 4usize)
+    pub fn dedent_token(&self) -> Option<DedentToken> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for ActionBody {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(ACTION_BODY as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == ACTION_BODY
+impl<'a> TypedNode for ActionBody<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == ACTION_BODY
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ActionInheritsCondition {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl ActionInheritsCondition {
-    pub fn l_paren_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
+pub struct ActionInheritsCondition<'a>(OscDslNode<'a>);
+impl ActionInheritsCondition<'_> {
+    pub fn left_paren_token(&self) -> Option<LeftParenToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn field_name(&self) -> SyntaxResult<FieldName> {
-        support::required_node(&self.syntax, 1usize)
+    pub fn field_name(&self) -> Option<FieldName> {
+        support::child(&self.0, 0usize)
     }
-    pub fn equal_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 2usize)
+    pub fn equal_token(&self) -> Option<EqualToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn action_inherits_constant(&self) -> SyntaxResult<ActionInheritsConstant> {
-        support::required_node(&self.syntax, 3usize)
+    pub fn action_inherits_constant(&self) -> Option<ActionInheritsConstant> {
+        support::child(&self.0, 0usize)
     }
-    pub fn r_paren_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 4usize)
+    pub fn right_paren_token(&self) -> Option<RightParenToken> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for ActionInheritsCondition {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(ACTION_INHERITS_CONDITION as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == ACTION_INHERITS_CONDITION
+impl<'a> TypedNode for ActionInheritsCondition<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == ACTION_INHERITS_CONDITION
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum ActionInheritsConstant {
-    EnumValueReference(EnumValueReference),
-    BoolLiteral(BoolLiteral),
+pub enum ActionInheritsConstant<'a> {
+    EnumValueReference(EnumValueReference<'a>),
+    BoolLiteral(BoolLiteral<'a>),
 }
-impl ActionInheritsConstant {
-    pub fn as_enum_value_reference(&self) -> Option<&EnumValueReference> {
+impl ActionInheritsConstant<'_> {
+    pub fn as_enum_value_reference(&self) -> Option<EnumValueReference> {
         match self {
-            ActionInheritsConstant::EnumValueReference(node) => Some(node),
+            Self::EnumValueReference(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_bool_literal(&self) -> Option<&BoolLiteral> {
+    pub fn as_bool_literal(&self) -> Option<BoolLiteral> {
         match self {
-            ActionInheritsConstant::BoolLiteral(node) => Some(node),
+            Self::BoolLiteral(node) => Some(node.clone()),
             _ => None,
         }
     }
 }
-impl AstNode for ActionInheritsConstant {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        EnumValueReference::KIND_SET.union(BoolLiteral::KIND_SET);
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        matches!(kind, ENUM_VALUE_REFERENCE | BOOL_LITERAL)
+impl<'a> TypedNode for ActionInheritsConstant<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        matches!(value, ENUM_VALUE_REFERENCE | BOOL_LITERAL)
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        let result = match syntax.kind() {
-            ENUM_VALUE_REFERENCE => Self::EnumValueReference(EnumValueReference::cast(syntax)?),
-            BOOL_LITERAL => Self::BoolLiteral(BoolLiteral::cast(syntax)?),
-            _ => return None,
-        };
-        Some(result)
+    fn cast(node: Self::Node) -> Option<Self> {
+        match *node.value() {
+            ENUM_VALUE_REFERENCE => {
+                EnumValueReference::cast(node.clone()).map(Self::EnumValueReference)
+            }
+            BOOL_LITERAL => BoolLiteral::cast(node.clone()).map(Self::BoolLiteral),
+            _ => None,
+        }
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        match &self {
+    fn syntax(&self) -> &Self::Node {
+        match self {
             Self::EnumValueReference(node) => node.syntax(),
             Self::BoolLiteral(node) => node.syntax(),
         }
     }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        match self {
-            Self::EnumValueReference(node) => node.into_syntax(),
-            Self::BoolLiteral(node) => node.into_syntax(),
-        }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ActionMemberItemList<'a>(OscDslNode<'a>);
+impl<'a> ActionMemberItemList<'a> {
+    pub fn action_member_item(&self) -> impl Iterator<Item = ActionMemberItem<'a>> + 'a {
+        support::children(&self.0)
+    }
+}
+impl<'a> TypedNode for ActionMemberItemList<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == ACTION_MEMBER_ITEM_LIST
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ActionMemberItemList {
-    syntax_list: SyntaxList<OscDslLanguage>,
+pub enum ActionMemberItem<'a> {
+    ScenarioMemberDecl(ScenarioMemberDecl<'a>),
+    BehaviorSpecification(BehaviorSpecification<'a>),
 }
-impl AstNode for ActionMemberItemList {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(ACTION_MEMBER_ITEM_LIST as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == ACTION_MEMBER_ITEM_LIST
-    }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self {
-            syntax_list: syntax.into_list(),
-        })
-    }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        self.syntax_list.node()
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax_list.into_node()
-    }
-}
-impl AstNodeList for ActionMemberItemList {
-    type Language = OscDslLanguage;
-    type Node = ActionMemberItem;
-    fn syntax_list(&self) -> &SyntaxList<OscDslLanguage> {
-        &self.syntax_list
-    }
-    fn into_syntax_list(self) -> SyntaxList<OscDslLanguage> {
-        self.syntax_list
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum ActionMemberItem {
-    ScenarioMemberDecl(ScenarioMemberDecl),
-    BehaviorSpecification(BehaviorSpecification),
-}
-impl ActionMemberItem {
-    pub fn as_scenario_member_decl(&self) -> Option<&ScenarioMemberDecl> {
+impl ActionMemberItem<'_> {
+    pub fn as_scenario_member_decl(&self) -> Option<ScenarioMemberDecl> {
         match self {
-            ActionMemberItem::ScenarioMemberDecl(node) => Some(node),
+            Self::ScenarioMemberDecl(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_behavior_specification(&self) -> Option<&BehaviorSpecification> {
+    pub fn as_behavior_specification(&self) -> Option<BehaviorSpecification> {
         match self {
-            ActionMemberItem::BehaviorSpecification(node) => Some(node),
+            Self::BehaviorSpecification(node) => Some(node.clone()),
             _ => None,
         }
     }
 }
-impl AstNode for ActionMemberItem {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        ScenarioMemberDecl::KIND_SET.union(BehaviorSpecification::KIND_SET);
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        matches!(kind, SCENARIO_MEMBER_DECL | BEHAVIOR_SPECIFICATION)
+impl<'a> TypedNode for ActionMemberItem<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        matches!(value, SCENARIO_MEMBER_DECL | BEHAVIOR_SPECIFICATION)
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        let result = match syntax.kind() {
-            SCENARIO_MEMBER_DECL => Self::ScenarioMemberDecl(ScenarioMemberDecl::cast(syntax)?),
-            BEHAVIOR_SPECIFICATION => {
-                Self::BehaviorSpecification(BehaviorSpecification::cast(syntax)?)
+    fn cast(node: Self::Node) -> Option<Self> {
+        match *node.value() {
+            SCENARIO_MEMBER_DECL => {
+                ScenarioMemberDecl::cast(node.clone()).map(Self::ScenarioMemberDecl)
             }
-            _ => return None,
-        };
-        Some(result)
+            BEHAVIOR_SPECIFICATION => {
+                BehaviorSpecification::cast(node.clone()).map(Self::BehaviorSpecification)
+            }
+            _ => None,
+        }
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        match &self {
+    fn syntax(&self) -> &Self::Node {
+        match self {
             Self::ScenarioMemberDecl(node) => node.syntax(),
             Self::BehaviorSpecification(node) => node.syntax(),
         }
     }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ModifierNamePrefix<'a>(OscDslNode<'a>);
+impl ModifierNamePrefix<'_> {
+    pub fn actor_name(&self) -> Option<ActorName> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn dot_token(&self) -> Option<DotToken> {
+        support::child(&self.0, 0usize)
+    }
+}
+impl<'a> TypedNode for ModifierNamePrefix<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == MODIFIER_NAME_PREFIX
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ModifierName<'a>(OscDslNode<'a>);
+impl ModifierName<'_> {
+    pub fn qualified_identifier(&self) -> Option<QualifiedIdentifier> {
+        support::child(&self.0, 0usize)
+    }
+}
+impl<'a> TypedNode for ModifierName<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == MODIFIER_NAME
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ModifierOfClause<'a>(OscDslNode<'a>);
+impl ModifierOfClause<'_> {
+    pub fn of_token(&self) -> Option<OfToken> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn qualified_behavior_name(&self) -> Option<QualifiedBehaviorName> {
+        support::child(&self.0, 0usize)
+    }
+}
+impl<'a> TypedNode for ModifierOfClause<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == MODIFIER_OF_CLAUSE
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ModifierBodyOrNewline<'a> {
+    ModifierBody(ModifierBody<'a>),
+    NewlineToken(NewlineToken<'a>),
+}
+impl ModifierBodyOrNewline<'_> {
+    pub fn as_modifier_body(&self) -> Option<ModifierBody> {
         match self {
-            Self::ScenarioMemberDecl(node) => node.into_syntax(),
-            Self::BehaviorSpecification(node) => node.into_syntax(),
-        }
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ModifierNamePrefix {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl ModifierNamePrefix {
-    pub fn actor_name(&self) -> SyntaxResult<ActorName> {
-        support::required_node(&self.syntax, 0usize)
-    }
-    pub fn dot_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 1usize)
-    }
-}
-impl AstNode for ModifierNamePrefix {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(MODIFIER_NAME_PREFIX as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == MODIFIER_NAME_PREFIX
-    }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
-    }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ModifierName {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl ModifierName {
-    pub fn qualified_identifier(&self) -> SyntaxResult<QualifiedIdentifier> {
-        support::required_node(&self.syntax, 0usize)
-    }
-}
-impl AstNode for ModifierName {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(MODIFIER_NAME as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == MODIFIER_NAME
-    }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
-    }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ModifierOfClause {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl ModifierOfClause {
-    pub fn of_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
-    }
-    pub fn qualified_behavior_name(&self) -> SyntaxResult<QualifiedBehaviorName> {
-        support::required_node(&self.syntax, 1usize)
-    }
-}
-impl AstNode for ModifierOfClause {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(MODIFIER_OF_CLAUSE as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == MODIFIER_OF_CLAUSE
-    }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
-    }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum ModifierBodyOrEmpty {
-    ModifierBody(ModifierBody),
-    Empty(Empty),
-}
-impl ModifierBodyOrEmpty {
-    pub fn as_modifier_body(&self) -> Option<&ModifierBody> {
-        match self {
-            ModifierBodyOrEmpty::ModifierBody(node) => Some(node),
+            Self::ModifierBody(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_empty(&self) -> Option<&Empty> {
+    pub fn as_newline_token(&self) -> Option<NewlineToken> {
         match self {
-            ModifierBodyOrEmpty::Empty(node) => Some(node),
+            Self::NewlineToken(node) => Some(node.clone()),
             _ => None,
         }
     }
 }
-impl AstNode for ModifierBodyOrEmpty {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> = ModifierBody::KIND_SET.union(Empty::KIND_SET);
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        matches!(kind, MODIFIER_BODY | EMPTY)
+impl<'a> TypedNode for ModifierBodyOrNewline<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        matches!(value, MODIFIER_BODY | NEWLINE)
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        let result = match syntax.kind() {
-            MODIFIER_BODY => Self::ModifierBody(ModifierBody::cast(syntax)?),
-            EMPTY => Self::Empty(Empty::cast(syntax)?),
-            _ => return None,
-        };
-        Some(result)
+    fn cast(node: Self::Node) -> Option<Self> {
+        match *node.value() {
+            MODIFIER_BODY => ModifierBody::cast(node.clone()).map(Self::ModifierBody),
+            NEWLINE => NewlineToken::cast(node.clone()).map(Self::NewlineToken),
+            _ => None,
+        }
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        match &self {
+    fn syntax(&self) -> &Self::Node {
+        match self {
             Self::ModifierBody(node) => node.syntax(),
-            Self::Empty(node) => node.syntax(),
-        }
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        match self {
-            Self::ModifierBody(node) => node.into_syntax(),
-            Self::Empty(node) => node.into_syntax(),
+            Self::NewlineToken(node) => node.syntax(),
         }
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ModifierBody {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl ModifierBody {
-    pub fn colon_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
+pub struct ModifierBody<'a>(OscDslNode<'a>);
+impl ModifierBody<'_> {
+    pub fn colon_token(&self) -> Option<ColonToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn newline_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 1usize)
+    pub fn newline_token(&self) -> Option<NewlineToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn indent_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 2usize)
+    pub fn indent_token(&self) -> Option<IndentToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn modifier_member_item_list(&self) -> ModifierMemberItemList {
-        support::list(&self.syntax, 3usize)
+    pub fn modifier_member_item_list(&self) -> Option<ModifierMemberItemList> {
+        support::child(&self.0, 0usize)
     }
-    pub fn dedent_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 4usize)
+    pub fn dedent_token(&self) -> Option<DedentToken> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for ModifierBody {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(MODIFIER_BODY as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == MODIFIER_BODY
+impl<'a> TypedNode for ModifierBody<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == MODIFIER_BODY
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ModifierMemberItemList {
-    syntax_list: SyntaxList<OscDslLanguage>,
-}
-impl AstNode for ModifierMemberItemList {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(MODIFIER_MEMBER_ITEM_LIST as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == MODIFIER_MEMBER_ITEM_LIST
-    }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self {
-            syntax_list: syntax.into_list(),
-        })
-    }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        self.syntax_list.node()
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax_list.into_node()
+pub struct ModifierMemberItemList<'a>(OscDslNode<'a>);
+impl<'a> ModifierMemberItemList<'a> {
+    pub fn modifier_member_item(&self) -> impl Iterator<Item = ModifierMemberItem<'a>> + 'a {
+        support::children(&self.0)
     }
 }
-impl AstNodeList for ModifierMemberItemList {
-    type Language = OscDslLanguage;
-    type Node = ModifierMemberItem;
-    fn syntax_list(&self) -> &SyntaxList<OscDslLanguage> {
-        &self.syntax_list
+impl<'a> TypedNode for ModifierMemberItemList<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == MODIFIER_MEMBER_ITEM_LIST
     }
-    fn into_syntax_list(self) -> SyntaxList<OscDslLanguage> {
-        self.syntax_list
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum ModifierMemberItem {
-    ScenarioMemberDecl(ScenarioMemberDecl),
-    OnDirective(OnDirective),
+pub enum ModifierMemberItem<'a> {
+    ScenarioMemberDecl(ScenarioMemberDecl<'a>),
+    OnDirective(OnDirective<'a>),
 }
-impl ModifierMemberItem {
-    pub fn as_scenario_member_decl(&self) -> Option<&ScenarioMemberDecl> {
+impl ModifierMemberItem<'_> {
+    pub fn as_scenario_member_decl(&self) -> Option<ScenarioMemberDecl> {
         match self {
-            ModifierMemberItem::ScenarioMemberDecl(node) => Some(node),
+            Self::ScenarioMemberDecl(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_on_directive(&self) -> Option<&OnDirective> {
+    pub fn as_on_directive(&self) -> Option<OnDirective> {
         match self {
-            ModifierMemberItem::OnDirective(node) => Some(node),
+            Self::OnDirective(node) => Some(node.clone()),
             _ => None,
         }
     }
 }
-impl AstNode for ModifierMemberItem {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        ScenarioMemberDecl::KIND_SET.union(OnDirective::KIND_SET);
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        matches!(kind, SCENARIO_MEMBER_DECL | ON_DIRECTIVE)
+impl<'a> TypedNode for ModifierMemberItem<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        matches!(value, SCENARIO_MEMBER_DECL | ON_DIRECTIVE)
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        let result = match syntax.kind() {
-            SCENARIO_MEMBER_DECL => Self::ScenarioMemberDecl(ScenarioMemberDecl::cast(syntax)?),
-            ON_DIRECTIVE => Self::OnDirective(OnDirective::cast(syntax)?),
-            _ => return None,
-        };
-        Some(result)
+    fn cast(node: Self::Node) -> Option<Self> {
+        match *node.value() {
+            SCENARIO_MEMBER_DECL => {
+                ScenarioMemberDecl::cast(node.clone()).map(Self::ScenarioMemberDecl)
+            }
+            ON_DIRECTIVE => OnDirective::cast(node.clone()).map(Self::OnDirective),
+            _ => None,
+        }
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        match &self {
+    fn syntax(&self) -> &Self::Node {
+        match self {
             Self::ScenarioMemberDecl(node) => node.syntax(),
             Self::OnDirective(node) => node.syntax(),
         }
     }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct OnDirective<'a>(OscDslNode<'a>);
+impl OnDirective<'_> {
+    pub fn on_token(&self) -> Option<OnToken> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn event_specification(&self) -> Option<EventSpecification> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn colon_token(&self) -> Option<ColonToken> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn newline_token(&self) -> Option<NewlineToken> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn indent_token(&self) -> Option<IndentToken> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn on_member_list(&self) -> Option<OnMemberList> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn dedent_token(&self) -> Option<DedentToken> {
+        support::child(&self.0, 0usize)
+    }
+}
+impl<'a> TypedNode for OnDirective<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == ON_DIRECTIVE
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct EnumTypeExtension<'a>(OscDslNode<'a>);
+impl EnumTypeExtension<'_> {
+    pub fn extend_token(&self) -> Option<ExtendToken> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn enum_name(&self) -> Option<EnumName> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn colon_token(&self) -> Option<ColonToken> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn left_bracket_token(&self) -> Option<LeftBracketToken> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn enum_member_decl_list(&self) -> Option<EnumMemberDeclList> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn right_bracket_token(&self) -> Option<RightBracketToken> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn newline_token(&self) -> Option<NewlineToken> {
+        support::child(&self.0, 0usize)
+    }
+}
+impl<'a> TypedNode for EnumTypeExtension<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == ENUM_TYPE_EXTENSION
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct StructuredTypeExtension<'a>(OscDslNode<'a>);
+impl StructuredTypeExtension<'_> {
+    pub fn extend_token(&self) -> Option<ExtendToken> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn extendable_type_name(&self) -> Option<ExtendableTypeName> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn colon_token(&self) -> Option<ColonToken> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn newline_token(&self) -> Option<NewlineToken> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn indent_token(&self) -> Option<IndentToken> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn extendable_member_decl_list(&self) -> Option<ExtendableMemberDeclList> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn dedent_token(&self) -> Option<DedentToken> {
+        support::child(&self.0, 0usize)
+    }
+}
+impl<'a> TypedNode for StructuredTypeExtension<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == STRUCTURED_TYPE_EXTENSION
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ExtendableTypeName<'a> {
+    StructName(StructName<'a>),
+    ActorName(ActorName<'a>),
+    QualifiedBehaviorName(QualifiedBehaviorName<'a>),
+}
+impl ExtendableTypeName<'_> {
+    pub fn as_struct_name(&self) -> Option<StructName> {
         match self {
-            Self::ScenarioMemberDecl(node) => node.into_syntax(),
-            Self::OnDirective(node) => node.into_syntax(),
-        }
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct OnDirective {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl OnDirective {
-    pub fn on_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
-    }
-    pub fn event_specification(&self) -> SyntaxResult<EventSpecification> {
-        support::required_node(&self.syntax, 1usize)
-    }
-    pub fn colon_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 2usize)
-    }
-    pub fn newline_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 3usize)
-    }
-    pub fn indent_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 4usize)
-    }
-    pub fn on_member_list(&self) -> OnMemberList {
-        support::list(&self.syntax, 5usize)
-    }
-    pub fn dedent_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 6usize)
-    }
-}
-impl AstNode for OnDirective {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(ON_DIRECTIVE as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == ON_DIRECTIVE
-    }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
-    }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct EnumTypeExtension {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl EnumTypeExtension {
-    pub fn extend_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
-    }
-    pub fn enum_name(&self) -> SyntaxResult<EnumName> {
-        support::required_node(&self.syntax, 1usize)
-    }
-    pub fn colon_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 2usize)
-    }
-    pub fn l_bracket_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 3usize)
-    }
-    pub fn enum_member_decl_list(&self) -> EnumMemberDeclList {
-        support::list(&self.syntax, 4usize)
-    }
-    pub fn r_bracket_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 5usize)
-    }
-    pub fn newline_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 6usize)
-    }
-}
-impl AstNode for EnumTypeExtension {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(ENUM_TYPE_EXTENSION as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == ENUM_TYPE_EXTENSION
-    }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
-    }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct StructuredTypeExtension {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl StructuredTypeExtension {
-    pub fn extend_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
-    }
-    pub fn extendable_type_name(&self) -> SyntaxResult<ExtendableTypeName> {
-        support::required_node(&self.syntax, 1usize)
-    }
-    pub fn colon_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 2usize)
-    }
-    pub fn newline_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 3usize)
-    }
-    pub fn indent_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 4usize)
-    }
-    pub fn extendable_member_decl_list(&self) -> ExtendableMemberDeclList {
-        support::list(&self.syntax, 5usize)
-    }
-    pub fn dedent_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 6usize)
-    }
-}
-impl AstNode for StructuredTypeExtension {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(STRUCTURED_TYPE_EXTENSION as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == STRUCTURED_TYPE_EXTENSION
-    }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
-    }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum ExtendableTypeName {
-    StructName(StructName),
-    ActorName(ActorName),
-    QualifiedBehaviorName(QualifiedBehaviorName),
-}
-impl ExtendableTypeName {
-    pub fn as_struct_name(&self) -> Option<&StructName> {
-        match self {
-            ExtendableTypeName::StructName(node) => Some(node),
+            Self::StructName(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_actor_name(&self) -> Option<&ActorName> {
+    pub fn as_actor_name(&self) -> Option<ActorName> {
         match self {
-            ExtendableTypeName::ActorName(node) => Some(node),
+            Self::ActorName(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_qualified_behavior_name(&self) -> Option<&QualifiedBehaviorName> {
+    pub fn as_qualified_behavior_name(&self) -> Option<QualifiedBehaviorName> {
         match self {
-            ExtendableTypeName::QualifiedBehaviorName(node) => Some(node),
+            Self::QualifiedBehaviorName(node) => Some(node.clone()),
             _ => None,
         }
     }
 }
-impl AstNode for ExtendableTypeName {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> = StructName::KIND_SET
-        .union(ActorName::KIND_SET)
-        .union(QualifiedBehaviorName::KIND_SET);
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        matches!(kind, STRUCT_NAME | ACTOR_NAME | QUALIFIED_BEHAVIOR_NAME)
+impl<'a> TypedNode for ExtendableTypeName<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        matches!(value, STRUCT_NAME | ACTOR_NAME | QUALIFIED_BEHAVIOR_NAME)
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        let result = match syntax.kind() {
-            STRUCT_NAME => Self::StructName(StructName::cast(syntax)?),
-            ACTOR_NAME => Self::ActorName(ActorName::cast(syntax)?),
+    fn cast(node: Self::Node) -> Option<Self> {
+        match *node.value() {
+            STRUCT_NAME => StructName::cast(node.clone()).map(Self::StructName),
+            ACTOR_NAME => ActorName::cast(node.clone()).map(Self::ActorName),
             QUALIFIED_BEHAVIOR_NAME => {
-                Self::QualifiedBehaviorName(QualifiedBehaviorName::cast(syntax)?)
+                QualifiedBehaviorName::cast(node.clone()).map(Self::QualifiedBehaviorName)
             }
-            _ => return None,
-        };
-        Some(result)
+            _ => None,
+        }
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        match &self {
+    fn syntax(&self) -> &Self::Node {
+        match self {
             Self::StructName(node) => node.syntax(),
             Self::ActorName(node) => node.syntax(),
             Self::QualifiedBehaviorName(node) => node.syntax(),
         }
     }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        match self {
-            Self::StructName(node) => node.into_syntax(),
-            Self::ActorName(node) => node.into_syntax(),
-            Self::QualifiedBehaviorName(node) => node.into_syntax(),
-        }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ExtendableMemberDeclList<'a>(OscDslNode<'a>);
+impl<'a> ExtendableMemberDeclList<'a> {
+    pub fn extendable_member_decl(&self) -> impl Iterator<Item = ExtendableMemberDecl<'a>> + 'a {
+        support::children(&self.0)
+    }
+}
+impl<'a> TypedNode for ExtendableMemberDeclList<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == EXTENDABLE_MEMBER_DECL_LIST
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ExtendableMemberDeclList {
-    syntax_list: SyntaxList<OscDslLanguage>,
+pub enum ExtendableMemberDecl<'a> {
+    StructMemberDecl(StructMemberDecl<'a>),
+    ActorMemberDecl(ActorMemberDecl<'a>),
+    ScenarioMemberDecl(ScenarioMemberDecl<'a>),
+    BehaviorSpecification(BehaviorSpecification<'a>),
 }
-impl AstNode for ExtendableMemberDeclList {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(EXTENDABLE_MEMBER_DECL_LIST as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == EXTENDABLE_MEMBER_DECL_LIST
-    }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self {
-            syntax_list: syntax.into_list(),
-        })
-    }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        self.syntax_list.node()
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax_list.into_node()
-    }
-}
-impl AstNodeList for ExtendableMemberDeclList {
-    type Language = OscDslLanguage;
-    type Node = ExtendableMemberDecl;
-    fn syntax_list(&self) -> &SyntaxList<OscDslLanguage> {
-        &self.syntax_list
-    }
-    fn into_syntax_list(self) -> SyntaxList<OscDslLanguage> {
-        self.syntax_list
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum ExtendableMemberDecl {
-    StructMemberDecl(StructMemberDecl),
-    ActorMemberDecl(ActorMemberDecl),
-    ScenarioMemberDecl(ScenarioMemberDecl),
-    BehaviorSpecification(BehaviorSpecification),
-}
-impl ExtendableMemberDecl {
-    pub fn as_struct_member_decl(&self) -> Option<&StructMemberDecl> {
+impl ExtendableMemberDecl<'_> {
+    pub fn as_struct_member_decl(&self) -> Option<StructMemberDecl> {
         match self {
-            ExtendableMemberDecl::StructMemberDecl(node) => Some(node),
+            Self::StructMemberDecl(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_actor_member_decl(&self) -> Option<&ActorMemberDecl> {
+    pub fn as_actor_member_decl(&self) -> Option<ActorMemberDecl> {
         match self {
-            ExtendableMemberDecl::ActorMemberDecl(node) => Some(node),
+            Self::ActorMemberDecl(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_scenario_member_decl(&self) -> Option<&ScenarioMemberDecl> {
+    pub fn as_scenario_member_decl(&self) -> Option<ScenarioMemberDecl> {
         match self {
-            ExtendableMemberDecl::ScenarioMemberDecl(node) => Some(node),
+            Self::ScenarioMemberDecl(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_behavior_specification(&self) -> Option<&BehaviorSpecification> {
+    pub fn as_behavior_specification(&self) -> Option<BehaviorSpecification> {
         match self {
-            ExtendableMemberDecl::BehaviorSpecification(node) => Some(node),
+            Self::BehaviorSpecification(node) => Some(node.clone()),
             _ => None,
         }
     }
 }
-impl AstNode for ExtendableMemberDecl {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> = StructMemberDecl::KIND_SET
-        .union(ActorMemberDecl::KIND_SET)
-        .union(ScenarioMemberDecl::KIND_SET)
-        .union(BehaviorSpecification::KIND_SET);
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
+impl<'a> TypedNode for ExtendableMemberDecl<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
         matches!(
-            kind,
+            value,
             STRUCT_MEMBER_DECL | ACTOR_MEMBER_DECL | SCENARIO_MEMBER_DECL | BEHAVIOR_SPECIFICATION
         )
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        let result = match syntax.kind() {
-            STRUCT_MEMBER_DECL => Self::StructMemberDecl(StructMemberDecl::cast(syntax)?),
-            ACTOR_MEMBER_DECL => Self::ActorMemberDecl(ActorMemberDecl::cast(syntax)?),
-            SCENARIO_MEMBER_DECL => Self::ScenarioMemberDecl(ScenarioMemberDecl::cast(syntax)?),
-            BEHAVIOR_SPECIFICATION => {
-                Self::BehaviorSpecification(BehaviorSpecification::cast(syntax)?)
+    fn cast(node: Self::Node) -> Option<Self> {
+        match *node.value() {
+            STRUCT_MEMBER_DECL => StructMemberDecl::cast(node.clone()).map(Self::StructMemberDecl),
+            ACTOR_MEMBER_DECL => ActorMemberDecl::cast(node.clone()).map(Self::ActorMemberDecl),
+            SCENARIO_MEMBER_DECL => {
+                ScenarioMemberDecl::cast(node.clone()).map(Self::ScenarioMemberDecl)
             }
-            _ => return None,
-        };
-        Some(result)
+            BEHAVIOR_SPECIFICATION => {
+                BehaviorSpecification::cast(node.clone()).map(Self::BehaviorSpecification)
+            }
+            _ => None,
+        }
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        match &self {
+    fn syntax(&self) -> &Self::Node {
+        match self {
             Self::StructMemberDecl(node) => node.syntax(),
             Self::ActorMemberDecl(node) => node.syntax(),
             Self::ScenarioMemberDecl(node) => node.syntax(),
             Self::BehaviorSpecification(node) => node.syntax(),
         }
     }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        match self {
-            Self::StructMemberDecl(node) => node.into_syntax(),
-            Self::ActorMemberDecl(node) => node.into_syntax(),
-            Self::ScenarioMemberDecl(node) => node.into_syntax(),
-            Self::BehaviorSpecification(node) => node.into_syntax(),
-        }
-    }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ParameterDeclaration {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl ParameterDeclaration {
-    pub fn field_name_list(&self) -> FieldNameList {
-        support::list(&self.syntax, 0usize)
+pub struct ParameterDeclaration<'a>(OscDslNode<'a>);
+impl ParameterDeclaration<'_> {
+    pub fn field_name_list(&self) -> Option<FieldNameList> {
+        support::child(&self.0, 0usize)
     }
-    pub fn colon_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 1usize)
+    pub fn colon_token(&self) -> Option<ColonToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn type_declarator(&self) -> SyntaxResult<TypeDeclarator> {
-        support::required_node(&self.syntax, 2usize)
+    pub fn type_declarator(&self) -> Option<TypeDeclarator> {
+        support::child(&self.0, 0usize)
     }
     pub fn parameter_initilizer_clause(&self) -> Option<ParameterInitilizerClause> {
-        support::node(&self.syntax, 3usize)
+        support::child(&self.0, 0usize)
     }
-    pub fn parameter_with_declaration_or_empty(
+    pub fn parameter_with_declaration_or_newline(
         &self,
-    ) -> SyntaxResult<ParameterWithDeclarationOrEmpty> {
-        support::required_node(&self.syntax, 4usize)
+    ) -> Option<ParameterWithDeclarationOrNewline> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for ParameterDeclaration {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(PARAMETER_DECLARATION as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == PARAMETER_DECLARATION
+impl<'a> TypedNode for ParameterDeclaration<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == PARAMETER_DECLARATION
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct EventName {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl EventName {
-    pub fn qualified_identifier(&self) -> SyntaxResult<QualifiedIdentifier> {
-        support::required_node(&self.syntax, 0usize)
+pub struct EventName<'a>(OscDslNode<'a>);
+impl EventName<'_> {
+    pub fn qualified_identifier(&self) -> Option<QualifiedIdentifier> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for EventName {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(EVENT_NAME as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == EVENT_NAME
+impl<'a> TypedNode for EventName<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == EVENT_NAME
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct EventArgumentListSpecification {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl EventArgumentListSpecification {
-    pub fn l_paren_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
+pub struct EventArgumentListSpecification<'a>(OscDslNode<'a>);
+impl EventArgumentListSpecification<'_> {
+    pub fn left_paren_token(&self) -> Option<LeftParenToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn argument_list_specification(&self) -> ArgumentListSpecification {
-        support::list(&self.syntax, 1usize)
+    pub fn argument_list_specification(&self) -> Option<ArgumentListSpecification> {
+        support::child(&self.0, 0usize)
     }
-    pub fn r_paren_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 2usize)
+    pub fn right_paren_token(&self) -> Option<RightParenToken> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for EventArgumentListSpecification {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(EVENT_ARGUMENT_LIST_SPECIFICATION as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == EVENT_ARGUMENT_LIST_SPECIFICATION
+impl<'a> TypedNode for EventArgumentListSpecification<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == EVENT_ARGUMENT_LIST_SPECIFICATION
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct EventIsClause {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl EventIsClause {
-    pub fn is_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
+pub struct EventIsClause<'a>(OscDslNode<'a>);
+impl EventIsClause<'_> {
+    pub fn is_token(&self) -> Option<IsToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn event_specification(&self) -> SyntaxResult<EventSpecification> {
-        support::required_node(&self.syntax, 1usize)
+    pub fn event_specification(&self) -> Option<EventSpecification> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for EventIsClause {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(EVENT_IS_CLAUSE as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == EVENT_IS_CLAUSE
+impl<'a> TypedNode for EventIsClause<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == EVENT_IS_CLAUSE
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ArgumentListSpecification {
-    syntax_list: SyntaxList<OscDslLanguage>,
-}
-impl AstNode for ArgumentListSpecification {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(ARGUMENT_LIST_SPECIFICATION as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == ARGUMENT_LIST_SPECIFICATION
+pub struct ArgumentListSpecification<'a>(OscDslNode<'a>);
+impl<'a> ArgumentListSpecification<'a> {
+    pub fn comma_token(&self) -> impl Iterator<Item = CommaToken<'a>> + 'a {
+        support::children(&self.0)
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self {
-            syntax_list: syntax.into_list(),
-        })
-    }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        self.syntax_list.node()
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax_list.into_node()
+    pub fn argument_specification(&self) -> impl Iterator<Item = ArgumentSpecification<'a>> + 'a {
+        support::children(&self.0)
     }
 }
-impl AstSeparatedList for ArgumentListSpecification {
-    type Language = OscDslLanguage;
-    type Node = ArgumentSpecification;
-    fn syntax_list(&self) -> &SyntaxList<OscDslLanguage> {
-        &self.syntax_list
+impl<'a> TypedNode for ArgumentListSpecification<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == ARGUMENT_LIST_SPECIFICATION
     }
-    fn into_syntax_list(self) -> SyntaxList<OscDslLanguage> {
-        self.syntax_list
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum EventSpecification {
-    EventReferenceSpecification(EventReferenceSpecification),
-    EventCondition(EventCondition),
+pub enum EventSpecification<'a> {
+    EventReferenceSpecification(EventReferenceSpecification<'a>),
+    EventCondition(EventCondition<'a>),
 }
-impl EventSpecification {
-    pub fn as_event_reference_specification(&self) -> Option<&EventReferenceSpecification> {
+impl EventSpecification<'_> {
+    pub fn as_event_reference_specification(&self) -> Option<EventReferenceSpecification> {
         match self {
-            EventSpecification::EventReferenceSpecification(node) => Some(node),
+            Self::EventReferenceSpecification(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_event_condition(&self) -> Option<&EventCondition> {
+    pub fn as_event_condition(&self) -> Option<EventCondition> {
         match self {
-            EventSpecification::EventCondition(node) => Some(node),
+            Self::EventCondition(node) => Some(node.clone()),
             _ => None,
         }
     }
 }
-impl AstNode for EventSpecification {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        EventReferenceSpecification::KIND_SET.union(EventCondition::KIND_SET);
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        matches!(kind, EVENT_REFERENCE_SPECIFICATION | EVENT_CONDITION)
+impl<'a> TypedNode for EventSpecification<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        matches!(value, EVENT_REFERENCE_SPECIFICATION | EVENT_CONDITION)
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        let result = match syntax.kind() {
-            EVENT_REFERENCE_SPECIFICATION => {
-                Self::EventReferenceSpecification(EventReferenceSpecification::cast(syntax)?)
-            }
-            EVENT_CONDITION => Self::EventCondition(EventCondition::cast(syntax)?),
-            _ => return None,
-        };
-        Some(result)
+    fn cast(node: Self::Node) -> Option<Self> {
+        match *node.value() {
+            EVENT_REFERENCE_SPECIFICATION => EventReferenceSpecification::cast(node.clone())
+                .map(Self::EventReferenceSpecification),
+            EVENT_CONDITION => EventCondition::cast(node.clone()).map(Self::EventCondition),
+            _ => None,
+        }
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        match &self {
+    fn syntax(&self) -> &Self::Node {
+        match self {
             Self::EventReferenceSpecification(node) => node.syntax(),
             Self::EventCondition(node) => node.syntax(),
         }
     }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        match self {
-            Self::EventReferenceSpecification(node) => node.into_syntax(),
-            Self::EventCondition(node) => node.into_syntax(),
-        }
-    }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct EventReferenceSpecification {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl EventReferenceSpecification {
-    pub fn event_reference(&self) -> SyntaxResult<EventReference> {
-        support::required_node(&self.syntax, 0usize)
+pub struct EventReferenceSpecification<'a>(OscDslNode<'a>);
+impl EventReferenceSpecification<'_> {
+    pub fn event_reference(&self) -> Option<EventReference> {
+        support::child(&self.0, 0usize)
     }
     pub fn event_reference_condition(&self) -> Option<EventReferenceCondition> {
-        support::node(&self.syntax, 1usize)
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for EventReferenceSpecification {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(EVENT_REFERENCE_SPECIFICATION as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == EVENT_REFERENCE_SPECIFICATION
+impl<'a> TypedNode for EventReferenceSpecification<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == EVENT_REFERENCE_SPECIFICATION
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum EventCondition {
-    BoolExpression(BoolExpression),
-    RiseExpression(RiseExpression),
-    FallExpression(FallExpression),
-    ElapsedExpression(ElapsedExpression),
-    EveryExpression(EveryExpression),
+pub enum EventCondition<'a> {
+    BoolExpression(BoolExpression<'a>),
+    RiseExpression(RiseExpression<'a>),
+    FallExpression(FallExpression<'a>),
+    ElapsedExpression(ElapsedExpression<'a>),
+    EveryExpression(EveryExpression<'a>),
 }
-impl EventCondition {
-    pub fn as_bool_expression(&self) -> Option<&BoolExpression> {
+impl EventCondition<'_> {
+    pub fn as_bool_expression(&self) -> Option<BoolExpression> {
         match self {
-            EventCondition::BoolExpression(node) => Some(node),
+            Self::BoolExpression(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_rise_expression(&self) -> Option<&RiseExpression> {
+    pub fn as_rise_expression(&self) -> Option<RiseExpression> {
         match self {
-            EventCondition::RiseExpression(node) => Some(node),
+            Self::RiseExpression(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_fall_expression(&self) -> Option<&FallExpression> {
+    pub fn as_fall_expression(&self) -> Option<FallExpression> {
         match self {
-            EventCondition::FallExpression(node) => Some(node),
+            Self::FallExpression(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_elapsed_expression(&self) -> Option<&ElapsedExpression> {
+    pub fn as_elapsed_expression(&self) -> Option<ElapsedExpression> {
         match self {
-            EventCondition::ElapsedExpression(node) => Some(node),
+            Self::ElapsedExpression(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_every_expression(&self) -> Option<&EveryExpression> {
+    pub fn as_every_expression(&self) -> Option<EveryExpression> {
         match self {
-            EventCondition::EveryExpression(node) => Some(node),
+            Self::EveryExpression(node) => Some(node.clone()),
             _ => None,
         }
     }
 }
-impl AstNode for EventCondition {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> = BoolExpression::KIND_SET
-        .union(RiseExpression::KIND_SET)
-        .union(FallExpression::KIND_SET)
-        .union(ElapsedExpression::KIND_SET)
-        .union(EveryExpression::KIND_SET);
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
+impl<'a> TypedNode for EventCondition<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
         matches!(
-            kind,
+            value,
             BOOL_EXPRESSION
                 | RISE_EXPRESSION
                 | FALL_EXPRESSION
@@ -4925,19 +5728,20 @@ impl AstNode for EventCondition {
                 | EVERY_EXPRESSION
         )
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        let result = match syntax.kind() {
-            BOOL_EXPRESSION => Self::BoolExpression(BoolExpression::cast(syntax)?),
-            RISE_EXPRESSION => Self::RiseExpression(RiseExpression::cast(syntax)?),
-            FALL_EXPRESSION => Self::FallExpression(FallExpression::cast(syntax)?),
-            ELAPSED_EXPRESSION => Self::ElapsedExpression(ElapsedExpression::cast(syntax)?),
-            EVERY_EXPRESSION => Self::EveryExpression(EveryExpression::cast(syntax)?),
-            _ => return None,
-        };
-        Some(result)
+    fn cast(node: Self::Node) -> Option<Self> {
+        match *node.value() {
+            BOOL_EXPRESSION => BoolExpression::cast(node.clone()).map(Self::BoolExpression),
+            RISE_EXPRESSION => RiseExpression::cast(node.clone()).map(Self::RiseExpression),
+            FALL_EXPRESSION => FallExpression::cast(node.clone()).map(Self::FallExpression),
+            ELAPSED_EXPRESSION => {
+                ElapsedExpression::cast(node.clone()).map(Self::ElapsedExpression)
+            }
+            EVERY_EXPRESSION => EveryExpression::cast(node.clone()).map(Self::EveryExpression),
+            _ => None,
+        }
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        match &self {
+    fn syntax(&self) -> &Self::Node {
+        match self {
             Self::BoolExpression(node) => node.syntax(),
             Self::RiseExpression(node) => node.syntax(),
             Self::FallExpression(node) => node.syntax(),
@@ -4945,328 +5749,268 @@ impl AstNode for EventCondition {
             Self::EveryExpression(node) => node.syntax(),
         }
     }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        match self {
-            Self::BoolExpression(node) => node.into_syntax(),
-            Self::RiseExpression(node) => node.into_syntax(),
-            Self::FallExpression(node) => node.into_syntax(),
-            Self::ElapsedExpression(node) => node.into_syntax(),
-            Self::EveryExpression(node) => node.into_syntax(),
-        }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct EventReference<'a>(OscDslNode<'a>);
+impl EventReference<'_> {
+    pub fn at_token(&self) -> Option<AtToken> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn event_path(&self) -> Option<EventPath> {
+        support::child(&self.0, 0usize)
+    }
+}
+impl<'a> TypedNode for EventReference<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == EVENT_REFERENCE
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct EventReference {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl EventReference {
-    pub fn at_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
-    }
-    pub fn event_path(&self) -> SyntaxResult<EventPath> {
-        support::required_node(&self.syntax, 1usize)
-    }
-}
-impl AstNode for EventReference {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(EVENT_REFERENCE as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == EVENT_REFERENCE
-    }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
-    }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct EventReferenceCondition {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl EventReferenceCondition {
+pub struct EventReferenceCondition<'a>(OscDslNode<'a>);
+impl EventReferenceCondition<'_> {
     pub fn event_field_decl(&self) -> Option<EventFieldDecl> {
-        support::node(&self.syntax, 0usize)
+        support::child(&self.0, 0usize)
     }
-    pub fn if_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 1usize)
+    pub fn if_token(&self) -> Option<IfToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn event_condition(&self) -> SyntaxResult<EventCondition> {
-        support::required_node(&self.syntax, 2usize)
+    pub fn event_condition(&self) -> Option<EventCondition> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for EventReferenceCondition {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(EVENT_REFERENCE_CONDITION as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == EVENT_REFERENCE_CONDITION
+impl<'a> TypedNode for EventReferenceCondition<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == EVENT_REFERENCE_CONDITION
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct EventFieldDecl {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl EventFieldDecl {
-    pub fn as_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
+pub struct EventFieldDecl<'a>(OscDslNode<'a>);
+impl EventFieldDecl<'_> {
+    pub fn as_token(&self) -> Option<AsToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn event_field_name(&self) -> SyntaxResult<EventFieldName> {
-        support::required_node(&self.syntax, 1usize)
+    pub fn event_field_name(&self) -> Option<EventFieldName> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for EventFieldDecl {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(EVENT_FIELD_DECL as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == EVENT_FIELD_DECL
+impl<'a> TypedNode for EventFieldDecl<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == EVENT_FIELD_DECL
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct EventPath {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl EventPath {
+pub struct EventPath<'a>(OscDslNode<'a>);
+impl EventPath<'_> {
     pub fn event_path_prefix(&self) -> Option<EventPathPrefix> {
-        support::node(&self.syntax, 0usize)
+        support::child(&self.0, 0usize)
     }
-    pub fn event_name(&self) -> SyntaxResult<EventName> {
-        support::required_node(&self.syntax, 1usize)
+    pub fn event_name(&self) -> Option<EventName> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for EventPath {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(EVENT_PATH as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == EVENT_PATH
+impl<'a> TypedNode for EventPath<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == EVENT_PATH
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct EventFieldName {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl EventFieldName {
-    pub fn qualified_identifier(&self) -> SyntaxResult<QualifiedIdentifier> {
-        support::required_node(&self.syntax, 0usize)
+pub struct EventFieldName<'a>(OscDslNode<'a>);
+impl EventFieldName<'_> {
+    pub fn qualified_identifier(&self) -> Option<QualifiedIdentifier> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for EventFieldName {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(EVENT_FIELD_NAME as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == EVENT_FIELD_NAME
+impl<'a> TypedNode for EventFieldName<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == EVENT_FIELD_NAME
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct EventPathPrefix {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl EventPathPrefix {
-    pub fn expression(&self) -> SyntaxResult<Expression> {
-        support::required_node(&self.syntax, 0usize)
+pub struct EventPathPrefix<'a>(OscDslNode<'a>);
+impl EventPathPrefix<'_> {
+    pub fn expression(&self) -> Option<Expression> {
+        support::child(&self.0, 0usize)
     }
-    pub fn dot_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 1usize)
+    pub fn dot_token(&self) -> Option<DotToken> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for EventPathPrefix {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(EVENT_PATH_PREFIX as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == EVENT_PATH_PREFIX
+impl<'a> TypedNode for EventPathPrefix<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == EVENT_PATH_PREFIX
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum Expression {
-    TernaryOpExp(TernaryOpExp),
-    LogicalOpExp(LogicalOpExp),
-    BinaryOpExp(BinaryOpExp),
-    UnaryOpExp(UnaryOpExp),
-    CastExp(CastExp),
-    TypeTestExp(TypeTestExp),
-    ElementAccess(ElementAccess),
-    FunctionApplication(FunctionApplication),
-    FieldAccess(FieldAccess),
-    ItExp(ItExp),
-    QualifiedIdentifier(QualifiedIdentifier),
-    ParenthesizedExp(ParenthesizedExp),
-    LiteralExp(LiteralExp),
-    EnumValueReference(EnumValueReference),
-    ListConstructor(ListConstructor),
-    RangeConstructor(RangeConstructor),
+pub enum Expression<'a> {
+    TernaryOpExp(TernaryOpExp<'a>),
+    LogicalOpExp(LogicalOpExp<'a>),
+    BinaryOpExp(BinaryOpExp<'a>),
+    UnaryOpExp(UnaryOpExp<'a>),
+    CastExp(CastExp<'a>),
+    TypeTestExp(TypeTestExp<'a>),
+    ElementAccess(ElementAccess<'a>),
+    FunctionApplication(FunctionApplication<'a>),
+    FieldAccess(FieldAccess<'a>),
+    ItExp(ItExp<'a>),
+    QualifiedIdentifier(QualifiedIdentifier<'a>),
+    ParenthesizedExp(ParenthesizedExp<'a>),
+    LiteralExp(LiteralExp<'a>),
+    EnumValueReference(EnumValueReference<'a>),
+    ListConstructor(ListConstructor<'a>),
+    RangeConstructor(RangeConstructor<'a>),
 }
-impl Expression {
-    pub fn as_ternary_op_exp(&self) -> Option<&TernaryOpExp> {
+impl Expression<'_> {
+    pub fn as_ternary_op_exp(&self) -> Option<TernaryOpExp> {
         match self {
-            Expression::TernaryOpExp(node) => Some(node),
+            Self::TernaryOpExp(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_logical_op_exp(&self) -> Option<&LogicalOpExp> {
+    pub fn as_logical_op_exp(&self) -> Option<LogicalOpExp> {
         match self {
-            Expression::LogicalOpExp(node) => Some(node),
+            Self::LogicalOpExp(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_binary_op_exp(&self) -> Option<&BinaryOpExp> {
+    pub fn as_binary_op_exp(&self) -> Option<BinaryOpExp> {
         match self {
-            Expression::BinaryOpExp(node) => Some(node),
+            Self::BinaryOpExp(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_unary_op_exp(&self) -> Option<&UnaryOpExp> {
+    pub fn as_unary_op_exp(&self) -> Option<UnaryOpExp> {
         match self {
-            Expression::UnaryOpExp(node) => Some(node),
+            Self::UnaryOpExp(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_cast_exp(&self) -> Option<&CastExp> {
+    pub fn as_cast_exp(&self) -> Option<CastExp> {
         match self {
-            Expression::CastExp(node) => Some(node),
+            Self::CastExp(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_type_test_exp(&self) -> Option<&TypeTestExp> {
+    pub fn as_type_test_exp(&self) -> Option<TypeTestExp> {
         match self {
-            Expression::TypeTestExp(node) => Some(node),
+            Self::TypeTestExp(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_element_access(&self) -> Option<&ElementAccess> {
+    pub fn as_element_access(&self) -> Option<ElementAccess> {
         match self {
-            Expression::ElementAccess(node) => Some(node),
+            Self::ElementAccess(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_function_application(&self) -> Option<&FunctionApplication> {
+    pub fn as_function_application(&self) -> Option<FunctionApplication> {
         match self {
-            Expression::FunctionApplication(node) => Some(node),
+            Self::FunctionApplication(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_field_access(&self) -> Option<&FieldAccess> {
+    pub fn as_field_access(&self) -> Option<FieldAccess> {
         match self {
-            Expression::FieldAccess(node) => Some(node),
+            Self::FieldAccess(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_it_exp(&self) -> Option<&ItExp> {
+    pub fn as_it_exp(&self) -> Option<ItExp> {
         match self {
-            Expression::ItExp(node) => Some(node),
+            Self::ItExp(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_qualified_identifier(&self) -> Option<&QualifiedIdentifier> {
+    pub fn as_qualified_identifier(&self) -> Option<QualifiedIdentifier> {
         match self {
-            Expression::QualifiedIdentifier(node) => Some(node),
+            Self::QualifiedIdentifier(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_parenthesized_exp(&self) -> Option<&ParenthesizedExp> {
+    pub fn as_parenthesized_exp(&self) -> Option<ParenthesizedExp> {
         match self {
-            Expression::ParenthesizedExp(node) => Some(node),
+            Self::ParenthesizedExp(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_literal_exp(&self) -> Option<&LiteralExp> {
+    pub fn as_literal_exp(&self) -> Option<LiteralExp> {
         match self {
-            Expression::LiteralExp(node) => Some(node),
+            Self::LiteralExp(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_enum_value_reference(&self) -> Option<&EnumValueReference> {
+    pub fn as_enum_value_reference(&self) -> Option<EnumValueReference> {
         match self {
-            Expression::EnumValueReference(node) => Some(node),
+            Self::EnumValueReference(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_list_constructor(&self) -> Option<&ListConstructor> {
+    pub fn as_list_constructor(&self) -> Option<ListConstructor> {
         match self {
-            Expression::ListConstructor(node) => Some(node),
+            Self::ListConstructor(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_range_constructor(&self) -> Option<&RangeConstructor> {
+    pub fn as_range_constructor(&self) -> Option<RangeConstructor> {
         match self {
-            Expression::RangeConstructor(node) => Some(node),
+            Self::RangeConstructor(node) => Some(node.clone()),
             _ => None,
         }
     }
 }
-impl AstNode for Expression {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> = TernaryOpExp::KIND_SET
-        .union(LogicalOpExp::KIND_SET)
-        .union(BinaryOpExp::KIND_SET)
-        .union(UnaryOpExp::KIND_SET)
-        .union(CastExp::KIND_SET)
-        .union(TypeTestExp::KIND_SET)
-        .union(ElementAccess::KIND_SET)
-        .union(FunctionApplication::KIND_SET)
-        .union(FieldAccess::KIND_SET)
-        .union(ItExp::KIND_SET)
-        .union(QualifiedIdentifier::KIND_SET)
-        .union(ParenthesizedExp::KIND_SET)
-        .union(LiteralExp::KIND_SET)
-        .union(EnumValueReference::KIND_SET)
-        .union(ListConstructor::KIND_SET)
-        .union(RangeConstructor::KIND_SET);
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
+impl<'a> TypedNode for Expression<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
         matches!(
-            kind,
+            value,
             TERNARY_OP_EXP
                 | LOGICAL_OP_EXP
                 | BINARY_OP_EXP
@@ -5285,30 +6029,35 @@ impl AstNode for Expression {
                 | RANGE_CONSTRUCTOR
         )
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        let result = match syntax.kind() {
-            TERNARY_OP_EXP => Self::TernaryOpExp(TernaryOpExp::cast(syntax)?),
-            LOGICAL_OP_EXP => Self::LogicalOpExp(LogicalOpExp::cast(syntax)?),
-            BINARY_OP_EXP => Self::BinaryOpExp(BinaryOpExp::cast(syntax)?),
-            UNARY_OP_EXP => Self::UnaryOpExp(UnaryOpExp::cast(syntax)?),
-            CAST_EXP => Self::CastExp(CastExp::cast(syntax)?),
-            TYPE_TEST_EXP => Self::TypeTestExp(TypeTestExp::cast(syntax)?),
-            ELEMENT_ACCESS => Self::ElementAccess(ElementAccess::cast(syntax)?),
-            FUNCTION_APPLICATION => Self::FunctionApplication(FunctionApplication::cast(syntax)?),
-            FIELD_ACCESS => Self::FieldAccess(FieldAccess::cast(syntax)?),
-            IT_EXP => Self::ItExp(ItExp::cast(syntax)?),
-            QUALIFIED_IDENTIFIER => Self::QualifiedIdentifier(QualifiedIdentifier::cast(syntax)?),
-            PARENTHESIZED_EXP => Self::ParenthesizedExp(ParenthesizedExp::cast(syntax)?),
-            LITERAL_EXP => Self::LiteralExp(LiteralExp::cast(syntax)?),
-            ENUM_VALUE_REFERENCE => Self::EnumValueReference(EnumValueReference::cast(syntax)?),
-            LIST_CONSTRUCTOR => Self::ListConstructor(ListConstructor::cast(syntax)?),
-            RANGE_CONSTRUCTOR => Self::RangeConstructor(RangeConstructor::cast(syntax)?),
-            _ => return None,
-        };
-        Some(result)
+    fn cast(node: Self::Node) -> Option<Self> {
+        match *node.value() {
+            TERNARY_OP_EXP => TernaryOpExp::cast(node.clone()).map(Self::TernaryOpExp),
+            LOGICAL_OP_EXP => LogicalOpExp::cast(node.clone()).map(Self::LogicalOpExp),
+            BINARY_OP_EXP => BinaryOpExp::cast(node.clone()).map(Self::BinaryOpExp),
+            UNARY_OP_EXP => UnaryOpExp::cast(node.clone()).map(Self::UnaryOpExp),
+            CAST_EXP => CastExp::cast(node.clone()).map(Self::CastExp),
+            TYPE_TEST_EXP => TypeTestExp::cast(node.clone()).map(Self::TypeTestExp),
+            ELEMENT_ACCESS => ElementAccess::cast(node.clone()).map(Self::ElementAccess),
+            FUNCTION_APPLICATION => {
+                FunctionApplication::cast(node.clone()).map(Self::FunctionApplication)
+            }
+            FIELD_ACCESS => FieldAccess::cast(node.clone()).map(Self::FieldAccess),
+            IT_EXP => ItExp::cast(node.clone()).map(Self::ItExp),
+            QUALIFIED_IDENTIFIER => {
+                QualifiedIdentifier::cast(node.clone()).map(Self::QualifiedIdentifier)
+            }
+            PARENTHESIZED_EXP => ParenthesizedExp::cast(node.clone()).map(Self::ParenthesizedExp),
+            LITERAL_EXP => LiteralExp::cast(node.clone()).map(Self::LiteralExp),
+            ENUM_VALUE_REFERENCE => {
+                EnumValueReference::cast(node.clone()).map(Self::EnumValueReference)
+            }
+            LIST_CONSTRUCTOR => ListConstructor::cast(node.clone()).map(Self::ListConstructor),
+            RANGE_CONSTRUCTOR => RangeConstructor::cast(node.clone()).map(Self::RangeConstructor),
+            _ => None,
+        }
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        match &self {
+    fn syntax(&self) -> &Self::Node {
+        match self {
             Self::TernaryOpExp(node) => node.syntax(),
             Self::LogicalOpExp(node) => node.syntax(),
             Self::BinaryOpExp(node) => node.syntax(),
@@ -5327,1631 +6076,1333 @@ impl AstNode for Expression {
             Self::RangeConstructor(node) => node.syntax(),
         }
     }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        match self {
-            Self::TernaryOpExp(node) => node.into_syntax(),
-            Self::LogicalOpExp(node) => node.into_syntax(),
-            Self::BinaryOpExp(node) => node.into_syntax(),
-            Self::UnaryOpExp(node) => node.into_syntax(),
-            Self::CastExp(node) => node.into_syntax(),
-            Self::TypeTestExp(node) => node.into_syntax(),
-            Self::ElementAccess(node) => node.into_syntax(),
-            Self::FunctionApplication(node) => node.into_syntax(),
-            Self::FieldAccess(node) => node.into_syntax(),
-            Self::ItExp(node) => node.into_syntax(),
-            Self::QualifiedIdentifier(node) => node.into_syntax(),
-            Self::ParenthesizedExp(node) => node.into_syntax(),
-            Self::LiteralExp(node) => node.into_syntax(),
-            Self::EnumValueReference(node) => node.into_syntax(),
-            Self::ListConstructor(node) => node.into_syntax(),
-            Self::RangeConstructor(node) => node.into_syntax(),
-        }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct BoolExpression<'a>(OscDslNode<'a>);
+impl BoolExpression<'_> {
+    pub fn expression(&self) -> Option<Expression> {
+        support::child(&self.0, 0usize)
+    }
+}
+impl<'a> TypedNode for BoolExpression<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == BOOL_EXPRESSION
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct BoolExpression {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl BoolExpression {
-    pub fn expression(&self) -> SyntaxResult<Expression> {
-        support::required_node(&self.syntax, 0usize)
+pub struct RiseExpression<'a>(OscDslNode<'a>);
+impl RiseExpression<'_> {
+    pub fn rise_token(&self) -> Option<RiseToken> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn left_paren_token(&self) -> Option<LeftParenToken> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn bool_expression(&self) -> Option<BoolExpression> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn right_paren_token(&self) -> Option<RightParenToken> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for BoolExpression {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(BOOL_EXPRESSION as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == BOOL_EXPRESSION
+impl<'a> TypedNode for RiseExpression<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == RISE_EXPRESSION
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct RiseExpression {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl RiseExpression {
-    pub fn rise_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
-    }
-    pub fn l_paren_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 1usize)
-    }
-    pub fn bool_expression(&self) -> SyntaxResult<BoolExpression> {
-        support::required_node(&self.syntax, 2usize)
-    }
-    pub fn r_paren_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 3usize)
-    }
-}
-impl AstNode for RiseExpression {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(RISE_EXPRESSION as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == RISE_EXPRESSION
-    }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
-    }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct FallExpression {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl FallExpression {
-    pub fn fall_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
+pub struct FallExpression<'a>(OscDslNode<'a>);
+impl FallExpression<'_> {
+    pub fn fall_token(&self) -> Option<FallToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn l_paren_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 1usize)
+    pub fn left_paren_token(&self) -> Option<LeftParenToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn bool_expression(&self) -> SyntaxResult<BoolExpression> {
-        support::required_node(&self.syntax, 2usize)
+    pub fn bool_expression(&self) -> Option<BoolExpression> {
+        support::child(&self.0, 0usize)
     }
-    pub fn r_paren_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 3usize)
+    pub fn right_paren_token(&self) -> Option<RightParenToken> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for FallExpression {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(FALL_EXPRESSION as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == FALL_EXPRESSION
+impl<'a> TypedNode for FallExpression<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == FALL_EXPRESSION
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ElapsedExpression {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl ElapsedExpression {
-    pub fn elapsed_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
+pub struct ElapsedExpression<'a>(OscDslNode<'a>);
+impl ElapsedExpression<'_> {
+    pub fn elapsed_token(&self) -> Option<ElapsedToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn l_paren_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 1usize)
+    pub fn left_paren_token(&self) -> Option<LeftParenToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn duration_expression(&self) -> SyntaxResult<DurationExpression> {
-        support::required_node(&self.syntax, 2usize)
+    pub fn duration_expression(&self) -> Option<DurationExpression> {
+        support::child(&self.0, 0usize)
     }
-    pub fn r_paren_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 3usize)
+    pub fn right_paren_token(&self) -> Option<RightParenToken> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for ElapsedExpression {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(ELAPSED_EXPRESSION as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == ELAPSED_EXPRESSION
+impl<'a> TypedNode for ElapsedExpression<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == ELAPSED_EXPRESSION
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct EveryExpression {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl EveryExpression {
-    pub fn every_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
+pub struct EveryExpression<'a>(OscDslNode<'a>);
+impl EveryExpression<'_> {
+    pub fn every_token(&self) -> Option<EveryToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn l_paren_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 1usize)
+    pub fn left_paren_token(&self) -> Option<LeftParenToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn duration_expression(&self) -> SyntaxResult<DurationExpression> {
-        support::required_node(&self.syntax, 2usize)
+    pub fn duration_expression(&self) -> Option<DurationExpression> {
+        support::child(&self.0, 0usize)
     }
     pub fn trailing_every_exp_offset(&self) -> Option<TrailingEveryExpOffset> {
-        support::node(&self.syntax, 3usize)
+        support::child(&self.0, 0usize)
     }
-    pub fn r_paren_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 4usize)
+    pub fn right_paren_token(&self) -> Option<RightParenToken> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for EveryExpression {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(EVERY_EXPRESSION as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == EVERY_EXPRESSION
+impl<'a> TypedNode for EveryExpression<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == EVERY_EXPRESSION
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct DurationExpression {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl DurationExpression {
-    pub fn expression(&self) -> SyntaxResult<Expression> {
-        support::required_node(&self.syntax, 0usize)
+pub struct DurationExpression<'a>(OscDslNode<'a>);
+impl DurationExpression<'_> {
+    pub fn expression(&self) -> Option<Expression> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for DurationExpression {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(DURATION_EXPRESSION as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == DURATION_EXPRESSION
+impl<'a> TypedNode for DurationExpression<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == DURATION_EXPRESSION
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct TrailingEveryExpOffset {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl TrailingEveryExpOffset {
-    pub fn comma_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
+pub struct TrailingEveryExpOffset<'a>(OscDslNode<'a>);
+impl TrailingEveryExpOffset<'_> {
+    pub fn comma_token(&self) -> Option<CommaToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn offset_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 1usize)
+    pub fn offset_token(&self) -> Option<OffsetToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn colon_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 2usize)
+    pub fn colon_token(&self) -> Option<ColonToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn duration_expression(&self) -> SyntaxResult<DurationExpression> {
-        support::required_node(&self.syntax, 3usize)
+    pub fn duration_expression(&self) -> Option<DurationExpression> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for TrailingEveryExpOffset {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(TRAILING_EVERY_EXP_OFFSET as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == TRAILING_EVERY_EXP_OFFSET
+impl<'a> TypedNode for TrailingEveryExpOffset<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == TRAILING_EVERY_EXP_OFFSET
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct VariableDeclaration {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl VariableDeclaration {
-    pub fn var_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
+pub struct VariableDeclaration<'a>(OscDslNode<'a>);
+impl VariableDeclaration<'_> {
+    pub fn var_token(&self) -> Option<VarToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn field_name_list(&self) -> FieldNameList {
-        support::list(&self.syntax, 1usize)
+    pub fn field_name_list(&self) -> Option<FieldNameList> {
+        support::child(&self.0, 0usize)
     }
-    pub fn colon_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 2usize)
+    pub fn colon_token(&self) -> Option<ColonToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn type_declarator(&self) -> SyntaxResult<TypeDeclarator> {
-        support::required_node(&self.syntax, 3usize)
+    pub fn type_declarator(&self) -> Option<TypeDeclarator> {
+        support::child(&self.0, 0usize)
     }
     pub fn variable_initializer(&self) -> Option<VariableInitializer> {
-        support::node(&self.syntax, 4usize)
+        support::child(&self.0, 0usize)
     }
-    pub fn newline_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 5usize)
+    pub fn newline_token(&self) -> Option<NewlineToken> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for VariableDeclaration {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(VARIABLE_DECLARATION as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == VARIABLE_DECLARATION
+impl<'a> TypedNode for VariableDeclaration<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == VARIABLE_DECLARATION
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct FieldNameList {
-    syntax_list: SyntaxList<OscDslLanguage>,
-}
-impl AstNode for FieldNameList {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(FIELD_NAME_LIST as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == FIELD_NAME_LIST
+pub struct FieldNameList<'a>(OscDslNode<'a>);
+impl<'a> FieldNameList<'a> {
+    pub fn comma_token(&self) -> impl Iterator<Item = CommaToken<'a>> + 'a {
+        support::children(&self.0)
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self {
-            syntax_list: syntax.into_list(),
-        })
-    }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        self.syntax_list.node()
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax_list.into_node()
+    pub fn field_name(&self) -> impl Iterator<Item = FieldName<'a>> + 'a {
+        support::children(&self.0)
     }
 }
-impl AstSeparatedList for FieldNameList {
-    type Language = OscDslLanguage;
-    type Node = FieldName;
-    fn syntax_list(&self) -> &SyntaxList<OscDslLanguage> {
-        &self.syntax_list
+impl<'a> TypedNode for FieldNameList<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == FIELD_NAME_LIST
     }
-    fn into_syntax_list(self) -> SyntaxList<OscDslLanguage> {
-        self.syntax_list
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ParameterInitilizerClause {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl ParameterInitilizerClause {
-    pub fn assign_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
+pub struct ParameterInitilizerClause<'a>(OscDslNode<'a>);
+impl ParameterInitilizerClause<'_> {
+    pub fn assign_token(&self) -> Option<AssignToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn default_value(&self) -> SyntaxResult<DefaultValue> {
-        support::required_node(&self.syntax, 1usize)
+    pub fn default_value(&self) -> Option<DefaultValue> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for ParameterInitilizerClause {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(PARAMETER_INITILIZER_CLAUSE as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == PARAMETER_INITILIZER_CLAUSE
+impl<'a> TypedNode for ParameterInitilizerClause<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == PARAMETER_INITILIZER_CLAUSE
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum ParameterWithDeclarationOrEmpty {
-    ParameterWithDeclaration(ParameterWithDeclaration),
-    Empty(Empty),
+pub enum ParameterWithDeclarationOrNewline<'a> {
+    ParameterWithDeclaration(ParameterWithDeclaration<'a>),
+    NewlineToken(NewlineToken<'a>),
 }
-impl ParameterWithDeclarationOrEmpty {
-    pub fn as_parameter_with_declaration(&self) -> Option<&ParameterWithDeclaration> {
+impl ParameterWithDeclarationOrNewline<'_> {
+    pub fn as_parameter_with_declaration(&self) -> Option<ParameterWithDeclaration> {
         match self {
-            ParameterWithDeclarationOrEmpty::ParameterWithDeclaration(node) => Some(node),
+            Self::ParameterWithDeclaration(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_empty(&self) -> Option<&Empty> {
+    pub fn as_newline_token(&self) -> Option<NewlineToken> {
         match self {
-            ParameterWithDeclarationOrEmpty::Empty(node) => Some(node),
+            Self::NewlineToken(node) => Some(node.clone()),
             _ => None,
         }
     }
 }
-impl AstNode for ParameterWithDeclarationOrEmpty {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        ParameterWithDeclaration::KIND_SET.union(Empty::KIND_SET);
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        matches!(kind, PARAMETER_WITH_DECLARATION | EMPTY)
+impl<'a> TypedNode for ParameterWithDeclarationOrNewline<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        matches!(value, PARAMETER_WITH_DECLARATION | NEWLINE)
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        let result = match syntax.kind() {
+    fn cast(node: Self::Node) -> Option<Self> {
+        match *node.value() {
             PARAMETER_WITH_DECLARATION => {
-                Self::ParameterWithDeclaration(ParameterWithDeclaration::cast(syntax)?)
+                ParameterWithDeclaration::cast(node.clone()).map(Self::ParameterWithDeclaration)
             }
-            EMPTY => Self::Empty(Empty::cast(syntax)?),
-            _ => return None,
-        };
-        Some(result)
+            NEWLINE => NewlineToken::cast(node.clone()).map(Self::NewlineToken),
+            _ => None,
+        }
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        match &self {
+    fn syntax(&self) -> &Self::Node {
+        match self {
             Self::ParameterWithDeclaration(node) => node.syntax(),
-            Self::Empty(node) => node.syntax(),
-        }
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        match self {
-            Self::ParameterWithDeclaration(node) => node.into_syntax(),
-            Self::Empty(node) => node.into_syntax(),
+            Self::NewlineToken(node) => node.syntax(),
         }
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct DefaultValue {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl DefaultValue {
-    pub fn expression(&self) -> SyntaxResult<Expression> {
-        support::required_node(&self.syntax, 0usize)
+pub struct DefaultValue<'a>(OscDslNode<'a>);
+impl DefaultValue<'_> {
+    pub fn expression(&self) -> Option<Expression> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for DefaultValue {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(DEFAULT_VALUE as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == DEFAULT_VALUE
+impl<'a> TypedNode for DefaultValue<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == DEFAULT_VALUE
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct VariableInitializer {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl VariableInitializer {
-    pub fn assign_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
+pub struct VariableInitializer<'a>(OscDslNode<'a>);
+impl VariableInitializer<'_> {
+    pub fn assign_token(&self) -> Option<AssignToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn variable_initializer_value(&self) -> SyntaxResult<VariableInitializerValue> {
-        support::required_node(&self.syntax, 1usize)
+    pub fn variable_initializer_value(&self) -> Option<VariableInitializerValue> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for VariableInitializer {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(VARIABLE_INITIALIZER as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == VARIABLE_INITIALIZER
+impl<'a> TypedNode for VariableInitializer<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == VARIABLE_INITIALIZER
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum VariableInitializerValue {
-    DefaultValue(DefaultValue),
-    SampleExpression(SampleExpression),
+pub enum VariableInitializerValue<'a> {
+    DefaultValue(DefaultValue<'a>),
+    SampleExpression(SampleExpression<'a>),
 }
-impl VariableInitializerValue {
-    pub fn as_default_value(&self) -> Option<&DefaultValue> {
+impl VariableInitializerValue<'_> {
+    pub fn as_default_value(&self) -> Option<DefaultValue> {
         match self {
-            VariableInitializerValue::DefaultValue(node) => Some(node),
+            Self::DefaultValue(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_sample_expression(&self) -> Option<&SampleExpression> {
+    pub fn as_sample_expression(&self) -> Option<SampleExpression> {
         match self {
-            VariableInitializerValue::SampleExpression(node) => Some(node),
+            Self::SampleExpression(node) => Some(node.clone()),
             _ => None,
         }
     }
 }
-impl AstNode for VariableInitializerValue {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        DefaultValue::KIND_SET.union(SampleExpression::KIND_SET);
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        matches!(kind, DEFAULT_VALUE | SAMPLE_EXPRESSION)
+impl<'a> TypedNode for VariableInitializerValue<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        matches!(value, DEFAULT_VALUE | SAMPLE_EXPRESSION)
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        let result = match syntax.kind() {
-            DEFAULT_VALUE => Self::DefaultValue(DefaultValue::cast(syntax)?),
-            SAMPLE_EXPRESSION => Self::SampleExpression(SampleExpression::cast(syntax)?),
-            _ => return None,
-        };
-        Some(result)
+    fn cast(node: Self::Node) -> Option<Self> {
+        match *node.value() {
+            DEFAULT_VALUE => DefaultValue::cast(node.clone()).map(Self::DefaultValue),
+            SAMPLE_EXPRESSION => SampleExpression::cast(node.clone()).map(Self::SampleExpression),
+            _ => None,
+        }
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        match &self {
+    fn syntax(&self) -> &Self::Node {
+        match self {
             Self::DefaultValue(node) => node.syntax(),
             Self::SampleExpression(node) => node.syntax(),
         }
     }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        match self {
-            Self::DefaultValue(node) => node.into_syntax(),
-            Self::SampleExpression(node) => node.into_syntax(),
-        }
-    }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct SampleExpression {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl SampleExpression {
-    pub fn sample_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
+pub struct SampleExpression<'a>(OscDslNode<'a>);
+impl SampleExpression<'_> {
+    pub fn sample_token(&self) -> Option<SampleToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn l_paren_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 1usize)
+    pub fn left_paren_token(&self) -> Option<LeftParenToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn expression(&self) -> SyntaxResult<Expression> {
-        support::required_node(&self.syntax, 2usize)
+    pub fn expression(&self) -> Option<Expression> {
+        support::child(&self.0, 0usize)
     }
-    pub fn comma_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 3usize)
+    pub fn comma_token(&self) -> Option<CommaToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn event_specification(&self) -> SyntaxResult<EventSpecification> {
-        support::required_node(&self.syntax, 4usize)
+    pub fn event_specification(&self) -> Option<EventSpecification> {
+        support::child(&self.0, 0usize)
     }
     pub fn sample_default_value(&self) -> Option<SampleDefaultValue> {
-        support::node(&self.syntax, 5usize)
+        support::child(&self.0, 0usize)
     }
-    pub fn r_paren_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 6usize)
+    pub fn right_paren_token(&self) -> Option<RightParenToken> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for SampleExpression {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(SAMPLE_EXPRESSION as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == SAMPLE_EXPRESSION
+impl<'a> TypedNode for SampleExpression<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == SAMPLE_EXPRESSION
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct SampleDefaultValue {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl SampleDefaultValue {
-    pub fn comma_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
+pub struct SampleDefaultValue<'a>(OscDslNode<'a>);
+impl SampleDefaultValue<'_> {
+    pub fn comma_token(&self) -> Option<CommaToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn default_value(&self) -> SyntaxResult<DefaultValue> {
-        support::required_node(&self.syntax, 1usize)
+    pub fn default_value(&self) -> Option<DefaultValue> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for SampleDefaultValue {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(SAMPLE_DEFAULT_VALUE as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == SAMPLE_DEFAULT_VALUE
+impl<'a> TypedNode for SampleDefaultValue<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == SAMPLE_DEFAULT_VALUE
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ParameterWithDeclaration {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl ParameterWithDeclaration {
-    pub fn with_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
+pub struct ParameterWithDeclaration<'a>(OscDslNode<'a>);
+impl ParameterWithDeclaration<'_> {
+    pub fn with_token(&self) -> Option<WithToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn colon_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 1usize)
+    pub fn colon_token(&self) -> Option<ColonToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn newline_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 2usize)
+    pub fn newline_token(&self) -> Option<NewlineToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn indent_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 3usize)
+    pub fn indent_token(&self) -> Option<IndentToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn parameter_with_member(&self) -> SyntaxResult<ParameterWithMember> {
-        support::required_node(&self.syntax, 4usize)
+    pub fn parameter_with_member(&self) -> Option<ParameterWithMember> {
+        support::child(&self.0, 0usize)
     }
-    pub fn dedent_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 5usize)
+    pub fn dedent_token(&self) -> Option<DedentToken> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for ParameterWithDeclaration {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(PARAMETER_WITH_DECLARATION as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == PARAMETER_WITH_DECLARATION
+impl<'a> TypedNode for ParameterWithDeclaration<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == PARAMETER_WITH_DECLARATION
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ParameterWithMember {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl ParameterWithMember {
-    pub fn constraint_declaration(&self) -> SyntaxResult<ConstraintDeclaration> {
-        support::required_node(&self.syntax, 0usize)
+pub struct ParameterWithMember<'a>(OscDslNode<'a>);
+impl ParameterWithMember<'_> {
+    pub fn constraint_declaration(&self) -> Option<ConstraintDeclaration> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for ParameterWithMember {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(PARAMETER_WITH_MEMBER as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == PARAMETER_WITH_MEMBER
+impl<'a> TypedNode for ParameterWithMember<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == PARAMETER_WITH_MEMBER
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct KeepConstraintDeclaration {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl KeepConstraintDeclaration {
-    pub fn keep_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
+pub struct KeepConstraintDeclaration<'a>(OscDslNode<'a>);
+impl KeepConstraintDeclaration<'_> {
+    pub fn keep_token(&self) -> Option<KeepToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn l_paren_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 1usize)
+    pub fn left_paren_token(&self) -> Option<LeftParenToken> {
+        support::child(&self.0, 0usize)
     }
     pub fn constraint_qualifier(&self) -> Option<ConstraintQualifier> {
-        support::node(&self.syntax, 2usize)
+        support::child(&self.0, 0usize)
     }
-    pub fn constraint_expression(&self) -> SyntaxResult<ConstraintExpression> {
-        support::required_node(&self.syntax, 3usize)
+    pub fn constraint_expression(&self) -> Option<ConstraintExpression> {
+        support::child(&self.0, 0usize)
     }
-    pub fn r_paren_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 4usize)
+    pub fn right_paren_token(&self) -> Option<RightParenToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn newline_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 5usize)
+    pub fn newline_token(&self) -> Option<NewlineToken> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for KeepConstraintDeclaration {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(KEEP_CONSTRAINT_DECLARATION as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == KEEP_CONSTRAINT_DECLARATION
+impl<'a> TypedNode for KeepConstraintDeclaration<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == KEEP_CONSTRAINT_DECLARATION
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct RemoveDefaultDeclaration {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl RemoveDefaultDeclaration {
-    pub fn remove_default_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
+pub struct RemoveDefaultDeclaration<'a>(OscDslNode<'a>);
+impl RemoveDefaultDeclaration<'_> {
+    pub fn remove_default_token(&self) -> Option<RemoveDefaultToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn l_paren_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 1usize)
+    pub fn left_paren_token(&self) -> Option<LeftParenToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn parameter_reference(&self) -> SyntaxResult<ParameterReference> {
-        support::required_node(&self.syntax, 2usize)
+    pub fn parameter_reference(&self) -> Option<ParameterReference> {
+        support::child(&self.0, 0usize)
     }
-    pub fn r_paren_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 3usize)
+    pub fn right_paren_token(&self) -> Option<RightParenToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn newline_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 4usize)
+    pub fn newline_token(&self) -> Option<NewlineToken> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for RemoveDefaultDeclaration {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(REMOVE_DEFAULT_DECLARATION as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == REMOVE_DEFAULT_DECLARATION
+impl<'a> TypedNode for RemoveDefaultDeclaration<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == REMOVE_DEFAULT_DECLARATION
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
-    }
-}
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
-pub enum ConstraintQualifierKind {
-    Default,
-    Hard,
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ConstraintQualifier {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl ConstraintQualifier {
-    pub fn kind(&self) -> ConstraintQualifierKind {
-        match self.syntax.kind() {
-            DEFAULT_KW => ConstraintQualifierKind::Default,
-            HARD_KW => ConstraintQualifierKind::Hard,
-            _ => unreachable!(),
-        }
-    }
-    pub fn token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
-    }
-}
-impl AstNode for ConstraintQualifier {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(CONSTRAINT_QUALIFIER as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == CONSTRAINT_QUALIFIER
-    }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
-    }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ConstraintExpression {
-    syntax: SyntaxNode<OscDslLanguage>,
+pub enum ConstraintQualifier<'a> {
+    DefaultToken(DefaultToken<'a>),
+    HardToken(HardToken<'a>),
 }
-impl ConstraintExpression {
-    pub fn expression(&self) -> SyntaxResult<Expression> {
-        support::required_node(&self.syntax, 0usize)
-    }
-}
-impl AstNode for ConstraintExpression {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(CONSTRAINT_EXPRESSION as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == CONSTRAINT_EXPRESSION
-    }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
-    }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum ParameterReference {
-    FieldName(FieldName),
-    FieldAccess(FieldAccess),
-}
-impl ParameterReference {
-    pub fn as_field_name(&self) -> Option<&FieldName> {
+impl ConstraintQualifier<'_> {
+    pub fn as_default_token(&self) -> Option<DefaultToken> {
         match self {
-            ParameterReference::FieldName(node) => Some(node),
+            Self::DefaultToken(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_field_access(&self) -> Option<&FieldAccess> {
+    pub fn as_hard_token(&self) -> Option<HardToken> {
         match self {
-            ParameterReference::FieldAccess(node) => Some(node),
+            Self::HardToken(node) => Some(node.clone()),
             _ => None,
         }
     }
 }
-impl AstNode for ParameterReference {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        FieldName::KIND_SET.union(FieldAccess::KIND_SET);
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        matches!(kind, FIELD_NAME | FIELD_ACCESS)
+impl<'a> TypedNode for ConstraintQualifier<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        matches!(value, DEFAULT_KW | HARD_KW)
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        let result = match syntax.kind() {
-            FIELD_NAME => Self::FieldName(FieldName::cast(syntax)?),
-            FIELD_ACCESS => Self::FieldAccess(FieldAccess::cast(syntax)?),
-            _ => return None,
-        };
-        Some(result)
+    fn cast(node: Self::Node) -> Option<Self> {
+        match *node.value() {
+            DEFAULT_KW => DefaultToken::cast(node.clone()).map(Self::DefaultToken),
+            HARD_KW => HardToken::cast(node.clone()).map(Self::HardToken),
+            _ => None,
+        }
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        match &self {
+    fn syntax(&self) -> &Self::Node {
+        match self {
+            Self::DefaultToken(node) => node.syntax(),
+            Self::HardToken(node) => node.syntax(),
+        }
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ConstraintExpression<'a>(OscDslNode<'a>);
+impl ConstraintExpression<'_> {
+    pub fn expression(&self) -> Option<Expression> {
+        support::child(&self.0, 0usize)
+    }
+}
+impl<'a> TypedNode for ConstraintExpression<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == CONSTRAINT_EXPRESSION
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ParameterReference<'a> {
+    FieldName(FieldName<'a>),
+    FieldAccess(FieldAccess<'a>),
+}
+impl ParameterReference<'_> {
+    pub fn as_field_name(&self) -> Option<FieldName> {
+        match self {
+            Self::FieldName(node) => Some(node.clone()),
+            _ => None,
+        }
+    }
+    pub fn as_field_access(&self) -> Option<FieldAccess> {
+        match self {
+            Self::FieldAccess(node) => Some(node.clone()),
+            _ => None,
+        }
+    }
+}
+impl<'a> TypedNode for ParameterReference<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        matches!(value, FIELD_NAME | FIELD_ACCESS)
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        match *node.value() {
+            FIELD_NAME => FieldName::cast(node.clone()).map(Self::FieldName),
+            FIELD_ACCESS => FieldAccess::cast(node.clone()).map(Self::FieldAccess),
+            _ => None,
+        }
+    }
+    fn syntax(&self) -> &Self::Node {
+        match self {
             Self::FieldName(node) => node.syntax(),
             Self::FieldAccess(node) => node.syntax(),
         }
     }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        match self {
-            Self::FieldName(node) => node.into_syntax(),
-            Self::FieldAccess(node) => node.into_syntax(),
-        }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct FieldAccess<'a>(OscDslNode<'a>);
+impl FieldAccess<'_> {
+    pub fn expression(&self) -> Option<Expression> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn dot_token(&self) -> Option<DotToken> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn field_name(&self) -> Option<FieldName> {
+        support::child(&self.0, 0usize)
+    }
+}
+impl<'a> TypedNode for FieldAccess<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == FIELD_ACCESS
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct FieldAccess {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl FieldAccess {
-    pub fn expression(&self) -> SyntaxResult<Expression> {
-        support::required_node(&self.syntax, 0usize)
-    }
-    pub fn dot_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 1usize)
-    }
-    pub fn field_name(&self) -> SyntaxResult<FieldName> {
-        support::required_node(&self.syntax, 2usize)
+pub struct MethodName<'a>(OscDslNode<'a>);
+impl MethodName<'_> {
+    pub fn qualified_identifier(&self) -> Option<QualifiedIdentifier> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for FieldAccess {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(FIELD_ACCESS as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == FIELD_ACCESS
+impl<'a> TypedNode for MethodName<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == METHOD_NAME
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct MethodName {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl MethodName {
-    pub fn qualified_identifier(&self) -> SyntaxResult<QualifiedIdentifier> {
-        support::required_node(&self.syntax, 0usize)
+pub struct MethodReturnType<'a>(OscDslNode<'a>);
+impl MethodReturnType<'_> {
+    pub fn arrow_token(&self) -> Option<ArrowToken> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn return_type(&self) -> Option<ReturnType> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for MethodName {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(METHOD_NAME as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == METHOD_NAME
+impl<'a> TypedNode for MethodReturnType<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == METHOD_RETURN_TYPE
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct MethodReturnType {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl MethodReturnType {
-    pub fn arrow_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
-    }
-    pub fn return_type(&self) -> SyntaxResult<ReturnType> {
-        support::required_node(&self.syntax, 1usize)
-    }
-}
-impl AstNode for MethodReturnType {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(METHOD_RETURN_TYPE as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == METHOD_RETURN_TYPE
-    }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
-    }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct MethodImplementation {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl MethodImplementation {
-    pub fn is_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
+pub struct MethodImplementation<'a>(OscDslNode<'a>);
+impl MethodImplementation<'_> {
+    pub fn is_token(&self) -> Option<IsToken> {
+        support::child(&self.0, 0usize)
     }
     pub fn method_qualifier(&self) -> Option<MethodQualifier> {
-        support::node(&self.syntax, 1usize)
+        support::child(&self.0, 0usize)
     }
-    pub fn method_body(&self) -> SyntaxResult<MethodBody> {
-        support::required_node(&self.syntax, 2usize)
+    pub fn method_body(&self) -> Option<MethodBody> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for MethodImplementation {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(METHOD_IMPLEMENTATION as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == METHOD_IMPLEMENTATION
+impl<'a> TypedNode for MethodImplementation<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == METHOD_IMPLEMENTATION
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ReturnType {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl ReturnType {
-    pub fn type_declarator(&self) -> SyntaxResult<TypeDeclarator> {
-        support::required_node(&self.syntax, 0usize)
+pub struct ReturnType<'a>(OscDslNode<'a>);
+impl ReturnType<'_> {
+    pub fn type_declarator(&self) -> Option<TypeDeclarator> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for ReturnType {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(RETURN_TYPE as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == RETURN_TYPE
+impl<'a> TypedNode for ReturnType<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == RETURN_TYPE
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct MethodQualifier {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl MethodQualifier {
-    pub fn only_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
+pub struct MethodQualifier<'a>(OscDslNode<'a>);
+impl MethodQualifier<'_> {
+    pub fn only_token(&self) -> Option<OnlyToken> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for MethodQualifier {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(METHOD_QUALIFIER as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == METHOD_QUALIFIER
+impl<'a> TypedNode for MethodQualifier<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == METHOD_QUALIFIER
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum MethodBody {
-    MethodExpressionBody(MethodExpressionBody),
-    MethodUndefinedBody(MethodUndefinedBody),
-    MethodExternalBody(MethodExternalBody),
+pub enum MethodBody<'a> {
+    MethodExpressionBody(MethodExpressionBody<'a>),
+    MethodUndefinedBody(MethodUndefinedBody<'a>),
+    MethodExternalBody(MethodExternalBody<'a>),
 }
-impl MethodBody {
-    pub fn as_method_expression_body(&self) -> Option<&MethodExpressionBody> {
+impl MethodBody<'_> {
+    pub fn as_method_expression_body(&self) -> Option<MethodExpressionBody> {
         match self {
-            MethodBody::MethodExpressionBody(node) => Some(node),
+            Self::MethodExpressionBody(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_method_undefined_body(&self) -> Option<&MethodUndefinedBody> {
+    pub fn as_method_undefined_body(&self) -> Option<MethodUndefinedBody> {
         match self {
-            MethodBody::MethodUndefinedBody(node) => Some(node),
+            Self::MethodUndefinedBody(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_method_external_body(&self) -> Option<&MethodExternalBody> {
+    pub fn as_method_external_body(&self) -> Option<MethodExternalBody> {
         match self {
-            MethodBody::MethodExternalBody(node) => Some(node),
+            Self::MethodExternalBody(node) => Some(node.clone()),
             _ => None,
         }
     }
 }
-impl AstNode for MethodBody {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> = MethodExpressionBody::KIND_SET
-        .union(MethodUndefinedBody::KIND_SET)
-        .union(MethodExternalBody::KIND_SET);
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
+impl<'a> TypedNode for MethodBody<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
         matches!(
-            kind,
+            value,
             METHOD_EXPRESSION_BODY | METHOD_UNDEFINED_BODY | METHOD_EXTERNAL_BODY
         )
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        let result = match syntax.kind() {
+    fn cast(node: Self::Node) -> Option<Self> {
+        match *node.value() {
             METHOD_EXPRESSION_BODY => {
-                Self::MethodExpressionBody(MethodExpressionBody::cast(syntax)?)
+                MethodExpressionBody::cast(node.clone()).map(Self::MethodExpressionBody)
             }
-            METHOD_UNDEFINED_BODY => Self::MethodUndefinedBody(MethodUndefinedBody::cast(syntax)?),
-            METHOD_EXTERNAL_BODY => Self::MethodExternalBody(MethodExternalBody::cast(syntax)?),
-            _ => return None,
-        };
-        Some(result)
+            METHOD_UNDEFINED_BODY => {
+                MethodUndefinedBody::cast(node.clone()).map(Self::MethodUndefinedBody)
+            }
+            METHOD_EXTERNAL_BODY => {
+                MethodExternalBody::cast(node.clone()).map(Self::MethodExternalBody)
+            }
+            _ => None,
+        }
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        match &self {
+    fn syntax(&self) -> &Self::Node {
+        match self {
             Self::MethodExpressionBody(node) => node.syntax(),
             Self::MethodUndefinedBody(node) => node.syntax(),
             Self::MethodExternalBody(node) => node.syntax(),
         }
     }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        match self {
-            Self::MethodExpressionBody(node) => node.into_syntax(),
-            Self::MethodUndefinedBody(node) => node.into_syntax(),
-            Self::MethodExternalBody(node) => node.into_syntax(),
-        }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct MethodExpressionBody<'a>(OscDslNode<'a>);
+impl MethodExpressionBody<'_> {
+    pub fn expression_token(&self) -> Option<ExpressionToken> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn expression(&self) -> Option<Expression> {
+        support::child(&self.0, 0usize)
+    }
+}
+impl<'a> TypedNode for MethodExpressionBody<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == METHOD_EXPRESSION_BODY
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct MethodExpressionBody {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl MethodExpressionBody {
-    pub fn expression_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
-    }
-    pub fn expression(&self) -> SyntaxResult<Expression> {
-        support::required_node(&self.syntax, 1usize)
+pub struct MethodUndefinedBody<'a>(OscDslNode<'a>);
+impl MethodUndefinedBody<'_> {
+    pub fn undefined_token(&self) -> Option<UndefinedToken> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for MethodExpressionBody {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(METHOD_EXPRESSION_BODY as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == METHOD_EXPRESSION_BODY
+impl<'a> TypedNode for MethodUndefinedBody<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == METHOD_UNDEFINED_BODY
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct MethodUndefinedBody {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl MethodUndefinedBody {
-    pub fn undefined_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
+pub struct MethodExternalBody<'a>(OscDslNode<'a>);
+impl MethodExternalBody<'_> {
+    pub fn external_token(&self) -> Option<ExternalToken> {
+        support::child(&self.0, 0usize)
     }
-}
-impl AstNode for MethodUndefinedBody {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(METHOD_UNDEFINED_BODY as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == METHOD_UNDEFINED_BODY
+    pub fn structured_identifier(&self) -> Option<StructuredIdentifier> {
+        support::child(&self.0, 0usize)
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
-    }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct MethodExternalBody {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl MethodExternalBody {
-    pub fn external_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
-    }
-    pub fn structured_identifier(&self) -> StructuredIdentifier {
-        support::list(&self.syntax, 1usize)
-    }
-    pub fn l_paren_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 2usize)
+    pub fn left_paren_token(&self) -> Option<LeftParenToken> {
+        support::child(&self.0, 0usize)
     }
     pub fn argument_list(&self) -> Option<ArgumentList> {
-        support::node(&self.syntax, 3usize)
+        support::child(&self.0, 0usize)
     }
-    pub fn r_paren_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 4usize)
+    pub fn right_paren_token(&self) -> Option<RightParenToken> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for MethodExternalBody {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(METHOD_EXTERNAL_BODY as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == METHOD_EXTERNAL_BODY
+impl<'a> TypedNode for MethodExternalBody<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == METHOD_EXTERNAL_BODY
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ArgumentList {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl ArgumentList {
-    pub fn positional_argument_list(&self) -> PositionalArgumentList {
-        support::list(&self.syntax, 0usize)
+pub struct ArgumentList<'a>(OscDslNode<'a>);
+impl ArgumentList<'_> {
+    pub fn positional_argument_list(&self) -> Option<PositionalArgumentList> {
+        support::child(&self.0, 0usize)
     }
-    pub fn named_argument_list(&self) -> NamedArgumentList {
-        support::list(&self.syntax, 1usize)
+    pub fn named_argument_list(&self) -> Option<NamedArgumentList> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for ArgumentList {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(ARGUMENT_LIST as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == ARGUMENT_LIST
+impl<'a> TypedNode for ArgumentList<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == ARGUMENT_LIST
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
-    }
-}
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
-pub enum CoverageOperatorKind {
-    Cover,
-    Record,
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct CoverageOperator {
-    syntax: SyntaxNode<OscDslLanguage>,
+pub enum CoverageOperator<'a> {
+    CoverToken(CoverToken<'a>),
+    RecordToken(RecordToken<'a>),
 }
-impl CoverageOperator {
-    pub fn kind(&self) -> CoverageOperatorKind {
-        match self.syntax.kind() {
-            COVER_KW => CoverageOperatorKind::Cover,
-            RECORD_KW => CoverageOperatorKind::Record,
-            _ => unreachable!(),
+impl CoverageOperator<'_> {
+    pub fn as_cover_token(&self) -> Option<CoverToken> {
+        match self {
+            Self::CoverToken(node) => Some(node.clone()),
+            _ => None,
         }
     }
-    pub fn token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
+    pub fn as_record_token(&self) -> Option<RecordToken> {
+        match self {
+            Self::RecordToken(node) => Some(node.clone()),
+            _ => None,
+        }
     }
 }
-impl AstNode for CoverageOperator {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(COVERAGE_OPERATOR as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == COVERAGE_OPERATOR
+impl<'a> TypedNode for CoverageOperator<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        matches!(value, COVER_KW | RECORD_KW)
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        match *node.value() {
+            COVER_KW => CoverToken::cast(node.clone()).map(Self::CoverToken),
+            RECORD_KW => RecordToken::cast(node.clone()).map(Self::RecordToken),
+            _ => None,
+        }
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        match self {
+            Self::CoverToken(node) => node.syntax(),
+            Self::RecordToken(node) => node.syntax(),
+        }
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ModifierApplication {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl ModifierApplication {
+pub struct ModifierApplication<'a>(OscDslNode<'a>);
+impl ModifierApplication<'_> {
     pub fn modifier_application_prefix(&self) -> Option<ModifierApplicationPrefix> {
-        support::node(&self.syntax, 0usize)
+        support::child(&self.0, 0usize)
     }
-    pub fn modifier_name(&self) -> SyntaxResult<ModifierName> {
-        support::required_node(&self.syntax, 1usize)
+    pub fn modifier_name(&self) -> Option<ModifierName> {
+        support::child(&self.0, 0usize)
     }
-    pub fn l_paren_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 2usize)
+    pub fn left_paren_token(&self) -> Option<LeftParenToken> {
+        support::child(&self.0, 0usize)
     }
     pub fn argument_list(&self) -> Option<ArgumentList> {
-        support::node(&self.syntax, 3usize)
+        support::child(&self.0, 0usize)
     }
-    pub fn r_paren_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 4usize)
+    pub fn right_paren_token(&self) -> Option<RightParenToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn newline_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 5usize)
+    pub fn newline_token(&self) -> Option<NewlineToken> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for ModifierApplication {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(MODIFIER_APPLICATION as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == MODIFIER_APPLICATION
+impl<'a> TypedNode for ModifierApplication<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == MODIFIER_APPLICATION
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ModifierApplicationPrefix {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl ModifierApplicationPrefix {
-    pub fn actor_expression(&self) -> SyntaxResult<ActorExpression> {
-        support::required_node(&self.syntax, 0usize)
+pub struct ModifierApplicationPrefix<'a>(OscDslNode<'a>);
+impl ModifierApplicationPrefix<'_> {
+    pub fn actor_expression(&self) -> Option<ActorExpression> {
+        support::child(&self.0, 0usize)
     }
-    pub fn dot_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 1usize)
+    pub fn dot_token(&self) -> Option<DotToken> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for ModifierApplicationPrefix {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(MODIFIER_APPLICATION_PREFIX as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == MODIFIER_APPLICATION_PREFIX
+impl<'a> TypedNode for ModifierApplicationPrefix<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == MODIFIER_APPLICATION_PREFIX
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ActorExpression {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl ActorExpression {
-    pub fn expression(&self) -> SyntaxResult<Expression> {
-        support::required_node(&self.syntax, 0usize)
+pub struct ActorExpression<'a>(OscDslNode<'a>);
+impl ActorExpression<'_> {
+    pub fn expression(&self) -> Option<Expression> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for ActorExpression {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(ACTOR_EXPRESSION as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == ACTOR_EXPRESSION
+impl<'a> TypedNode for ActorExpression<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == ACTOR_EXPRESSION
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct DoDirective {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl DoDirective {
-    pub fn do_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
+pub struct DoDirective<'a>(OscDslNode<'a>);
+impl DoDirective<'_> {
+    pub fn do_token(&self) -> Option<DoToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn do_member(&self) -> SyntaxResult<DoMember> {
-        support::required_node(&self.syntax, 1usize)
+    pub fn do_member(&self) -> Option<DoMember> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for DoDirective {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(DO_DIRECTIVE as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == DO_DIRECTIVE
+impl<'a> TypedNode for DoDirective<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == DO_DIRECTIVE
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct OnMemberList {
-    syntax_list: SyntaxList<OscDslLanguage>,
-}
-impl AstNode for OnMemberList {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(ON_MEMBER_LIST as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == ON_MEMBER_LIST
-    }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self {
-            syntax_list: syntax.into_list(),
-        })
-    }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        self.syntax_list.node()
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax_list.into_node()
+pub struct OnMemberList<'a>(OscDslNode<'a>);
+impl<'a> OnMemberList<'a> {
+    pub fn on_member(&self) -> impl Iterator<Item = OnMember<'a>> + 'a {
+        support::children(&self.0)
     }
 }
-impl AstNodeList for OnMemberList {
-    type Language = OscDslLanguage;
-    type Node = OnMember;
-    fn syntax_list(&self) -> &SyntaxList<OscDslLanguage> {
-        &self.syntax_list
+impl<'a> TypedNode for OnMemberList<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == ON_MEMBER_LIST
     }
-    fn into_syntax_list(self) -> SyntaxList<OscDslLanguage> {
-        self.syntax_list
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum OnMember {
-    CallDirective(CallDirective),
-    EmitDirective(EmitDirective),
+pub enum OnMember<'a> {
+    CallDirective(CallDirective<'a>),
+    EmitDirective(EmitDirective<'a>),
 }
-impl OnMember {
-    pub fn as_call_directive(&self) -> Option<&CallDirective> {
+impl OnMember<'_> {
+    pub fn as_call_directive(&self) -> Option<CallDirective> {
         match self {
-            OnMember::CallDirective(node) => Some(node),
+            Self::CallDirective(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_emit_directive(&self) -> Option<&EmitDirective> {
+    pub fn as_emit_directive(&self) -> Option<EmitDirective> {
         match self {
-            OnMember::EmitDirective(node) => Some(node),
+            Self::EmitDirective(node) => Some(node.clone()),
             _ => None,
         }
     }
 }
-impl AstNode for OnMember {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        CallDirective::KIND_SET.union(EmitDirective::KIND_SET);
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        matches!(kind, CALL_DIRECTIVE | EMIT_DIRECTIVE)
+impl<'a> TypedNode for OnMember<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        matches!(value, CALL_DIRECTIVE | EMIT_DIRECTIVE)
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        let result = match syntax.kind() {
-            CALL_DIRECTIVE => Self::CallDirective(CallDirective::cast(syntax)?),
-            EMIT_DIRECTIVE => Self::EmitDirective(EmitDirective::cast(syntax)?),
-            _ => return None,
-        };
-        Some(result)
+    fn cast(node: Self::Node) -> Option<Self> {
+        match *node.value() {
+            CALL_DIRECTIVE => CallDirective::cast(node.clone()).map(Self::CallDirective),
+            EMIT_DIRECTIVE => EmitDirective::cast(node.clone()).map(Self::EmitDirective),
+            _ => None,
+        }
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        match &self {
+    fn syntax(&self) -> &Self::Node {
+        match self {
             Self::CallDirective(node) => node.syntax(),
             Self::EmitDirective(node) => node.syntax(),
         }
     }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        match self {
-            Self::CallDirective(node) => node.into_syntax(),
-            Self::EmitDirective(node) => node.into_syntax(),
-        }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct CallDirective<'a>(OscDslNode<'a>);
+impl CallDirective<'_> {
+    pub fn call_token(&self) -> Option<CallToken> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn method_invocation(&self) -> Option<MethodInvocation> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn newline_token(&self) -> Option<NewlineToken> {
+        support::child(&self.0, 0usize)
+    }
+}
+impl<'a> TypedNode for CallDirective<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == CALL_DIRECTIVE
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct CallDirective {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl CallDirective {
-    pub fn call_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
+pub struct EmitDirective<'a>(OscDslNode<'a>);
+impl EmitDirective<'_> {
+    pub fn emit_token(&self) -> Option<EmitToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn method_invocation(&self) -> SyntaxResult<MethodInvocation> {
-        support::required_node(&self.syntax, 1usize)
-    }
-    pub fn newline_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 2usize)
-    }
-}
-impl AstNode for CallDirective {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(CALL_DIRECTIVE as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == CALL_DIRECTIVE
-    }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
-    }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct EmitDirective {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl EmitDirective {
-    pub fn emit_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
-    }
-    pub fn event_name(&self) -> SyntaxResult<EventName> {
-        support::required_node(&self.syntax, 1usize)
+    pub fn event_name(&self) -> Option<EventName> {
+        support::child(&self.0, 0usize)
     }
     pub fn emit_arguments(&self) -> Option<EmitArguments> {
-        support::node(&self.syntax, 2usize)
+        support::child(&self.0, 0usize)
     }
-    pub fn newline_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 3usize)
+    pub fn newline_token(&self) -> Option<NewlineToken> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for EmitDirective {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(EMIT_DIRECTIVE as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == EMIT_DIRECTIVE
+impl<'a> TypedNode for EmitDirective<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == EMIT_DIRECTIVE
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct DoMember {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl DoMember {
+pub struct DoMember<'a>(OscDslNode<'a>);
+impl DoMember<'_> {
     pub fn do_member_label(&self) -> Option<DoMemberLabel> {
-        support::node(&self.syntax, 0usize)
+        support::child(&self.0, 0usize)
     }
-    pub fn do_member_body(&self) -> SyntaxResult<DoMemberBody> {
-        support::required_node(&self.syntax, 1usize)
+    pub fn do_member_body(&self) -> Option<DoMemberBody> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for DoMember {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(DO_MEMBER as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == DO_MEMBER
+impl<'a> TypedNode for DoMember<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == DO_MEMBER
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct DoMemberLabel {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl DoMemberLabel {
-    pub fn label_name(&self) -> SyntaxResult<LabelName> {
-        support::required_node(&self.syntax, 0usize)
+pub struct DoMemberLabel<'a>(OscDslNode<'a>);
+impl DoMemberLabel<'_> {
+    pub fn label_name(&self) -> Option<LabelName> {
+        support::child(&self.0, 0usize)
     }
-    pub fn colon_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 1usize)
+    pub fn colon_token(&self) -> Option<ColonToken> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for DoMemberLabel {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(DO_MEMBER_LABEL as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == DO_MEMBER_LABEL
+impl<'a> TypedNode for DoMemberLabel<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == DO_MEMBER_LABEL
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum DoMemberBody {
-    Composition(Composition),
-    BehaviorInvocation(BehaviorInvocation),
-    WaitDirective(WaitDirective),
-    EmitDirective(EmitDirective),
-    CallDirective(CallDirective),
+pub enum DoMemberBody<'a> {
+    Composition(Composition<'a>),
+    BehaviorInvocation(BehaviorInvocation<'a>),
+    WaitDirective(WaitDirective<'a>),
+    EmitDirective(EmitDirective<'a>),
+    CallDirective(CallDirective<'a>),
 }
-impl DoMemberBody {
-    pub fn as_composition(&self) -> Option<&Composition> {
+impl DoMemberBody<'_> {
+    pub fn as_composition(&self) -> Option<Composition> {
         match self {
-            DoMemberBody::Composition(node) => Some(node),
+            Self::Composition(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_behavior_invocation(&self) -> Option<&BehaviorInvocation> {
+    pub fn as_behavior_invocation(&self) -> Option<BehaviorInvocation> {
         match self {
-            DoMemberBody::BehaviorInvocation(node) => Some(node),
+            Self::BehaviorInvocation(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_wait_directive(&self) -> Option<&WaitDirective> {
+    pub fn as_wait_directive(&self) -> Option<WaitDirective> {
         match self {
-            DoMemberBody::WaitDirective(node) => Some(node),
+            Self::WaitDirective(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_emit_directive(&self) -> Option<&EmitDirective> {
+    pub fn as_emit_directive(&self) -> Option<EmitDirective> {
         match self {
-            DoMemberBody::EmitDirective(node) => Some(node),
+            Self::EmitDirective(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_call_directive(&self) -> Option<&CallDirective> {
+    pub fn as_call_directive(&self) -> Option<CallDirective> {
         match self {
-            DoMemberBody::CallDirective(node) => Some(node),
+            Self::CallDirective(node) => Some(node.clone()),
             _ => None,
         }
     }
 }
-impl AstNode for DoMemberBody {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> = Composition::KIND_SET
-        .union(BehaviorInvocation::KIND_SET)
-        .union(WaitDirective::KIND_SET)
-        .union(EmitDirective::KIND_SET)
-        .union(CallDirective::KIND_SET);
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
+impl<'a> TypedNode for DoMemberBody<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
         matches!(
-            kind,
+            value,
             COMPOSITION | BEHAVIOR_INVOCATION | WAIT_DIRECTIVE | EMIT_DIRECTIVE | CALL_DIRECTIVE
         )
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        let result = match syntax.kind() {
-            COMPOSITION => Self::Composition(Composition::cast(syntax)?),
-            BEHAVIOR_INVOCATION => Self::BehaviorInvocation(BehaviorInvocation::cast(syntax)?),
-            WAIT_DIRECTIVE => Self::WaitDirective(WaitDirective::cast(syntax)?),
-            EMIT_DIRECTIVE => Self::EmitDirective(EmitDirective::cast(syntax)?),
-            CALL_DIRECTIVE => Self::CallDirective(CallDirective::cast(syntax)?),
-            _ => return None,
-        };
-        Some(result)
+    fn cast(node: Self::Node) -> Option<Self> {
+        match *node.value() {
+            COMPOSITION => Composition::cast(node.clone()).map(Self::Composition),
+            BEHAVIOR_INVOCATION => {
+                BehaviorInvocation::cast(node.clone()).map(Self::BehaviorInvocation)
+            }
+            WAIT_DIRECTIVE => WaitDirective::cast(node.clone()).map(Self::WaitDirective),
+            EMIT_DIRECTIVE => EmitDirective::cast(node.clone()).map(Self::EmitDirective),
+            CALL_DIRECTIVE => CallDirective::cast(node.clone()).map(Self::CallDirective),
+            _ => None,
+        }
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        match &self {
+    fn syntax(&self) -> &Self::Node {
+        match self {
             Self::Composition(node) => node.syntax(),
             Self::BehaviorInvocation(node) => node.syntax(),
             Self::WaitDirective(node) => node.syntax(),
@@ -6959,1308 +7410,1063 @@ impl AstNode for DoMemberBody {
             Self::CallDirective(node) => node.syntax(),
         }
     }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        match self {
-            Self::Composition(node) => node.into_syntax(),
-            Self::BehaviorInvocation(node) => node.into_syntax(),
-            Self::WaitDirective(node) => node.into_syntax(),
-            Self::EmitDirective(node) => node.into_syntax(),
-            Self::CallDirective(node) => node.into_syntax(),
-        }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct LabelName<'a>(OscDslNode<'a>);
+impl LabelName<'_> {
+    pub fn qualified_identifier(&self) -> Option<QualifiedIdentifier> {
+        support::child(&self.0, 0usize)
+    }
+}
+impl<'a> TypedNode for LabelName<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == LABEL_NAME
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct LabelName {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl LabelName {
-    pub fn qualified_identifier(&self) -> SyntaxResult<QualifiedIdentifier> {
-        support::required_node(&self.syntax, 0usize)
-    }
-}
-impl AstNode for LabelName {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(LABEL_NAME as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == LABEL_NAME
-    }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
-    }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Composition {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl Composition {
-    pub fn composition_operator(&self) -> SyntaxResult<CompositionOperator> {
-        support::required_node(&self.syntax, 0usize)
+pub struct Composition<'a>(OscDslNode<'a>);
+impl Composition<'_> {
+    pub fn composition_operator(&self) -> Option<CompositionOperator> {
+        support::child(&self.0, 0usize)
     }
     pub fn composition_arguments(&self) -> Option<CompositionArguments> {
-        support::node(&self.syntax, 1usize)
+        support::child(&self.0, 0usize)
     }
-    pub fn colon_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 2usize)
+    pub fn colon_token(&self) -> Option<ColonToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn newline_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 3usize)
+    pub fn newline_token(&self) -> Option<NewlineToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn indent_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 4usize)
+    pub fn indent_token(&self) -> Option<IndentToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn do_member_list(&self) -> DoMemberList {
-        support::list(&self.syntax, 5usize)
+    pub fn do_member_list(&self) -> Option<DoMemberList> {
+        support::child(&self.0, 0usize)
     }
-    pub fn dedent_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 6usize)
+    pub fn dedent_token(&self) -> Option<DedentToken> {
+        support::child(&self.0, 0usize)
     }
     pub fn behavior_with_declaration(&self) -> Option<BehaviorWithDeclaration> {
-        support::node(&self.syntax, 7usize)
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for Composition {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(COMPOSITION as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == COMPOSITION
+impl<'a> TypedNode for Composition<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == COMPOSITION
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct BehaviorInvocation {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl BehaviorInvocation {
+pub struct BehaviorInvocation<'a>(OscDslNode<'a>);
+impl BehaviorInvocation<'_> {
     pub fn behavior_invocation_prefix(&self) -> Option<BehaviorInvocationPrefix> {
-        support::node(&self.syntax, 0usize)
+        support::child(&self.0, 0usize)
     }
-    pub fn behavior_name(&self) -> SyntaxResult<BehaviorName> {
-        support::required_node(&self.syntax, 1usize)
+    pub fn behavior_name(&self) -> Option<BehaviorName> {
+        support::child(&self.0, 0usize)
     }
-    pub fn l_paren_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 2usize)
+    pub fn left_paren_token(&self) -> Option<LeftParenToken> {
+        support::child(&self.0, 0usize)
     }
     pub fn argument_list(&self) -> Option<ArgumentList> {
-        support::node(&self.syntax, 3usize)
+        support::child(&self.0, 0usize)
     }
-    pub fn r_paren_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 4usize)
+    pub fn right_paren_token(&self) -> Option<RightParenToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn behavior_with_declaration_or_empty(
-        &self,
-    ) -> SyntaxResult<BehaviorWithDeclarationOrEmpty> {
-        support::required_node(&self.syntax, 5usize)
+    pub fn behavior_with_declaration_or_newline(&self) -> Option<BehaviorWithDeclarationOrNewline> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for BehaviorInvocation {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(BEHAVIOR_INVOCATION as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == BEHAVIOR_INVOCATION
+impl<'a> TypedNode for BehaviorInvocation<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == BEHAVIOR_INVOCATION
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct WaitDirective {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl WaitDirective {
-    pub fn wait_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
+pub struct WaitDirective<'a>(OscDslNode<'a>);
+impl WaitDirective<'_> {
+    pub fn wait_token(&self) -> Option<WaitToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn event_specification(&self) -> SyntaxResult<EventSpecification> {
-        support::required_node(&self.syntax, 1usize)
+    pub fn event_specification(&self) -> Option<EventSpecification> {
+        support::child(&self.0, 0usize)
     }
-    pub fn newline_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 2usize)
+    pub fn newline_token(&self) -> Option<NewlineToken> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for WaitDirective {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(WAIT_DIRECTIVE as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == WAIT_DIRECTIVE
+impl<'a> TypedNode for WaitDirective<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == WAIT_DIRECTIVE
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
-    }
-}
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
-pub enum CompositionOperatorKind {
-    Serial,
-    OneOf,
-    Parallel,
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct CompositionOperator {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl CompositionOperator {
-    pub fn kind(&self) -> CompositionOperatorKind {
-        match self.syntax.kind() {
-            SERIAL_KW => CompositionOperatorKind::Serial,
-            ONE_OF_KW => CompositionOperatorKind::OneOf,
-            PARALLEL_KW => CompositionOperatorKind::Parallel,
-            _ => unreachable!(),
-        }
-    }
-    pub fn token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
-    }
-}
-impl AstNode for CompositionOperator {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(COMPOSITION_OPERATOR as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == COMPOSITION_OPERATOR
-    }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
-    }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct CompositionArguments {
-    syntax: SyntaxNode<OscDslLanguage>,
+pub enum CompositionOperator<'a> {
+    SerialToken(SerialToken<'a>),
+    OneOfToken(OneOfToken<'a>),
+    ParallelToken(ParallelToken<'a>),
 }
-impl CompositionArguments {
-    pub fn l_paren_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
-    }
-    pub fn unqualified_argument_list(&self) -> SyntaxResult<UnqualifiedArgumentList> {
-        support::required_node(&self.syntax, 1usize)
-    }
-    pub fn r_paren_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 2usize)
-    }
-}
-impl AstNode for CompositionArguments {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(COMPOSITION_ARGUMENTS as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == COMPOSITION_ARGUMENTS
-    }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
-    }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct DoMemberList {
-    syntax_list: SyntaxList<OscDslLanguage>,
-}
-impl AstNode for DoMemberList {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(DO_MEMBER_LIST as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == DO_MEMBER_LIST
-    }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self {
-            syntax_list: syntax.into_list(),
-        })
-    }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        self.syntax_list.node()
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax_list.into_node()
-    }
-}
-impl AstNodeList for DoMemberList {
-    type Language = OscDslLanguage;
-    type Node = DoMember;
-    fn syntax_list(&self) -> &SyntaxList<OscDslLanguage> {
-        &self.syntax_list
-    }
-    fn into_syntax_list(self) -> SyntaxList<OscDslLanguage> {
-        self.syntax_list
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct BehaviorWithDeclaration {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl BehaviorWithDeclaration {
-    pub fn with_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
-    }
-    pub fn colon_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 1usize)
-    }
-    pub fn newline_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 2usize)
-    }
-    pub fn indent_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 3usize)
-    }
-    pub fn behavior_with_member_list(&self) -> BehaviorWithMemberList {
-        support::list(&self.syntax, 4usize)
-    }
-    pub fn dedent_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 5usize)
-    }
-}
-impl AstNode for BehaviorWithDeclaration {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(BEHAVIOR_WITH_DECLARATION as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == BEHAVIOR_WITH_DECLARATION
-    }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
-    }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct UnqualifiedArgumentList {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl UnqualifiedArgumentList {
-    pub fn positional_argument_list(&self) -> PositionalArgumentList {
-        support::list(&self.syntax, 0usize)
-    }
-    pub fn unqualified_named_argument_list(&self) -> UnqualifiedNamedArgumentList {
-        support::list(&self.syntax, 1usize)
-    }
-}
-impl AstNode for UnqualifiedArgumentList {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(UNQUALIFIED_ARGUMENT_LIST as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == UNQUALIFIED_ARGUMENT_LIST
-    }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
-    }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct BehaviorInvocationPrefix {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl BehaviorInvocationPrefix {
-    pub fn actor_expression(&self) -> SyntaxResult<ActorExpression> {
-        support::required_node(&self.syntax, 0usize)
-    }
-    pub fn dot_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 1usize)
-    }
-}
-impl AstNode for BehaviorInvocationPrefix {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(BEHAVIOR_INVOCATION_PREFIX as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == BEHAVIOR_INVOCATION_PREFIX
-    }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
-    }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum BehaviorWithDeclarationOrEmpty {
-    BehaviorWithDeclaration(BehaviorWithDeclaration),
-    Empty(Empty),
-}
-impl BehaviorWithDeclarationOrEmpty {
-    pub fn as_behavior_with_declaration(&self) -> Option<&BehaviorWithDeclaration> {
+impl CompositionOperator<'_> {
+    pub fn as_serial_token(&self) -> Option<SerialToken> {
         match self {
-            BehaviorWithDeclarationOrEmpty::BehaviorWithDeclaration(node) => Some(node),
+            Self::SerialToken(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_empty(&self) -> Option<&Empty> {
+    pub fn as_one_of_token(&self) -> Option<OneOfToken> {
         match self {
-            BehaviorWithDeclarationOrEmpty::Empty(node) => Some(node),
+            Self::OneOfToken(node) => Some(node.clone()),
+            _ => None,
+        }
+    }
+    pub fn as_parallel_token(&self) -> Option<ParallelToken> {
+        match self {
+            Self::ParallelToken(node) => Some(node.clone()),
             _ => None,
         }
     }
 }
-impl AstNode for BehaviorWithDeclarationOrEmpty {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        BehaviorWithDeclaration::KIND_SET.union(Empty::KIND_SET);
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        matches!(kind, BEHAVIOR_WITH_DECLARATION | EMPTY)
+impl<'a> TypedNode for CompositionOperator<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        matches!(value, SERIAL_KW | ONE_OF_KW | PARALLEL_KW)
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        let result = match syntax.kind() {
+    fn cast(node: Self::Node) -> Option<Self> {
+        match *node.value() {
+            SERIAL_KW => SerialToken::cast(node.clone()).map(Self::SerialToken),
+            ONE_OF_KW => OneOfToken::cast(node.clone()).map(Self::OneOfToken),
+            PARALLEL_KW => ParallelToken::cast(node.clone()).map(Self::ParallelToken),
+            _ => None,
+        }
+    }
+    fn syntax(&self) -> &Self::Node {
+        match self {
+            Self::SerialToken(node) => node.syntax(),
+            Self::OneOfToken(node) => node.syntax(),
+            Self::ParallelToken(node) => node.syntax(),
+        }
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct CompositionArguments<'a>(OscDslNode<'a>);
+impl CompositionArguments<'_> {
+    pub fn left_paren_token(&self) -> Option<LeftParenToken> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn unqualified_argument_list(&self) -> Option<UnqualifiedArgumentList> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn right_paren_token(&self) -> Option<RightParenToken> {
+        support::child(&self.0, 0usize)
+    }
+}
+impl<'a> TypedNode for CompositionArguments<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == COMPOSITION_ARGUMENTS
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct DoMemberList<'a>(OscDslNode<'a>);
+impl<'a> DoMemberList<'a> {
+    pub fn do_member(&self) -> impl Iterator<Item = DoMember<'a>> + 'a {
+        support::children(&self.0)
+    }
+}
+impl<'a> TypedNode for DoMemberList<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == DO_MEMBER_LIST
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct BehaviorWithDeclaration<'a>(OscDslNode<'a>);
+impl BehaviorWithDeclaration<'_> {
+    pub fn with_token(&self) -> Option<WithToken> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn colon_token(&self) -> Option<ColonToken> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn newline_token(&self) -> Option<NewlineToken> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn indent_token(&self) -> Option<IndentToken> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn behavior_with_member_list(&self) -> Option<BehaviorWithMemberList> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn dedent_token(&self) -> Option<DedentToken> {
+        support::child(&self.0, 0usize)
+    }
+}
+impl<'a> TypedNode for BehaviorWithDeclaration<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == BEHAVIOR_WITH_DECLARATION
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct UnqualifiedArgumentList<'a>(OscDslNode<'a>);
+impl UnqualifiedArgumentList<'_> {
+    pub fn positional_argument_list(&self) -> Option<PositionalArgumentList> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn unqualified_named_argument_list(&self) -> Option<UnqualifiedNamedArgumentList> {
+        support::child(&self.0, 0usize)
+    }
+}
+impl<'a> TypedNode for UnqualifiedArgumentList<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == UNQUALIFIED_ARGUMENT_LIST
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct BehaviorInvocationPrefix<'a>(OscDslNode<'a>);
+impl BehaviorInvocationPrefix<'_> {
+    pub fn actor_expression(&self) -> Option<ActorExpression> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn dot_token(&self) -> Option<DotToken> {
+        support::child(&self.0, 0usize)
+    }
+}
+impl<'a> TypedNode for BehaviorInvocationPrefix<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == BEHAVIOR_INVOCATION_PREFIX
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum BehaviorWithDeclarationOrNewline<'a> {
+    BehaviorWithDeclaration(BehaviorWithDeclaration<'a>),
+    NewlineToken(NewlineToken<'a>),
+}
+impl BehaviorWithDeclarationOrNewline<'_> {
+    pub fn as_behavior_with_declaration(&self) -> Option<BehaviorWithDeclaration> {
+        match self {
+            Self::BehaviorWithDeclaration(node) => Some(node.clone()),
+            _ => None,
+        }
+    }
+    pub fn as_newline_token(&self) -> Option<NewlineToken> {
+        match self {
+            Self::NewlineToken(node) => Some(node.clone()),
+            _ => None,
+        }
+    }
+}
+impl<'a> TypedNode for BehaviorWithDeclarationOrNewline<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        matches!(value, BEHAVIOR_WITH_DECLARATION | NEWLINE)
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        match *node.value() {
             BEHAVIOR_WITH_DECLARATION => {
-                Self::BehaviorWithDeclaration(BehaviorWithDeclaration::cast(syntax)?)
+                BehaviorWithDeclaration::cast(node.clone()).map(Self::BehaviorWithDeclaration)
             }
-            EMPTY => Self::Empty(Empty::cast(syntax)?),
-            _ => return None,
-        };
-        Some(result)
+            NEWLINE => NewlineToken::cast(node.clone()).map(Self::NewlineToken),
+            _ => None,
+        }
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        match &self {
+    fn syntax(&self) -> &Self::Node {
+        match self {
             Self::BehaviorWithDeclaration(node) => node.syntax(),
-            Self::Empty(node) => node.syntax(),
-        }
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        match self {
-            Self::BehaviorWithDeclaration(node) => node.into_syntax(),
-            Self::Empty(node) => node.into_syntax(),
+            Self::NewlineToken(node) => node.syntax(),
         }
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct BehaviorWithMemberList {
-    syntax_list: SyntaxList<OscDslLanguage>,
-}
-impl AstNode for BehaviorWithMemberList {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(BEHAVIOR_WITH_MEMBER_LIST as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == BEHAVIOR_WITH_MEMBER_LIST
-    }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self {
-            syntax_list: syntax.into_list(),
-        })
-    }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        self.syntax_list.node()
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax_list.into_node()
+pub struct BehaviorWithMemberList<'a>(OscDslNode<'a>);
+impl<'a> BehaviorWithMemberList<'a> {
+    pub fn behavior_with_member(&self) -> impl Iterator<Item = BehaviorWithMember<'a>> + 'a {
+        support::children(&self.0)
     }
 }
-impl AstNodeList for BehaviorWithMemberList {
-    type Language = OscDslLanguage;
-    type Node = BehaviorWithMember;
-    fn syntax_list(&self) -> &SyntaxList<OscDslLanguage> {
-        &self.syntax_list
+impl<'a> TypedNode for BehaviorWithMemberList<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == BEHAVIOR_WITH_MEMBER_LIST
     }
-    fn into_syntax_list(self) -> SyntaxList<OscDslLanguage> {
-        self.syntax_list
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum BehaviorWithMember {
-    ConstraintDeclaration(ConstraintDeclaration),
-    ModifierApplication(ModifierApplication),
-    UntilDirective(UntilDirective),
+pub enum BehaviorWithMember<'a> {
+    ConstraintDeclaration(ConstraintDeclaration<'a>),
+    ModifierApplication(ModifierApplication<'a>),
+    UntilDirective(UntilDirective<'a>),
 }
-impl BehaviorWithMember {
-    pub fn as_constraint_declaration(&self) -> Option<&ConstraintDeclaration> {
+impl BehaviorWithMember<'_> {
+    pub fn as_constraint_declaration(&self) -> Option<ConstraintDeclaration> {
         match self {
-            BehaviorWithMember::ConstraintDeclaration(node) => Some(node),
+            Self::ConstraintDeclaration(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_modifier_application(&self) -> Option<&ModifierApplication> {
+    pub fn as_modifier_application(&self) -> Option<ModifierApplication> {
         match self {
-            BehaviorWithMember::ModifierApplication(node) => Some(node),
+            Self::ModifierApplication(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_until_directive(&self) -> Option<&UntilDirective> {
+    pub fn as_until_directive(&self) -> Option<UntilDirective> {
         match self {
-            BehaviorWithMember::UntilDirective(node) => Some(node),
+            Self::UntilDirective(node) => Some(node.clone()),
             _ => None,
         }
     }
 }
-impl AstNode for BehaviorWithMember {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> = ConstraintDeclaration::KIND_SET
-        .union(ModifierApplication::KIND_SET)
-        .union(UntilDirective::KIND_SET);
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
+impl<'a> TypedNode for BehaviorWithMember<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
         matches!(
-            kind,
+            value,
             CONSTRAINT_DECLARATION | MODIFIER_APPLICATION | UNTIL_DIRECTIVE
         )
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        let result = match syntax.kind() {
+    fn cast(node: Self::Node) -> Option<Self> {
+        match *node.value() {
             CONSTRAINT_DECLARATION => {
-                Self::ConstraintDeclaration(ConstraintDeclaration::cast(syntax)?)
+                ConstraintDeclaration::cast(node.clone()).map(Self::ConstraintDeclaration)
             }
-            MODIFIER_APPLICATION => Self::ModifierApplication(ModifierApplication::cast(syntax)?),
-            UNTIL_DIRECTIVE => Self::UntilDirective(UntilDirective::cast(syntax)?),
-            _ => return None,
-        };
-        Some(result)
+            MODIFIER_APPLICATION => {
+                ModifierApplication::cast(node.clone()).map(Self::ModifierApplication)
+            }
+            UNTIL_DIRECTIVE => UntilDirective::cast(node.clone()).map(Self::UntilDirective),
+            _ => None,
+        }
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        match &self {
+    fn syntax(&self) -> &Self::Node {
+        match self {
             Self::ConstraintDeclaration(node) => node.syntax(),
             Self::ModifierApplication(node) => node.syntax(),
             Self::UntilDirective(node) => node.syntax(),
         }
     }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        match self {
-            Self::ConstraintDeclaration(node) => node.into_syntax(),
-            Self::ModifierApplication(node) => node.into_syntax(),
-            Self::UntilDirective(node) => node.into_syntax(),
-        }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct UntilDirective<'a>(OscDslNode<'a>);
+impl UntilDirective<'_> {
+    pub fn until_token(&self) -> Option<UntilToken> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn event_specification(&self) -> Option<EventSpecification> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn newline_token(&self) -> Option<NewlineToken> {
+        support::child(&self.0, 0usize)
+    }
+}
+impl<'a> TypedNode for UntilDirective<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == UNTIL_DIRECTIVE
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct UntilDirective {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl UntilDirective {
-    pub fn until_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
-    }
-    pub fn event_specification(&self) -> SyntaxResult<EventSpecification> {
-        support::required_node(&self.syntax, 1usize)
-    }
-    pub fn newline_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 2usize)
-    }
-}
-impl AstNode for UntilDirective {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(UNTIL_DIRECTIVE as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == UNTIL_DIRECTIVE
-    }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
-    }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct EmitArguments {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl EmitArguments {
-    pub fn l_paren_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
-    }
-    pub fn argument_list(&self) -> SyntaxResult<ArgumentList> {
-        support::required_node(&self.syntax, 1usize)
-    }
-    pub fn r_paren_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 2usize)
-    }
-}
-impl AstNode for EmitArguments {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(EMIT_ARGUMENTS as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == EMIT_ARGUMENTS
-    }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
-    }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct MethodInvocation {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl MethodInvocation {
-    pub fn expression(&self) -> SyntaxResult<Expression> {
-        support::required_node(&self.syntax, 0usize)
-    }
-    pub fn l_paren_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 1usize)
+pub struct EmitArguments<'a>(OscDslNode<'a>);
+impl EmitArguments<'_> {
+    pub fn left_paren_token(&self) -> Option<LeftParenToken> {
+        support::child(&self.0, 0usize)
     }
     pub fn argument_list(&self) -> Option<ArgumentList> {
-        support::node(&self.syntax, 2usize)
+        support::child(&self.0, 0usize)
     }
-    pub fn r_paren_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 3usize)
+    pub fn right_paren_token(&self) -> Option<RightParenToken> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for MethodInvocation {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(METHOD_INVOCATION as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == METHOD_INVOCATION
+impl<'a> TypedNode for EmitArguments<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == EMIT_ARGUMENTS
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ArgumentSpecification {
-    syntax: SyntaxNode<OscDslLanguage>,
+pub struct MethodInvocation<'a>(OscDslNode<'a>);
+impl MethodInvocation<'_> {
+    pub fn expression(&self) -> Option<Expression> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn left_paren_token(&self) -> Option<LeftParenToken> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn argument_list(&self) -> Option<ArgumentList> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn right_paren_token(&self) -> Option<RightParenToken> {
+        support::child(&self.0, 0usize)
+    }
 }
-impl ArgumentSpecification {
-    pub fn argument_name(&self) -> SyntaxResult<ArgumentName> {
-        support::required_node(&self.syntax, 0usize)
+impl<'a> TypedNode for MethodInvocation<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == METHOD_INVOCATION
     }
-    pub fn colon_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 1usize)
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    pub fn type_declarator(&self) -> SyntaxResult<TypeDeclarator> {
-        support::required_node(&self.syntax, 2usize)
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ArgumentSpecification<'a>(OscDslNode<'a>);
+impl ArgumentSpecification<'_> {
+    pub fn argument_name(&self) -> Option<ArgumentName> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn colon_token(&self) -> Option<ColonToken> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn type_declarator(&self) -> Option<TypeDeclarator> {
+        support::child(&self.0, 0usize)
     }
     pub fn argument_initializer(&self) -> Option<ArgumentInitializer> {
-        support::node(&self.syntax, 3usize)
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for ArgumentSpecification {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(ARGUMENT_SPECIFICATION as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == ARGUMENT_SPECIFICATION
+impl<'a> TypedNode for ArgumentSpecification<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == ARGUMENT_SPECIFICATION
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ArgumentName {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl ArgumentName {
-    pub fn qualified_identifier(&self) -> SyntaxResult<QualifiedIdentifier> {
-        support::required_node(&self.syntax, 0usize)
+pub struct ArgumentName<'a>(OscDslNode<'a>);
+impl ArgumentName<'_> {
+    pub fn qualified_identifier(&self) -> Option<QualifiedIdentifier> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for ArgumentName {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(ARGUMENT_NAME as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == ARGUMENT_NAME
+impl<'a> TypedNode for ArgumentName<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == ARGUMENT_NAME
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ArgumentInitializer {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl ArgumentInitializer {
-    pub fn assign_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
+pub struct ArgumentInitializer<'a>(OscDslNode<'a>);
+impl ArgumentInitializer<'_> {
+    pub fn assign_token(&self) -> Option<AssignToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn default_value(&self) -> SyntaxResult<DefaultValue> {
-        support::required_node(&self.syntax, 1usize)
+    pub fn default_value(&self) -> Option<DefaultValue> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for ArgumentInitializer {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(ARGUMENT_INITIALIZER as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == ARGUMENT_INITIALIZER
+impl<'a> TypedNode for ArgumentInitializer<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == ARGUMENT_INITIALIZER
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct PositionalArgumentList {
-    syntax_list: SyntaxList<OscDslLanguage>,
-}
-impl AstNode for PositionalArgumentList {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(POSITIONAL_ARGUMENT_LIST as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == POSITIONAL_ARGUMENT_LIST
+pub struct PositionalArgumentList<'a>(OscDslNode<'a>);
+impl<'a> PositionalArgumentList<'a> {
+    pub fn comma_token(&self) -> impl Iterator<Item = CommaToken<'a>> + 'a {
+        support::children(&self.0)
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self {
-            syntax_list: syntax.into_list(),
-        })
-    }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        self.syntax_list.node()
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax_list.into_node()
+    pub fn positional_argument(&self) -> impl Iterator<Item = PositionalArgument<'a>> + 'a {
+        support::children(&self.0)
     }
 }
-impl AstSeparatedList for PositionalArgumentList {
-    type Language = OscDslLanguage;
-    type Node = PositionalArgument;
-    fn syntax_list(&self) -> &SyntaxList<OscDslLanguage> {
-        &self.syntax_list
+impl<'a> TypedNode for PositionalArgumentList<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == POSITIONAL_ARGUMENT_LIST
     }
-    fn into_syntax_list(self) -> SyntaxList<OscDslLanguage> {
-        self.syntax_list
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct NamedArgumentList {
-    syntax_list: SyntaxList<OscDslLanguage>,
-}
-impl AstNode for NamedArgumentList {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(NAMED_ARGUMENT_LIST as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == NAMED_ARGUMENT_LIST
+pub struct NamedArgumentList<'a>(OscDslNode<'a>);
+impl<'a> NamedArgumentList<'a> {
+    pub fn comma_token(&self) -> impl Iterator<Item = CommaToken<'a>> + 'a {
+        support::children(&self.0)
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self {
-            syntax_list: syntax.into_list(),
-        })
-    }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        self.syntax_list.node()
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax_list.into_node()
+    pub fn named_argument(&self) -> impl Iterator<Item = NamedArgument<'a>> + 'a {
+        support::children(&self.0)
     }
 }
-impl AstSeparatedList for NamedArgumentList {
-    type Language = OscDslLanguage;
-    type Node = NamedArgument;
-    fn syntax_list(&self) -> &SyntaxList<OscDslLanguage> {
-        &self.syntax_list
+impl<'a> TypedNode for NamedArgumentList<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == NAMED_ARGUMENT_LIST
     }
-    fn into_syntax_list(self) -> SyntaxList<OscDslLanguage> {
-        self.syntax_list
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct PositionalArgument {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl PositionalArgument {
-    pub fn expression(&self) -> SyntaxResult<Expression> {
-        support::required_node(&self.syntax, 0usize)
+pub struct PositionalArgument<'a>(OscDslNode<'a>);
+impl PositionalArgument<'_> {
+    pub fn expression(&self) -> Option<Expression> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for PositionalArgument {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(POSITIONAL_ARGUMENT as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == POSITIONAL_ARGUMENT
+impl<'a> TypedNode for PositionalArgument<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == POSITIONAL_ARGUMENT
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct NamedArgument {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl NamedArgument {
-    pub fn argument_name(&self) -> SyntaxResult<ArgumentName> {
-        support::required_node(&self.syntax, 0usize)
+pub struct NamedArgument<'a>(OscDslNode<'a>);
+impl NamedArgument<'_> {
+    pub fn argument_name(&self) -> Option<ArgumentName> {
+        support::child(&self.0, 0usize)
     }
-    pub fn colon_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 1usize)
+    pub fn colon_token(&self) -> Option<ColonToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn expression(&self) -> SyntaxResult<Expression> {
-        support::required_node(&self.syntax, 2usize)
+    pub fn expression(&self) -> Option<Expression> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for NamedArgument {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(NAMED_ARGUMENT as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == NAMED_ARGUMENT
+impl<'a> TypedNode for NamedArgument<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == NAMED_ARGUMENT
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct UnqualifiedNamedArgumentList {
-    syntax_list: SyntaxList<OscDslLanguage>,
-}
-impl AstNode for UnqualifiedNamedArgumentList {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(UNQUALIFIED_NAMED_ARGUMENT_LIST as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == UNQUALIFIED_NAMED_ARGUMENT_LIST
+pub struct UnqualifiedNamedArgumentList<'a>(OscDslNode<'a>);
+impl<'a> UnqualifiedNamedArgumentList<'a> {
+    pub fn comma_token(&self) -> impl Iterator<Item = CommaToken<'a>> + 'a {
+        support::children(&self.0)
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self {
-            syntax_list: syntax.into_list(),
-        })
-    }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        self.syntax_list.node()
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax_list.into_node()
+    pub fn unqualified_named_argument(
+        &self,
+    ) -> impl Iterator<Item = UnqualifiedNamedArgument<'a>> + 'a {
+        support::children(&self.0)
     }
 }
-impl AstSeparatedList for UnqualifiedNamedArgumentList {
-    type Language = OscDslLanguage;
-    type Node = UnqualifiedNamedArgument;
-    fn syntax_list(&self) -> &SyntaxList<OscDslLanguage> {
-        &self.syntax_list
+impl<'a> TypedNode for UnqualifiedNamedArgumentList<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == UNQUALIFIED_NAMED_ARGUMENT_LIST
     }
-    fn into_syntax_list(self) -> SyntaxList<OscDslLanguage> {
-        self.syntax_list
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct UnqualifiedNamedArgument {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl UnqualifiedNamedArgument {
-    pub fn unqualified_argument_name(&self) -> SyntaxResult<UnqualifiedArgumentName> {
-        support::required_node(&self.syntax, 0usize)
+pub struct UnqualifiedNamedArgument<'a>(OscDslNode<'a>);
+impl UnqualifiedNamedArgument<'_> {
+    pub fn unqualified_argument_name(&self) -> Option<UnqualifiedArgumentName> {
+        support::child(&self.0, 0usize)
     }
-    pub fn colon_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 1usize)
+    pub fn colon_token(&self) -> Option<ColonToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn expression(&self) -> SyntaxResult<Expression> {
-        support::required_node(&self.syntax, 2usize)
+    pub fn expression(&self) -> Option<Expression> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for UnqualifiedNamedArgument {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(UNQUALIFIED_NAMED_ARGUMENT as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == UNQUALIFIED_NAMED_ARGUMENT
+impl<'a> TypedNode for UnqualifiedNamedArgument<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == UNQUALIFIED_NAMED_ARGUMENT
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct UnqualifiedArgumentName {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl UnqualifiedArgumentName {
-    pub fn identifier_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
+pub struct UnqualifiedArgumentName<'a>(OscDslNode<'a>);
+impl UnqualifiedArgumentName<'_> {
+    pub fn identifier_token(&self) -> Option<IdentifierToken> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for UnqualifiedArgumentName {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(UNQUALIFIED_ARGUMENT_NAME as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == UNQUALIFIED_ARGUMENT_NAME
+impl<'a> TypedNode for UnqualifiedArgumentName<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == UNQUALIFIED_ARGUMENT_NAME
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct TernaryOpExp {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl TernaryOpExp {
-    pub fn condition(&self) -> SyntaxResult<Expression> {
-        support::required_node(&self.syntax, 0usize)
+pub struct TernaryOpExp<'a>(OscDslNode<'a>);
+impl TernaryOpExp<'_> {
+    pub fn condition(&self) -> Option<Expression> {
+        support::child(&self.0, 0usize)
     }
-    pub fn question_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 1usize)
+    pub fn question_token(&self) -> Option<QuestionToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn then(&self) -> SyntaxResult<Expression> {
-        support::required_node(&self.syntax, 2usize)
+    pub fn then(&self) -> Option<Expression> {
+        support::child(&self.0, 1usize)
     }
-    pub fn colon_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 3usize)
+    pub fn colon_token(&self) -> Option<ColonToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn els(&self) -> SyntaxResult<Expression> {
-        support::required_node(&self.syntax, 4usize)
+    pub fn els(&self) -> Option<Expression> {
+        support::child(&self.0, 2usize)
     }
 }
-impl AstNode for TernaryOpExp {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(TERNARY_OP_EXP as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == TERNARY_OP_EXP
+impl<'a> TypedNode for TernaryOpExp<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == TERNARY_OP_EXP
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct LogicalOpExp {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl LogicalOpExp {
-    pub fn lhs(&self) -> SyntaxResult<Expression> {
-        support::required_node(&self.syntax, 0usize)
+pub struct LogicalOpExp<'a>(OscDslNode<'a>);
+impl LogicalOpExp<'_> {
+    pub fn lhs(&self) -> Option<Expression> {
+        support::child(&self.0, 0usize)
     }
-    pub fn logical_op(&self) -> SyntaxResult<LogicalOp> {
-        support::required_node(&self.syntax, 1usize)
+    pub fn logical_op(&self) -> Option<LogicalOp> {
+        support::child(&self.0, 0usize)
     }
-    pub fn rhs(&self) -> SyntaxResult<Expression> {
-        support::required_node(&self.syntax, 2usize)
+    pub fn rhs(&self) -> Option<Expression> {
+        support::child(&self.0, 1usize)
     }
 }
-impl AstNode for LogicalOpExp {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(LOGICAL_OP_EXP as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == LOGICAL_OP_EXP
+impl<'a> TypedNode for LogicalOpExp<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == LOGICAL_OP_EXP
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct BinaryOpExp {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl BinaryOpExp {
-    pub fn lhs(&self) -> SyntaxResult<Expression> {
-        support::required_node(&self.syntax, 0usize)
+pub struct BinaryOpExp<'a>(OscDslNode<'a>);
+impl BinaryOpExp<'_> {
+    pub fn lhs(&self) -> Option<Expression> {
+        support::child(&self.0, 0usize)
     }
-    pub fn binary_op(&self) -> SyntaxResult<BinaryOp> {
-        support::required_node(&self.syntax, 1usize)
+    pub fn binary_op(&self) -> Option<BinaryOp> {
+        support::child(&self.0, 0usize)
     }
-    pub fn rhs(&self) -> SyntaxResult<Expression> {
-        support::required_node(&self.syntax, 2usize)
+    pub fn rhs(&self) -> Option<Expression> {
+        support::child(&self.0, 1usize)
     }
 }
-impl AstNode for BinaryOpExp {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(BINARY_OP_EXP as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == BINARY_OP_EXP
+impl<'a> TypedNode for BinaryOpExp<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == BINARY_OP_EXP
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct UnaryOpExp {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl UnaryOpExp {
-    pub fn unary_op(&self) -> SyntaxResult<UnaryOp> {
-        support::required_node(&self.syntax, 0usize)
+pub struct UnaryOpExp<'a>(OscDslNode<'a>);
+impl UnaryOpExp<'_> {
+    pub fn unary_op(&self) -> Option<UnaryOp> {
+        support::child(&self.0, 0usize)
     }
-    pub fn expression(&self) -> SyntaxResult<Expression> {
-        support::required_node(&self.syntax, 1usize)
+    pub fn expression(&self) -> Option<Expression> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for UnaryOpExp {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(UNARY_OP_EXP as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == UNARY_OP_EXP
+impl<'a> TypedNode for UnaryOpExp<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == UNARY_OP_EXP
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct CastExp {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl CastExp {
-    pub fn expression(&self) -> SyntaxResult<Expression> {
-        support::required_node(&self.syntax, 0usize)
+pub struct CastExp<'a>(OscDslNode<'a>);
+impl CastExp<'_> {
+    pub fn expression(&self) -> Option<Expression> {
+        support::child(&self.0, 0usize)
     }
-    pub fn dot_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 1usize)
+    pub fn dot_token(&self) -> Option<DotToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn as_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 2usize)
+    pub fn as_token(&self) -> Option<AsToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn l_paren_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 3usize)
+    pub fn left_paren_token(&self) -> Option<LeftParenToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn type_declarator(&self) -> SyntaxResult<TypeDeclarator> {
-        support::required_node(&self.syntax, 4usize)
+    pub fn type_declarator(&self) -> Option<TypeDeclarator> {
+        support::child(&self.0, 0usize)
     }
-    pub fn r_paren_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 5usize)
+    pub fn right_paren_token(&self) -> Option<RightParenToken> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for CastExp {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(CAST_EXP as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == CAST_EXP
+impl<'a> TypedNode for CastExp<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == CAST_EXP
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct TypeTestExp {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl TypeTestExp {
-    pub fn expression(&self) -> SyntaxResult<Expression> {
-        support::required_node(&self.syntax, 0usize)
+pub struct TypeTestExp<'a>(OscDslNode<'a>);
+impl TypeTestExp<'_> {
+    pub fn expression(&self) -> Option<Expression> {
+        support::child(&self.0, 0usize)
     }
-    pub fn dot_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 1usize)
+    pub fn dot_token(&self) -> Option<DotToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn is_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 2usize)
+    pub fn is_token(&self) -> Option<IsToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn l_paren_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 3usize)
+    pub fn left_paren_token(&self) -> Option<LeftParenToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn type_declarator(&self) -> SyntaxResult<TypeDeclarator> {
-        support::required_node(&self.syntax, 4usize)
+    pub fn type_declarator(&self) -> Option<TypeDeclarator> {
+        support::child(&self.0, 0usize)
     }
-    pub fn r_paren_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 5usize)
+    pub fn right_paren_token(&self) -> Option<RightParenToken> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for TypeTestExp {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(TYPE_TEST_EXP as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == TYPE_TEST_EXP
+impl<'a> TypedNode for TypeTestExp<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == TYPE_TEST_EXP
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ElementAccess {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl ElementAccess {
-    pub fn object(&self) -> SyntaxResult<Expression> {
-        support::required_node(&self.syntax, 0usize)
+pub struct ElementAccess<'a>(OscDslNode<'a>);
+impl ElementAccess<'_> {
+    pub fn object(&self) -> Option<Expression> {
+        support::child(&self.0, 0usize)
     }
-    pub fn l_bracket_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 1usize)
+    pub fn left_bracket_token(&self) -> Option<LeftBracketToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn index(&self) -> SyntaxResult<Expression> {
-        support::required_node(&self.syntax, 2usize)
+    pub fn index(&self) -> Option<Expression> {
+        support::child(&self.0, 1usize)
     }
-    pub fn r_bracket_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 3usize)
+    pub fn right_bracket_token(&self) -> Option<RightBracketToken> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for ElementAccess {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(ELEMENT_ACCESS as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == ELEMENT_ACCESS
+impl<'a> TypedNode for ElementAccess<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == ELEMENT_ACCESS
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct FunctionApplication {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl FunctionApplication {
-    pub fn expression(&self) -> SyntaxResult<Expression> {
-        support::required_node(&self.syntax, 0usize)
+pub struct FunctionApplication<'a>(OscDslNode<'a>);
+impl FunctionApplication<'_> {
+    pub fn expression(&self) -> Option<Expression> {
+        support::child(&self.0, 0usize)
     }
-    pub fn l_paren_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 1usize)
+    pub fn left_paren_token(&self) -> Option<LeftParenToken> {
+        support::child(&self.0, 0usize)
     }
     pub fn argument_list(&self) -> Option<ArgumentList> {
-        support::node(&self.syntax, 2usize)
+        support::child(&self.0, 0usize)
     }
-    pub fn r_paren_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 3usize)
+    pub fn right_paren_token(&self) -> Option<RightParenToken> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for FunctionApplication {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(FUNCTION_APPLICATION as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == FUNCTION_APPLICATION
+impl<'a> TypedNode for FunctionApplication<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == FUNCTION_APPLICATION
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ItExp {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl ItExp {
-    pub fn it_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
+pub struct ItExp<'a>(OscDslNode<'a>);
+impl ItExp<'_> {
+    pub fn it_token(&self) -> Option<ItToken> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for ItExp {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(IT_EXP as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == IT_EXP
+impl<'a> TypedNode for ItExp<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == IT_EXP
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ParenthesizedExp {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl ParenthesizedExp {
-    pub fn l_paren_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
+pub struct ParenthesizedExp<'a>(OscDslNode<'a>);
+impl ParenthesizedExp<'_> {
+    pub fn left_paren_token(&self) -> Option<LeftParenToken> {
+        support::child(&self.0, 0usize)
     }
-    pub fn expression(&self) -> SyntaxResult<Expression> {
-        support::required_node(&self.syntax, 1usize)
+    pub fn expression(&self) -> Option<Expression> {
+        support::child(&self.0, 0usize)
     }
-    pub fn r_paren_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 2usize)
+    pub fn right_paren_token(&self) -> Option<RightParenToken> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for ParenthesizedExp {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(PARENTHESIZED_EXP as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == PARENTHESIZED_EXP
+impl<'a> TypedNode for ParenthesizedExp<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == PARENTHESIZED_EXP
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum LiteralExp {
-    IntegerLiteralExp(IntegerLiteralExp),
-    FloatLiteralExp(FloatLiteralExp),
-    PhysicalLiteralExp(PhysicalLiteralExp),
-    BoolLiteralExp(BoolLiteralExp),
-    StringLiteralExp(StringLiteralExp),
+pub enum LiteralExp<'a> {
+    IntegerLiteralExp(IntegerLiteralExp<'a>),
+    FloatLiteralExp(FloatLiteralExp<'a>),
+    PhysicalLiteralExp(PhysicalLiteralExp<'a>),
+    BoolLiteralExp(BoolLiteralExp<'a>),
+    StringLiteralExp(StringLiteralExp<'a>),
 }
-impl LiteralExp {
-    pub fn as_integer_literal_exp(&self) -> Option<&IntegerLiteralExp> {
+impl LiteralExp<'_> {
+    pub fn as_integer_literal_exp(&self) -> Option<IntegerLiteralExp> {
         match self {
-            LiteralExp::IntegerLiteralExp(node) => Some(node),
+            Self::IntegerLiteralExp(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_float_literal_exp(&self) -> Option<&FloatLiteralExp> {
+    pub fn as_float_literal_exp(&self) -> Option<FloatLiteralExp> {
         match self {
-            LiteralExp::FloatLiteralExp(node) => Some(node),
+            Self::FloatLiteralExp(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_physical_literal_exp(&self) -> Option<&PhysicalLiteralExp> {
+    pub fn as_physical_literal_exp(&self) -> Option<PhysicalLiteralExp> {
         match self {
-            LiteralExp::PhysicalLiteralExp(node) => Some(node),
+            Self::PhysicalLiteralExp(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_bool_literal_exp(&self) -> Option<&BoolLiteralExp> {
+    pub fn as_bool_literal_exp(&self) -> Option<BoolLiteralExp> {
         match self {
-            LiteralExp::BoolLiteralExp(node) => Some(node),
+            Self::BoolLiteralExp(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_string_literal_exp(&self) -> Option<&StringLiteralExp> {
+    pub fn as_string_literal_exp(&self) -> Option<StringLiteralExp> {
         match self {
-            LiteralExp::StringLiteralExp(node) => Some(node),
+            Self::StringLiteralExp(node) => Some(node.clone()),
             _ => None,
         }
     }
 }
-impl AstNode for LiteralExp {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> = IntegerLiteralExp::KIND_SET
-        .union(FloatLiteralExp::KIND_SET)
-        .union(PhysicalLiteralExp::KIND_SET)
-        .union(BoolLiteralExp::KIND_SET)
-        .union(StringLiteralExp::KIND_SET);
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
+impl<'a> TypedNode for LiteralExp<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
         matches!(
-            kind,
+            value,
             INTEGER_LITERAL_EXP
                 | FLOAT_LITERAL_EXP
                 | PHYSICAL_LITERAL_EXP
@@ -8268,19 +8474,22 @@ impl AstNode for LiteralExp {
                 | STRING_LITERAL_EXP
         )
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        let result = match syntax.kind() {
-            INTEGER_LITERAL_EXP => Self::IntegerLiteralExp(IntegerLiteralExp::cast(syntax)?),
-            FLOAT_LITERAL_EXP => Self::FloatLiteralExp(FloatLiteralExp::cast(syntax)?),
-            PHYSICAL_LITERAL_EXP => Self::PhysicalLiteralExp(PhysicalLiteralExp::cast(syntax)?),
-            BOOL_LITERAL_EXP => Self::BoolLiteralExp(BoolLiteralExp::cast(syntax)?),
-            STRING_LITERAL_EXP => Self::StringLiteralExp(StringLiteralExp::cast(syntax)?),
-            _ => return None,
-        };
-        Some(result)
+    fn cast(node: Self::Node) -> Option<Self> {
+        match *node.value() {
+            INTEGER_LITERAL_EXP => {
+                IntegerLiteralExp::cast(node.clone()).map(Self::IntegerLiteralExp)
+            }
+            FLOAT_LITERAL_EXP => FloatLiteralExp::cast(node.clone()).map(Self::FloatLiteralExp),
+            PHYSICAL_LITERAL_EXP => {
+                PhysicalLiteralExp::cast(node.clone()).map(Self::PhysicalLiteralExp)
+            }
+            BOOL_LITERAL_EXP => BoolLiteralExp::cast(node.clone()).map(Self::BoolLiteralExp),
+            STRING_LITERAL_EXP => StringLiteralExp::cast(node.clone()).map(Self::StringLiteralExp),
+            _ => None,
+        }
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        match &self {
+    fn syntax(&self) -> &Self::Node {
+        match self {
             Self::IntegerLiteralExp(node) => node.syntax(),
             Self::FloatLiteralExp(node) => node.syntax(),
             Self::PhysicalLiteralExp(node) => node.syntax(),
@@ -8288,477 +8497,495 @@ impl AstNode for LiteralExp {
             Self::StringLiteralExp(node) => node.syntax(),
         }
     }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        match self {
-            Self::IntegerLiteralExp(node) => node.into_syntax(),
-            Self::FloatLiteralExp(node) => node.into_syntax(),
-            Self::PhysicalLiteralExp(node) => node.into_syntax(),
-            Self::BoolLiteralExp(node) => node.into_syntax(),
-            Self::StringLiteralExp(node) => node.into_syntax(),
-        }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ListConstructor<'a>(OscDslNode<'a>);
+impl ListConstructor<'_> {
+    pub fn left_bracket_token(&self) -> Option<LeftBracketToken> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn expression_list(&self) -> Option<ExpressionList> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn right_bracket_token(&self) -> Option<RightBracketToken> {
+        support::child(&self.0, 0usize)
+    }
+}
+impl<'a> TypedNode for ListConstructor<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == LIST_CONSTRUCTOR
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ListConstructor {
-    syntax: SyntaxNode<OscDslLanguage>,
+pub enum RangeConstructor<'a> {
+    ParenthesesRangeConstructor(ParenthesesRangeConstructor<'a>),
+    BracketsRangeConstructor(BracketsRangeConstructor<'a>),
 }
-impl ListConstructor {
-    pub fn l_bracket_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
-    }
-    pub fn expression_list(&self) -> ExpressionList {
-        support::list(&self.syntax, 1usize)
-    }
-    pub fn r_bracket_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 2usize)
-    }
-}
-impl AstNode for ListConstructor {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(LIST_CONSTRUCTOR as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == LIST_CONSTRUCTOR
-    }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
-    }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum RangeConstructor {
-    ParenthesesRangeConstructor(ParenthesesRangeConstructor),
-    BracketsRangeConstructor(BracketsRangeConstructor),
-}
-impl RangeConstructor {
-    pub fn as_parentheses_range_constructor(&self) -> Option<&ParenthesesRangeConstructor> {
+impl RangeConstructor<'_> {
+    pub fn as_parentheses_range_constructor(&self) -> Option<ParenthesesRangeConstructor> {
         match self {
-            RangeConstructor::ParenthesesRangeConstructor(node) => Some(node),
+            Self::ParenthesesRangeConstructor(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_brackets_range_constructor(&self) -> Option<&BracketsRangeConstructor> {
+    pub fn as_brackets_range_constructor(&self) -> Option<BracketsRangeConstructor> {
         match self {
-            RangeConstructor::BracketsRangeConstructor(node) => Some(node),
+            Self::BracketsRangeConstructor(node) => Some(node.clone()),
             _ => None,
         }
     }
 }
-impl AstNode for RangeConstructor {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        ParenthesesRangeConstructor::KIND_SET.union(BracketsRangeConstructor::KIND_SET);
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
+impl<'a> TypedNode for RangeConstructor<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
         matches!(
-            kind,
+            value,
             PARENTHESES_RANGE_CONSTRUCTOR | BRACKETS_RANGE_CONSTRUCTOR
         )
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        let result = match syntax.kind() {
-            PARENTHESES_RANGE_CONSTRUCTOR => {
-                Self::ParenthesesRangeConstructor(ParenthesesRangeConstructor::cast(syntax)?)
-            }
+    fn cast(node: Self::Node) -> Option<Self> {
+        match *node.value() {
+            PARENTHESES_RANGE_CONSTRUCTOR => ParenthesesRangeConstructor::cast(node.clone())
+                .map(Self::ParenthesesRangeConstructor),
             BRACKETS_RANGE_CONSTRUCTOR => {
-                Self::BracketsRangeConstructor(BracketsRangeConstructor::cast(syntax)?)
+                BracketsRangeConstructor::cast(node.clone()).map(Self::BracketsRangeConstructor)
             }
-            _ => return None,
-        };
-        Some(result)
+            _ => None,
+        }
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        match &self {
+    fn syntax(&self) -> &Self::Node {
+        match self {
             Self::ParenthesesRangeConstructor(node) => node.syntax(),
             Self::BracketsRangeConstructor(node) => node.syntax(),
         }
     }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum LogicalOp<'a> {
+    FatArrowToken(FatArrowToken<'a>),
+    OrToken(OrToken<'a>),
+    AndToken(AndToken<'a>),
+}
+impl LogicalOp<'_> {
+    pub fn as_fat_arrow_token(&self) -> Option<FatArrowToken> {
         match self {
-            Self::ParenthesesRangeConstructor(node) => node.into_syntax(),
-            Self::BracketsRangeConstructor(node) => node.into_syntax(),
+            Self::FatArrowToken(node) => Some(node.clone()),
+            _ => None,
+        }
+    }
+    pub fn as_or_token(&self) -> Option<OrToken> {
+        match self {
+            Self::OrToken(node) => Some(node.clone()),
+            _ => None,
+        }
+    }
+    pub fn as_and_token(&self) -> Option<AndToken> {
+        match self {
+            Self::AndToken(node) => Some(node.clone()),
+            _ => None,
         }
     }
 }
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
-pub enum LogicalOpKind {
-    FatArrow,
-    Or,
-    And,
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct LogicalOp {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl LogicalOp {
-    pub fn kind(&self) -> LogicalOpKind {
-        match self.syntax.kind() {
-            FAT_ARROW => LogicalOpKind::FatArrow,
-            OR_KW => LogicalOpKind::Or,
-            AND_KW => LogicalOpKind::And,
-            _ => unreachable!(),
+impl<'a> TypedNode for LogicalOp<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        matches!(value, FAT_ARROW | OR_KW | AND_KW)
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        match *node.value() {
+            FAT_ARROW => FatArrowToken::cast(node.clone()).map(Self::FatArrowToken),
+            OR_KW => OrToken::cast(node.clone()).map(Self::OrToken),
+            AND_KW => AndToken::cast(node.clone()).map(Self::AndToken),
+            _ => None,
         }
     }
-    pub fn token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
-    }
-}
-impl AstNode for LogicalOp {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(LOGICAL_OP as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == LOGICAL_OP
-    }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
-    }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
-    }
-}
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
-pub enum BinaryOpKind {
-    Equal,
-    NotEq,
-    Less,
-    LessEq,
-    Greater,
-    GreaterEq,
-    In,
-    Plus,
-    Minus,
-    Star,
-    Slash,
-    Percent,
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct BinaryOp {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl BinaryOp {
-    pub fn kind(&self) -> BinaryOpKind {
-        match self.syntax.kind() {
-            EQUAL => BinaryOpKind::Equal,
-            NOT_EQ => BinaryOpKind::NotEq,
-            LESS => BinaryOpKind::Less,
-            LESS_EQ => BinaryOpKind::LessEq,
-            GREATER => BinaryOpKind::Greater,
-            GREATER_EQ => BinaryOpKind::GreaterEq,
-            IN_KW => BinaryOpKind::In,
-            PLUS => BinaryOpKind::Plus,
-            MINUS => BinaryOpKind::Minus,
-            STAR => BinaryOpKind::Star,
-            SLASH => BinaryOpKind::Slash,
-            PERCENT => BinaryOpKind::Percent,
-            _ => unreachable!(),
+    fn syntax(&self) -> &Self::Node {
+        match self {
+            Self::FatArrowToken(node) => node.syntax(),
+            Self::OrToken(node) => node.syntax(),
+            Self::AndToken(node) => node.syntax(),
         }
     }
-    pub fn token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
-    }
-}
-impl AstNode for BinaryOp {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(BINARY_OP as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == BINARY_OP
-    }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
-    }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
-    }
-}
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
-pub enum UnaryOpKind {
-    Not,
-    Minus,
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct UnaryOp {
-    syntax: SyntaxNode<OscDslLanguage>,
+pub enum BinaryOp<'a> {
+    EqualToken(EqualToken<'a>),
+    NotEqualToken(NotEqualToken<'a>),
+    LessToken(LessToken<'a>),
+    LessEqualToken(LessEqualToken<'a>),
+    GreaterToken(GreaterToken<'a>),
+    GreaterEqualToken(GreaterEqualToken<'a>),
+    InToken(InToken<'a>),
+    PlusToken(PlusToken<'a>),
+    MinusToken(MinusToken<'a>),
+    StarToken(StarToken<'a>),
+    SlashToken(SlashToken<'a>),
+    PercentToken(PercentToken<'a>),
 }
-impl UnaryOp {
-    pub fn kind(&self) -> UnaryOpKind {
-        match self.syntax.kind() {
-            NOT_KW => UnaryOpKind::Not,
-            MINUS => UnaryOpKind::Minus,
-            _ => unreachable!(),
+impl BinaryOp<'_> {
+    pub fn as_equal_token(&self) -> Option<EqualToken> {
+        match self {
+            Self::EqualToken(node) => Some(node.clone()),
+            _ => None,
         }
     }
-    pub fn token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
+    pub fn as_not_equal_token(&self) -> Option<NotEqualToken> {
+        match self {
+            Self::NotEqualToken(node) => Some(node.clone()),
+            _ => None,
+        }
+    }
+    pub fn as_less_token(&self) -> Option<LessToken> {
+        match self {
+            Self::LessToken(node) => Some(node.clone()),
+            _ => None,
+        }
+    }
+    pub fn as_less_equal_token(&self) -> Option<LessEqualToken> {
+        match self {
+            Self::LessEqualToken(node) => Some(node.clone()),
+            _ => None,
+        }
+    }
+    pub fn as_greater_token(&self) -> Option<GreaterToken> {
+        match self {
+            Self::GreaterToken(node) => Some(node.clone()),
+            _ => None,
+        }
+    }
+    pub fn as_greater_equal_token(&self) -> Option<GreaterEqualToken> {
+        match self {
+            Self::GreaterEqualToken(node) => Some(node.clone()),
+            _ => None,
+        }
+    }
+    pub fn as_in_token(&self) -> Option<InToken> {
+        match self {
+            Self::InToken(node) => Some(node.clone()),
+            _ => None,
+        }
+    }
+    pub fn as_plus_token(&self) -> Option<PlusToken> {
+        match self {
+            Self::PlusToken(node) => Some(node.clone()),
+            _ => None,
+        }
+    }
+    pub fn as_minus_token(&self) -> Option<MinusToken> {
+        match self {
+            Self::MinusToken(node) => Some(node.clone()),
+            _ => None,
+        }
+    }
+    pub fn as_star_token(&self) -> Option<StarToken> {
+        match self {
+            Self::StarToken(node) => Some(node.clone()),
+            _ => None,
+        }
+    }
+    pub fn as_slash_token(&self) -> Option<SlashToken> {
+        match self {
+            Self::SlashToken(node) => Some(node.clone()),
+            _ => None,
+        }
+    }
+    pub fn as_percent_token(&self) -> Option<PercentToken> {
+        match self {
+            Self::PercentToken(node) => Some(node.clone()),
+            _ => None,
+        }
     }
 }
-impl AstNode for UnaryOp {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(UNARY_OP as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == UNARY_OP
+impl<'a> TypedNode for BinaryOp<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        matches!(
+            value,
+            EQUAL
+                | NOT_EQUAL
+                | LESS
+                | LESS_EQUAL
+                | GREATER
+                | GREATER_EQUAL
+                | IN_KW
+                | PLUS
+                | MINUS
+                | STAR
+                | SLASH
+                | PERCENT
+        )
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        match *node.value() {
+            EQUAL => EqualToken::cast(node.clone()).map(Self::EqualToken),
+            NOT_EQUAL => NotEqualToken::cast(node.clone()).map(Self::NotEqualToken),
+            LESS => LessToken::cast(node.clone()).map(Self::LessToken),
+            LESS_EQUAL => LessEqualToken::cast(node.clone()).map(Self::LessEqualToken),
+            GREATER => GreaterToken::cast(node.clone()).map(Self::GreaterToken),
+            GREATER_EQUAL => GreaterEqualToken::cast(node.clone()).map(Self::GreaterEqualToken),
+            IN_KW => InToken::cast(node.clone()).map(Self::InToken),
+            PLUS => PlusToken::cast(node.clone()).map(Self::PlusToken),
+            MINUS => MinusToken::cast(node.clone()).map(Self::MinusToken),
+            STAR => StarToken::cast(node.clone()).map(Self::StarToken),
+            SLASH => SlashToken::cast(node.clone()).map(Self::SlashToken),
+            PERCENT => PercentToken::cast(node.clone()).map(Self::PercentToken),
+            _ => None,
+        }
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct IntegerLiteralExp {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl IntegerLiteralExp {
-    pub fn integer_literal_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
-    }
-}
-impl AstNode for IntegerLiteralExp {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(INTEGER_LITERAL_EXP as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == INTEGER_LITERAL_EXP
-    }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
-    }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct FloatLiteralExp {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl FloatLiteralExp {
-    pub fn float_literal_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
-    }
-}
-impl AstNode for FloatLiteralExp {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(FLOAT_LITERAL_EXP as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == FLOAT_LITERAL_EXP
-    }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
-    }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct PhysicalLiteralExp {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl PhysicalLiteralExp {
-    pub fn physical_literal(&self) -> SyntaxResult<PhysicalLiteral> {
-        support::required_node(&self.syntax, 0usize)
-    }
-}
-impl AstNode for PhysicalLiteralExp {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(PHYSICAL_LITERAL_EXP as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == PHYSICAL_LITERAL_EXP
-    }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
-    }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct BoolLiteralExp {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl BoolLiteralExp {
-    pub fn bool_literal(&self) -> SyntaxResult<BoolLiteral> {
-        support::required_node(&self.syntax, 0usize)
-    }
-}
-impl AstNode for BoolLiteralExp {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(BOOL_LITERAL_EXP as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == BOOL_LITERAL_EXP
-    }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
-    }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        match self {
+            Self::EqualToken(node) => node.syntax(),
+            Self::NotEqualToken(node) => node.syntax(),
+            Self::LessToken(node) => node.syntax(),
+            Self::LessEqualToken(node) => node.syntax(),
+            Self::GreaterToken(node) => node.syntax(),
+            Self::GreaterEqualToken(node) => node.syntax(),
+            Self::InToken(node) => node.syntax(),
+            Self::PlusToken(node) => node.syntax(),
+            Self::MinusToken(node) => node.syntax(),
+            Self::StarToken(node) => node.syntax(),
+            Self::SlashToken(node) => node.syntax(),
+            Self::PercentToken(node) => node.syntax(),
+        }
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct StringLiteralExp {
-    syntax: SyntaxNode<OscDslLanguage>,
+pub enum UnaryOp<'a> {
+    NotToken(NotToken<'a>),
+    MinusToken(MinusToken<'a>),
 }
-impl StringLiteralExp {
-    pub fn string_literal_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
+impl UnaryOp<'_> {
+    pub fn as_not_token(&self) -> Option<NotToken> {
+        match self {
+            Self::NotToken(node) => Some(node.clone()),
+            _ => None,
+        }
     }
-}
-impl AstNode for StringLiteralExp {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(STRING_LITERAL_EXP as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == STRING_LITERAL_EXP
-    }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
-    }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    pub fn as_minus_token(&self) -> Option<MinusToken> {
+        match self {
+            Self::MinusToken(node) => Some(node.clone()),
+            _ => None,
+        }
     }
 }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ExpressionList {
-    syntax_list: SyntaxList<OscDslLanguage>,
-}
-impl AstNode for ExpressionList {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(EXPRESSION_LIST as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == EXPRESSION_LIST
+impl<'a> TypedNode for UnaryOp<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        matches!(value, NOT_KW | MINUS)
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self {
-            syntax_list: syntax.into_list(),
-        })
+    fn cast(node: Self::Node) -> Option<Self> {
+        match *node.value() {
+            NOT_KW => NotToken::cast(node.clone()).map(Self::NotToken),
+            MINUS => MinusToken::cast(node.clone()).map(Self::MinusToken),
+            _ => None,
+        }
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        self.syntax_list.node()
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax_list.into_node()
-    }
-}
-impl AstSeparatedList for ExpressionList {
-    type Language = OscDslLanguage;
-    type Node = Expression;
-    fn syntax_list(&self) -> &SyntaxList<OscDslLanguage> {
-        &self.syntax_list
-    }
-    fn into_syntax_list(self) -> SyntaxList<OscDslLanguage> {
-        self.syntax_list
+    fn syntax(&self) -> &Self::Node {
+        match self {
+            Self::NotToken(node) => node.syntax(),
+            Self::MinusToken(node) => node.syntax(),
+        }
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ParenthesesRangeConstructor {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl ParenthesesRangeConstructor {
-    pub fn range_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
-    }
-    pub fn l_paren_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 1usize)
-    }
-    pub fn begin(&self) -> SyntaxResult<Expression> {
-        support::required_node(&self.syntax, 2usize)
-    }
-    pub fn comma_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 3usize)
-    }
-    pub fn end(&self) -> SyntaxResult<Expression> {
-        support::required_node(&self.syntax, 4usize)
-    }
-    pub fn r_paren_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 5usize)
+pub struct IntegerLiteralExp<'a>(OscDslNode<'a>);
+impl IntegerLiteralExp<'_> {
+    pub fn integer_literal_token(&self) -> Option<IntegerLiteralToken> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for ParenthesesRangeConstructor {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(PARENTHESES_RANGE_CONSTRUCTOR as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == PARENTHESES_RANGE_CONSTRUCTOR
+impl<'a> TypedNode for IntegerLiteralExp<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == INTEGER_LITERAL_EXP
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
-    }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct BracketsRangeConstructor {
-    syntax: SyntaxNode<OscDslLanguage>,
-}
-impl BracketsRangeConstructor {
-    pub fn l_bracket_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 0usize)
-    }
-    pub fn begin(&self) -> SyntaxResult<Expression> {
-        support::required_node(&self.syntax, 1usize)
-    }
-    pub fn dot_dot_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 2usize)
-    }
-    pub fn end(&self) -> SyntaxResult<Expression> {
-        support::required_node(&self.syntax, 3usize)
-    }
-    pub fn r_bracket_token(&self) -> SyntaxResult<SyntaxToken<OscDslLanguage>> {
-        support::required_token(&self.syntax, 4usize)
+pub struct FloatLiteralExp<'a>(OscDslNode<'a>);
+impl FloatLiteralExp<'_> {
+    pub fn float_literal_token(&self) -> Option<FloatLiteralToken> {
+        support::child(&self.0, 0usize)
     }
 }
-impl AstNode for BracketsRangeConstructor {
-    type Language = OscDslLanguage;
-    const KIND_SET: SyntaxKindSet<Self::Language> =
-        SyntaxKindSet::from_raw(RawSyntaxKind(BRACKETS_RANGE_CONSTRUCTOR as u16));
-    fn can_cast(kind: OscDslSyntaxKind) -> bool {
-        kind == BRACKETS_RANGE_CONSTRUCTOR
+impl<'a> TypedNode for FloatLiteralExp<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == FLOAT_LITERAL_EXP
     }
-    fn cast(syntax: SyntaxNode<Self::Language>) -> Option<Self> {
-        Self::can_cast(syntax.kind()).then(|| Self { syntax })
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
     }
-    fn syntax(&self) -> &SyntaxNode<Self::Language> {
-        &self.syntax
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
-    fn into_syntax(self) -> SyntaxNode<Self::Language> {
-        self.syntax
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct PhysicalLiteralExp<'a>(OscDslNode<'a>);
+impl PhysicalLiteralExp<'_> {
+    pub fn physical_literal(&self) -> Option<PhysicalLiteral> {
+        support::child(&self.0, 0usize)
+    }
+}
+impl<'a> TypedNode for PhysicalLiteralExp<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == PHYSICAL_LITERAL_EXP
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct BoolLiteralExp<'a>(OscDslNode<'a>);
+impl BoolLiteralExp<'_> {
+    pub fn bool_literal(&self) -> Option<BoolLiteral> {
+        support::child(&self.0, 0usize)
+    }
+}
+impl<'a> TypedNode for BoolLiteralExp<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == BOOL_LITERAL_EXP
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct StringLiteralExp<'a>(OscDslNode<'a>);
+impl StringLiteralExp<'_> {
+    pub fn string_literal_token(&self) -> Option<StringLiteralToken> {
+        support::child(&self.0, 0usize)
+    }
+}
+impl<'a> TypedNode for StringLiteralExp<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == STRING_LITERAL_EXP
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ExpressionList<'a>(OscDslNode<'a>);
+impl<'a> ExpressionList<'a> {
+    pub fn comma_token(&self) -> impl Iterator<Item = CommaToken<'a>> + 'a {
+        support::children(&self.0)
+    }
+    pub fn expression(&self) -> impl Iterator<Item = Expression<'a>> + 'a {
+        support::children(&self.0)
+    }
+}
+impl<'a> TypedNode for ExpressionList<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == EXPRESSION_LIST
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ParenthesesRangeConstructor<'a>(OscDslNode<'a>);
+impl ParenthesesRangeConstructor<'_> {
+    pub fn range_token(&self) -> Option<RangeToken> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn left_paren_token(&self) -> Option<LeftParenToken> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn begin(&self) -> Option<Expression> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn comma_token(&self) -> Option<CommaToken> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn end(&self) -> Option<Expression> {
+        support::child(&self.0, 1usize)
+    }
+    pub fn right_paren_token(&self) -> Option<RightParenToken> {
+        support::child(&self.0, 0usize)
+    }
+}
+impl<'a> TypedNode for ParenthesesRangeConstructor<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == PARENTHESES_RANGE_CONSTRUCTOR
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct BracketsRangeConstructor<'a>(OscDslNode<'a>);
+impl BracketsRangeConstructor<'_> {
+    pub fn left_bracket_token(&self) -> Option<LeftBracketToken> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn begin(&self) -> Option<Expression> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn dot_dot_token(&self) -> Option<DotDotToken> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn end(&self) -> Option<Expression> {
+        support::child(&self.0, 1usize)
+    }
+    pub fn right_bracket_token(&self) -> Option<RightBracketToken> {
+        support::child(&self.0, 0usize)
+    }
+}
+impl<'a> TypedNode for BracketsRangeConstructor<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == BRACKETS_RANGE_CONSTRUCTOR
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
