@@ -2,7 +2,7 @@ use std::str::Chars;
 
 use crate::{
     chars::{is_id_char, is_id_start_char},
-    syntax::generated::OscDslSyntaxKind::{self, *},
+    syntax::OscDslSyntaxKind::{self, *},
 };
 
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Debug, Hash)]
@@ -217,10 +217,10 @@ fn next_token(cursor: &mut Cursor) -> Lexeme {
             }
             ',' => cursor.token(COMMA),
             '@' => cursor.token(AT),
-            '(' => cursor.token(L_PAREN),
-            ')' => cursor.token(R_PAREN),
-            '[' => cursor.token(L_BRACKET),
-            ']' => cursor.token(R_BRACKET),
+            '(' => cursor.token(LEFT_PAREN),
+            ')' => cursor.token(RIGHT_PAREN),
+            '[' => cursor.token(LEFT_BRACKET),
+            ']' => cursor.token(RIGHT_BRACKET),
             '?' => cursor.token(QUESTION),
             '+' => cursor.token(PLUS),
             '*' => cursor.token(STAR),
@@ -235,21 +235,21 @@ fn next_token(cursor: &mut Cursor) -> Lexeme {
             }
             '<' => {
                 if cursor.eat('=') {
-                    cursor.token(LESS_EQ)
+                    cursor.token(LESS_EQUAL)
                 } else {
                     cursor.token(LESS)
                 }
             }
             '>' => {
                 if cursor.eat('=') {
-                    cursor.token(GREATER_EQ)
+                    cursor.token(GREATER_EQUAL)
                 } else {
                     cursor.token(GREATER)
                 }
             }
             '!' => {
                 if cursor.eat('=') {
-                    cursor.token(NOT_EQ)
+                    cursor.token(NOT_EQUAL)
                 } else {
                     cursor.token(EXCLAMATION)
                 }
