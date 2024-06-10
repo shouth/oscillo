@@ -6,7 +6,7 @@ use crate::{
 };
 
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Debug, Hash)]
-pub struct Lexeme {
+pub struct Token {
     pub kind: OscDslSyntaxKind,
     pub length: usize,
 }
@@ -51,13 +51,13 @@ impl<'a> Cursor<'_> {
         }
     }
 
-    fn token(&mut self, kind: OscDslSyntaxKind) -> Lexeme {
+    fn token(&mut self, kind: OscDslSyntaxKind) -> Token {
         let length = self.offset;
         self.offset = 0;
         if length > 0 {
             self.source.nth(length - 1);
         }
-        Lexeme { kind, length }
+        Token { kind, length }
     }
 }
 
@@ -93,7 +93,7 @@ fn eat_exponent(cursor: &mut Cursor) -> bool {
     }
 }
 
-fn lex(cursor: &mut Cursor) -> Lexeme {
+fn next_simple_token(cursor: &mut Cursor) -> Token {
     if let Some(c) = cursor.bump() {
         match c {
             ' ' | '\t' | '\u{000C}' => {
@@ -279,28 +279,27 @@ fn lex(cursor: &mut Cursor) -> Lexeme {
 
 struct Lexer<'a> {
     lexer: Cursor<'a>,
-    token: Lexeme,
+    token: Token,
 }
 
 impl Lexer<'_> {
     pub fn new(source: &str) -> Lexer {
         let mut lexer = Cursor::new(source);
-        let token = lex(&mut lexer);
+        let token = next_simple_token(&mut lexer);
         Lexer { lexer, token }
     }
 
-    fn bump(&mut self) -> Lexeme {
-        let mut token = lex(&mut self.lexer);
-        std::mem::swap(&mut self.token, &mut token);
-        token
+    fn bump(&mut self) -> Token {
+        let token = next_simple_token(&mut self.lexer);
+        std::mem::replace(&mut self.token, token)
     }
 
-    fn peek(&self) -> &Lexeme {
+    fn peek(&self) -> &Token {
         &self.token
     }
 }
 
-fn next_token(l: &mut Lexer) -> Lexeme {
+fn next_token(l: &mut Lexer) -> Token {
     let token = l.bump();
 
     // glue sign token and adjacent numeric token to meet max munch rule
@@ -308,7 +307,7 @@ fn next_token(l: &mut Lexer) -> Lexeme {
         PLUS => match l.peek().kind {
             FLOAT_LITERAL => {
                 let next_token = l.bump();
-                Lexeme {
+                Token {
                     kind: FLOAT_LITERAL,
                     length: token.length + next_token.length,
                 }
@@ -318,7 +317,7 @@ fn next_token(l: &mut Lexer) -> Lexeme {
         MINUS => match l.peek().kind {
             kind @ (INTEGER_LITERAL | FLOAT_LITERAL) => {
                 let next_token = l.bump();
-                Lexeme {
+                Token {
                     kind,
                     length: token.length + next_token.length,
                 }
@@ -329,15 +328,11 @@ fn next_token(l: &mut Lexer) -> Lexeme {
     }
 }
 
-pub fn tokenize(source: &str) -> impl Iterator<Item = Lexeme> + '_ {
+pub fn tokenize(source: &str) -> impl Iterator<Item = Token> + '_ {
     let mut lexer = Lexer::new(source);
     std::iter::from_fn(move || {
         let token = next_token(&mut lexer);
-        if token.kind == EOF {
-            None
-        } else {
-            Some(token)
-        }
+        (token.kind != EOF).then(|| token)
     })
 }
 
