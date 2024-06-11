@@ -113,7 +113,7 @@ const LITERALS: &[&str] = &["integer_literal", "float_literal", "string_literal"
 
 const TOKENS: &[&str] = &["newline", "indent", "dedent", "identifier", "error"];
 
-const TRIVIALS: &[&str] = &["whitespace", "comment", "nonlogical_newline"];
+const TRIVIALS: &[&str] = &["whitespace", "comment", "trivial_newline"];
 
 pub struct Token {
     name: String,
@@ -163,7 +163,7 @@ pub fn grammar() -> Grammar<Token> {
         .chain(PUNCTS.iter().map(|x| (x.1, x.0, TokenKind::Punctuation)))
         .chain(KEYWORDS.iter().map(|&x| (x, x, TokenKind::Keyword)))
         .chain(LITERALS.iter().map(|&x| (x, x, TokenKind::Literal)))
-        .chain(TOKENS.iter().map(|&data| (data, data, TokenKind::Token)))
+        .chain(TOKENS.iter().map(|&x| (x, x, TokenKind::Token)))
         .chain(TRIVIALS.iter().map(|&x| (x, x, TokenKind::Trivial)))
         .map(|(name, terminal, kind)| Token {
             name: name.to_string(),

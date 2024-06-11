@@ -1668,12 +1668,12 @@ impl<'a> TypedNode for CommentToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct NonlogicalNewlineToken<'a>(OscDslNode<'a>);
-impl<'a> TypedNode for NonlogicalNewlineToken<'a> {
+pub struct TrivialNewlineToken<'a>(OscDslNode<'a>);
+impl<'a> TypedNode for TrivialNewlineToken<'a> {
     type Value = OscDslSyntaxKind;
     type Node = OscDslNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
-        value == NONLOGICAL_NEWLINE
+        value == TRIVIAL_NEWLINE
     }
     fn cast(node: Self::Node) -> Option<Self> {
         Self::can_cast(*node.value()).then(|| Self(node))
