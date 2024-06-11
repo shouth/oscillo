@@ -278,19 +278,19 @@ fn next_simple_token(cursor: &mut Cursor) -> Token {
 }
 
 struct Lexer<'a> {
-    lexer: Cursor<'a>,
+    cursor: Cursor<'a>,
     token: Token,
 }
 
 impl Lexer<'_> {
     pub fn new(source: &str) -> Lexer {
-        let mut lexer = Cursor::new(source);
-        let token = next_simple_token(&mut lexer);
-        Lexer { lexer, token }
+        let mut cursor = Cursor::new(source);
+        let token = next_simple_token(&mut cursor);
+        Lexer { cursor, token }
     }
 
     fn bump(&mut self) -> Token {
-        let token = next_simple_token(&mut self.lexer);
+        let token = next_simple_token(&mut self.cursor);
         std::mem::replace(&mut self.token, token)
     }
 
