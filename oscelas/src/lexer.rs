@@ -106,7 +106,10 @@ fn next_simple_token(cursor: &mut Cursor) -> Token {
                 cursor.token(NONLOGICAL_NEWLINE)
             }
             '\\' => {
-                if let Some('\n' | '\r') = cursor.first() {
+                if cursor.eat('\n') {
+                    cursor.token(NONLOGICAL_NEWLINE)
+                } else if cursor.eat('\r') {
+                    cursor.eat('\n');
                     cursor.token(NONLOGICAL_NEWLINE)
                 } else {
                     cursor.token(ERROR)
