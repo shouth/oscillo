@@ -94,7 +94,8 @@ fn eat_exponent(cursor: &mut Cursor) -> bool {
 }
 
 fn next_simple_token(cursor: &mut Cursor) -> LexedToken {
-    if let Some(c) = cursor.bump() {
+    if let Some(c) = cursor.first() {
+        cursor.bump();
         match c {
             '\t' | '\u{000C}' | ' ' | '\\' => {
                 if c == '\\' {
