@@ -1,4 +1,4 @@
-use std::str::Chars;
+use std::{collections::VecDeque, str::Chars};
 
 use crate::{
     chars::{is_id_char, is_id_start_char},
@@ -96,24 +96,45 @@ fn eat_exponent(cursor: &mut Cursor) -> bool {
 fn next_simple_token(cursor: &mut Cursor) -> LexedToken {
     if let Some(c) = cursor.bump() {
         match c {
-            ' ' | '\t' | '\u{000C}' => {
-                while cursor.eat(' ') || cursor.eat('\t') || cursor.eat('\u{000C}') {}
+            '\t' | '\u{000C}' | ' ' | '\\' => {
+                if c == '\\' {
+                    if cursor.eat('\r') {
+                        cursor.eat('\n');
+                    } else if cursor.eat('\n') {
+                        // do nothing
+                    } else {
+                        return cursor.token(ERROR);
+                    }
+                }
+
+                while let Some(c) = cursor.first() {
+                    match c {
+                        '\t' | '\u{000C}' | ' ' => {
+                            cursor.bump();
+                        }
+                        '\\' => {
+                            if cursor.second().is_some_and(|c| c == '\r') {
+                                cursor.bump();
+                                cursor.bump();
+                                cursor.eat('\n');
+                            } else if cursor.second().is_some_and(|c| c == '\n') {
+                                cursor.bump();
+                                cursor.bump();
+                            } else {
+                                break;
+                            }
+                        }
+                        _ => {
+                            break;
+                        }
+                    }
+                }
                 cursor.token(WHITESPACE)
             }
             '\n' => cursor.token(TRIVIAL_NEWLINE),
             '\r' => {
                 cursor.eat('\n');
                 cursor.token(TRIVIAL_NEWLINE)
-            }
-            '\\' => {
-                if cursor.eat('\n') {
-                    cursor.token(TRIVIAL_NEWLINE)
-                } else if cursor.eat('\r') {
-                    cursor.eat('\n');
-                    cursor.token(TRIVIAL_NEWLINE)
-                } else {
-                    cursor.token(ERROR)
-                }
             }
             '#' => {
                 while cursor.first().is_some_and(|c| c != '\n' && c != '\r') {
@@ -282,24 +303,30 @@ fn next_simple_token(cursor: &mut Cursor) -> LexedToken {
 
 pub struct Lexer<'a> {
     cursor: Cursor<'a>,
-    token: LexedToken,
+    tokens: VecDeque<LexedToken>,
 }
 
 impl Lexer<'_> {
     pub fn new(source: &str) -> Lexer {
-        let mut cursor = Cursor::new(source);
-        let token = next_simple_token(&mut cursor);
-        Lexer { cursor, token }
+        Lexer {
+            cursor: Cursor::new(source),
+            tokens: VecDeque::new(),
+        }
     }
 
     fn bump(&mut self) -> LexedToken {
-        let token = self.token;
-        self.token = next_simple_token(&mut self.cursor);
-        token
+        match self.tokens.pop_front() {
+            Some(token) => token,
+            None => next_simple_token(&mut self.cursor),
+        }
     }
 
-    fn peek(&self) -> &LexedToken {
-        &self.token
+    fn nth(&mut self, n: usize) -> &LexedToken {
+        while self.tokens.len() <= n {
+            let token = next_simple_token(&mut self.cursor);
+            self.tokens.push_back(token);
+        }
+        &self.tokens[n]
     }
 
     pub fn next_token(&mut self) -> LexedToken {
@@ -307,7 +334,7 @@ impl Lexer<'_> {
 
         // glue sign token and adjacent numeric token to meet max munch rule
         match token.kind {
-            PLUS => match self.peek().kind {
+            PLUS => match self.nth(0).kind {
                 FLOAT_LITERAL => {
                     let next_token = self.bump();
                     LexedToken {
@@ -317,7 +344,7 @@ impl Lexer<'_> {
                 }
                 _ => token,
             },
-            MINUS => match self.peek().kind {
+            MINUS => match self.nth(0).kind {
                 kind @ (INTEGER_LITERAL | FLOAT_LITERAL) => {
                     let next_token = self.bump();
                     LexedToken {
