@@ -100,17 +100,17 @@ fn next_simple_token(cursor: &mut Cursor) -> Token {
                 while cursor.eat(' ') || cursor.eat('\t') || cursor.eat('\u{000C}') {}
                 cursor.token(WHITESPACE)
             }
-            '\n' => cursor.token(NONLOGICAL_NEWLINE),
+            '\n' => cursor.token(TRIVIAL_NEWLINE),
             '\r' => {
                 cursor.eat('\n');
-                cursor.token(NONLOGICAL_NEWLINE)
+                cursor.token(TRIVIAL_NEWLINE)
             }
             '\\' => {
                 if cursor.eat('\n') {
-                    cursor.token(NONLOGICAL_NEWLINE)
+                    cursor.token(TRIVIAL_NEWLINE)
                 } else if cursor.eat('\r') {
                     cursor.eat('\n');
-                    cursor.token(NONLOGICAL_NEWLINE)
+                    cursor.token(TRIVIAL_NEWLINE)
                 } else {
                     cursor.token(ERROR)
                 }
