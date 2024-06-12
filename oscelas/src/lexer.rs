@@ -6,7 +6,7 @@ use crate::{
 };
 
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Debug, Hash)]
-pub struct Token {
+pub struct LexedToken {
     pub kind: OscDslSyntaxKind,
     pub length: usize,
 }
@@ -51,13 +51,13 @@ impl<'a> Cursor<'_> {
         }
     }
 
-    fn token(&mut self, kind: OscDslSyntaxKind) -> Token {
+    fn token(&mut self, kind: OscDslSyntaxKind) -> LexedToken {
         let length = self.offset;
         self.offset = 0;
         if length > 0 {
             self.source.nth(length - 1);
         }
-        Token { kind, length }
+        LexedToken { kind, length }
     }
 }
 
@@ -93,7 +93,7 @@ fn eat_exponent(cursor: &mut Cursor) -> bool {
     }
 }
 
-fn next_simple_token(cursor: &mut Cursor) -> Token {
+fn next_simple_token(cursor: &mut Cursor) -> LexedToken {
     if let Some(c) = cursor.bump() {
         match c {
             ' ' | '\t' | '\u{000C}' => {
@@ -280,9 +280,9 @@ fn next_simple_token(cursor: &mut Cursor) -> Token {
     }
 }
 
-struct Lexer<'a> {
+pub struct Lexer<'a> {
     cursor: Cursor<'a>,
-    token: Token,
+    token: LexedToken,
 }
 
 impl Lexer<'_> {
@@ -292,63 +292,60 @@ impl Lexer<'_> {
         Lexer { cursor, token }
     }
 
-    fn bump(&mut self) -> Token {
-        let token = next_simple_token(&mut self.cursor);
-        std::mem::replace(&mut self.token, token)
+    fn bump(&mut self) -> LexedToken {
+        let token = self.token;
+        self.token = next_simple_token(&mut self.cursor);
+        token
     }
 
-    fn peek(&self) -> &Token {
+    fn peek(&self) -> &LexedToken {
         &self.token
     }
-}
 
-fn next_token(l: &mut Lexer) -> Token {
-    let token = l.bump();
+    pub fn next_token(&mut self) -> LexedToken {
+        let token = self.bump();
 
-    // glue sign token and adjacent numeric token to meet max munch rule
-    match token.kind {
-        PLUS => match l.peek().kind {
-            FLOAT_LITERAL => {
-                let next_token = l.bump();
-                Token {
-                    kind: FLOAT_LITERAL,
-                    length: token.length + next_token.length,
+        // glue sign token and adjacent numeric token to meet max munch rule
+        match token.kind {
+            PLUS => match self.peek().kind {
+                FLOAT_LITERAL => {
+                    let next_token = self.bump();
+                    LexedToken {
+                        kind: FLOAT_LITERAL,
+                        length: token.length + next_token.length,
+                    }
                 }
-            }
-            _ => token,
-        },
-        MINUS => match l.peek().kind {
-            kind @ (INTEGER_LITERAL | FLOAT_LITERAL) => {
-                let next_token = l.bump();
-                Token {
-                    kind,
-                    length: token.length + next_token.length,
+                _ => token,
+            },
+            MINUS => match self.peek().kind {
+                kind @ (INTEGER_LITERAL | FLOAT_LITERAL) => {
+                    let next_token = self.bump();
+                    LexedToken {
+                        kind,
+                        length: token.length + next_token.length,
+                    }
                 }
-            }
+                _ => token,
+            },
             _ => token,
-        },
-        _ => token,
+        }
     }
-}
-
-pub fn tokenize(source: &str) -> impl Iterator<Item = Token> + '_ {
-    let mut lexer = Lexer::new(source);
-    std::iter::from_fn(move || {
-        let token = next_token(&mut lexer);
-        (token.kind != EOF).then(|| token)
-    })
 }
 
 #[cfg(test)]
 mod tests {
     fn tokenize(source: &str) -> Vec<&str> {
-        super::tokenize(source)
-            .scan(0, |offset, token| {
-                let lexeme = &source[*offset..][..token.length];
-                *offset += token.length;
-                Some(lexeme)
-            })
-            .collect()
+        let mut result = Vec::new();
+        let mut lexer = super::Lexer::new(source);
+        let mut offset = 0;
+        loop {
+            let token = lexer.next_token();
+            if token.kind == super::EOF {
+                return result;
+            }
+            result.push(&source[offset..][..token.length]);
+            offset += token.length;
+        }
     }
 
     #[test]
