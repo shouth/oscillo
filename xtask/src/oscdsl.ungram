@@ -142,12 +142,12 @@ TypeDeclarator =
   NonAggregateTypeDeclarator
 | AggregateTypeDeclarator
 
-NonAggregateTypeDeclarator =
+NonAggregateTypeDeclarator = // This grammar is relaxed to remove ambiguity
   PrimitiveType
-| PhysicalTypeName
-| EnumName
-| StructName
-| ActorName
+// | PhysicalTypeName
+// | EnumName
+// | StructName
+// | ActorName
 | QualifiedBehaviorName
 
 AggregateTypeDeclarator =
@@ -416,18 +416,27 @@ StructuredTypeExtension =
   'extend' ExtendableTypeName ':' 'newline' 'indent' ExtendableMemberDeclList 'dedent'
 
 ExtendableMemberDeclList =
-  ExtendableMemberDecl*
+  ExtensionMemberDecl*
 
-ExtendableTypeName =
-  StructName
-| ActorName
-| QualifiedBehaviorName
+ExtendableTypeName = // This grammar is relaxed to remove ambiguity
+  QualifiedBehaviorName
+// | StructName
+// | ActorName
 
-ExtendableMemberDecl =
-  StructMemberDecl
-| ActorMemberDecl
-| ScenarioMemberDecl
-| BehaviorSpecification
+ExtensionMemberDecl = // This grammar is relaxed to remove ambiguity
+  EventDeclaration
+| ParameterDeclaration
+| VariableDeclaration
+| KeepConstraintDeclaration
+| RemoveDefaultDeclaration
+| MethodDeclaration
+| CoverageDeclaration
+| OnDirective
+| DoDirective
+//   StructMemberDecl
+// | ActorMemberDecl
+// | ScenarioMemberDecl
+// | BehaviorSpecification
 
 
 // Global parameter declarations
