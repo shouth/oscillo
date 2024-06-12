@@ -1,6 +1,6 @@
 use quote::{format_ident, quote};
 
-use crate::{grammar::{Grammar, Terminal}, syntax_name::SyntaxKindName};
+use crate::{grammar::{Grammar, RuleKind, Terminal}, syntax_name::SyntaxKindName};
 
 pub fn generate_syntax_kind<T>(grammar: &Grammar<T>) -> String
 where
@@ -12,6 +12,7 @@ where
 
     let rule_kind_idents = grammar
         .rules()
+        .filter(|index| !matches!(grammar[*index].kind, RuleKind::Choice(_)))
         .map(|index| format_ident!("{}", grammar[index].syntax_kind_name()));
 
     let code = quote! {
