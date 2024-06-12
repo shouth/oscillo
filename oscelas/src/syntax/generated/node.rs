@@ -2009,7 +2009,19 @@ impl<'a> TypedNode for MainStatement<'a> {
     fn can_cast(value: Self::Value) -> bool {
         matches!(
             value,
-            NAMESPACE_STATEMENT | EXPORT_STATEMENT | OSC_DECLARATION
+            NAMESPACE_STATEMENT
+                | EXPORT_STATEMENT
+                | PHYSICAL_TYPE_DECLARATION
+                | UNIT_DECLARATION
+                | ENUM_DECLARATION
+                | STRUCT_DECLARATION
+                | ACTOR_DECLARATION
+                | ACTION_DECLARATION
+                | SCENARIO_DECLARATION
+                | MODIFIER_DECLARATION
+                | ENUM_TYPE_EXTENSION
+                | STRUCTURED_TYPE_EXTENSION
+                | GLOBAL_PARAMETER_DECLARATION
         )
     }
     fn cast(node: Self::Node) -> Option<Self> {
@@ -2018,7 +2030,19 @@ impl<'a> TypedNode for MainStatement<'a> {
                 NamespaceStatement::cast(node.clone()).map(Self::NamespaceStatement)
             }
             EXPORT_STATEMENT => ExportStatement::cast(node.clone()).map(Self::ExportStatement),
-            OSC_DECLARATION => OscDeclaration::cast(node.clone()).map(Self::OscDeclaration),
+            PHYSICAL_TYPE_DECLARATION
+            | UNIT_DECLARATION
+            | ENUM_DECLARATION
+            | STRUCT_DECLARATION
+            | ACTOR_DECLARATION
+            | ACTION_DECLARATION
+            | SCENARIO_DECLARATION
+            | MODIFIER_DECLARATION
+            | ENUM_TYPE_EXTENSION
+            | STRUCTURED_TYPE_EXTENSION
+            | GLOBAL_PARAMETER_DECLARATION => {
+                OscDeclaration::cast(node.clone()).map(Self::OscDeclaration)
+            }
             _ => None,
         }
     }
@@ -2286,7 +2310,8 @@ impl<'a> TypedNode for OscDeclaration<'a> {
                 | ACTION_DECLARATION
                 | SCENARIO_DECLARATION
                 | MODIFIER_DECLARATION
-                | TYPE_EXTENSION
+                | ENUM_TYPE_EXTENSION
+                | STRUCTURED_TYPE_EXTENSION
                 | GLOBAL_PARAMETER_DECLARATION
         )
     }
@@ -2310,7 +2335,9 @@ impl<'a> TypedNode for OscDeclaration<'a> {
             MODIFIER_DECLARATION => {
                 ModifierDeclaration::cast(node.clone()).map(Self::ModifierDeclaration)
             }
-            TYPE_EXTENSION => TypeExtension::cast(node.clone()).map(Self::TypeExtension),
+            ENUM_TYPE_EXTENSION | STRUCTURED_TYPE_EXTENSION => {
+                TypeExtension::cast(node.clone()).map(Self::TypeExtension)
+            }
             GLOBAL_PARAMETER_DECLARATION => {
                 GlobalParameterDeclaration::cast(node.clone()).map(Self::GlobalParameterDeclaration)
             }
@@ -2878,12 +2905,31 @@ impl<'a> TypedNode for TypeDeclarator<'a> {
     fn can_cast(value: Self::Value) -> bool {
         matches!(
             value,
-            NON_AGGREGATE_TYPE_DECLARATOR | AGGREGATE_TYPE_DECLARATOR
+            INT_KW
+                | UINT_KW
+                | FLOAT_KW
+                | BOOL_KW
+                | STRING_KW
+                | PHYSICAL_TYPE_NAME
+                | ENUM_NAME
+                | STRUCT_NAME
+                | ACTOR_NAME
+                | QUALIFIED_BEHAVIOR_NAME
+                | AGGREGATE_TYPE_DECLARATOR
         )
     }
     fn cast(node: Self::Node) -> Option<Self> {
         match *node.value() {
-            NON_AGGREGATE_TYPE_DECLARATOR => {
+            INT_KW
+            | UINT_KW
+            | FLOAT_KW
+            | BOOL_KW
+            | STRING_KW
+            | PHYSICAL_TYPE_NAME
+            | ENUM_NAME
+            | STRUCT_NAME
+            | ACTOR_NAME
+            | QUALIFIED_BEHAVIOR_NAME => {
                 NonAggregateTypeDeclarator::cast(node.clone()).map(Self::NonAggregateTypeDeclarator)
             }
             AGGREGATE_TYPE_DECLARATOR => {
@@ -2952,7 +2998,11 @@ impl<'a> TypedNode for NonAggregateTypeDeclarator<'a> {
     fn can_cast(value: Self::Value) -> bool {
         matches!(
             value,
-            PRIMITIVE_TYPE
+            INT_KW
+                | UINT_KW
+                | FLOAT_KW
+                | BOOL_KW
+                | STRING_KW
                 | PHYSICAL_TYPE_NAME
                 | ENUM_NAME
                 | STRUCT_NAME
@@ -2962,7 +3012,9 @@ impl<'a> TypedNode for NonAggregateTypeDeclarator<'a> {
     }
     fn cast(node: Self::Node) -> Option<Self> {
         match *node.value() {
-            PRIMITIVE_TYPE => PrimitiveType::cast(node.clone()).map(Self::PrimitiveType),
+            INT_KW | UINT_KW | FLOAT_KW | BOOL_KW | STRING_KW => {
+                PrimitiveType::cast(node.clone()).map(Self::PrimitiveType)
+            }
             PHYSICAL_TYPE_NAME => PhysicalTypeName::cast(node.clone()).map(Self::PhysicalTypeName),
             ENUM_NAME => EnumName::cast(node.clone()).map(Self::EnumName),
             STRUCT_NAME => StructName::cast(node.clone()).map(Self::StructName),
@@ -3801,14 +3853,14 @@ impl<'a> TypedNode for StructInheritsConstant<'a> {
     type Value = OscDslSyntaxKind;
     type Node = OscDslNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
-        matches!(value, ENUM_VALUE_REFERENCE | BOOL_LITERAL)
+        matches!(value, ENUM_VALUE_REFERENCE | TRUE_KW | FALSE_KW)
     }
     fn cast(node: Self::Node) -> Option<Self> {
         match *node.value() {
             ENUM_VALUE_REFERENCE => {
                 EnumValueReference::cast(node.clone()).map(Self::EnumValueReference)
             }
-            BOOL_LITERAL => BoolLiteral::cast(node.clone()).map(Self::BoolLiteral),
+            TRUE_KW | FALSE_KW => BoolLiteral::cast(node.clone()).map(Self::BoolLiteral),
             _ => None,
         }
     }
@@ -3918,8 +3970,10 @@ impl<'a> TypedNode for StructMemberDecl<'a> {
         matches!(
             value,
             EVENT_DECLARATION
-                | FIELD_DECLARATION
-                | CONSTRAINT_DECLARATION
+                | PARAMETER_DECLARATION
+                | VARIABLE_DECLARATION
+                | KEEP_CONSTRAINT_DECLARATION
+                | REMOVE_DEFAULT_DECLARATION
                 | METHOD_DECLARATION
                 | COVERAGE_DECLARATION
         )
@@ -3927,8 +3981,10 @@ impl<'a> TypedNode for StructMemberDecl<'a> {
     fn cast(node: Self::Node) -> Option<Self> {
         match *node.value() {
             EVENT_DECLARATION => EventDeclaration::cast(node.clone()).map(Self::EventDeclaration),
-            FIELD_DECLARATION => FieldDeclaration::cast(node.clone()).map(Self::FieldDeclaration),
-            CONSTRAINT_DECLARATION => {
+            PARAMETER_DECLARATION | VARIABLE_DECLARATION => {
+                FieldDeclaration::cast(node.clone()).map(Self::FieldDeclaration)
+            }
+            KEEP_CONSTRAINT_DECLARATION | REMOVE_DEFAULT_DECLARATION => {
                 ConstraintDeclaration::cast(node.clone()).map(Self::ConstraintDeclaration)
             }
             METHOD_DECLARATION => {
@@ -4264,14 +4320,14 @@ impl<'a> TypedNode for ActorInheritsConstant<'a> {
     type Value = OscDslSyntaxKind;
     type Node = OscDslNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
-        matches!(value, ENUM_VALUE_REFERENCE | BOOL_LITERAL)
+        matches!(value, ENUM_VALUE_REFERENCE | TRUE_KW | FALSE_KW)
     }
     fn cast(node: Self::Node) -> Option<Self> {
         match *node.value() {
             ENUM_VALUE_REFERENCE => {
                 EnumValueReference::cast(node.clone()).map(Self::EnumValueReference)
             }
-            BOOL_LITERAL => BoolLiteral::cast(node.clone()).map(Self::BoolLiteral),
+            TRUE_KW | FALSE_KW => BoolLiteral::cast(node.clone()).map(Self::BoolLiteral),
             _ => None,
         }
     }
@@ -4381,8 +4437,10 @@ impl<'a> TypedNode for ActorMemberDecl<'a> {
         matches!(
             value,
             EVENT_DECLARATION
-                | FIELD_DECLARATION
-                | CONSTRAINT_DECLARATION
+                | PARAMETER_DECLARATION
+                | VARIABLE_DECLARATION
+                | KEEP_CONSTRAINT_DECLARATION
+                | REMOVE_DEFAULT_DECLARATION
                 | METHOD_DECLARATION
                 | COVERAGE_DECLARATION
         )
@@ -4390,8 +4448,10 @@ impl<'a> TypedNode for ActorMemberDecl<'a> {
     fn cast(node: Self::Node) -> Option<Self> {
         match *node.value() {
             EVENT_DECLARATION => EventDeclaration::cast(node.clone()).map(Self::EventDeclaration),
-            FIELD_DECLARATION => FieldDeclaration::cast(node.clone()).map(Self::FieldDeclaration),
-            CONSTRAINT_DECLARATION => {
+            PARAMETER_DECLARATION | VARIABLE_DECLARATION => {
+                FieldDeclaration::cast(node.clone()).map(Self::FieldDeclaration)
+            }
+            KEEP_CONSTRAINT_DECLARATION | REMOVE_DEFAULT_DECLARATION => {
                 ConstraintDeclaration::cast(node.clone()).map(Self::ConstraintDeclaration)
             }
             METHOD_DECLARATION => {
@@ -4533,14 +4593,14 @@ impl<'a> TypedNode for ScenarioInheritsConstant<'a> {
     type Value = OscDslSyntaxKind;
     type Node = OscDslNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
-        matches!(value, ENUM_VALUE_REFERENCE | BOOL_LITERAL)
+        matches!(value, ENUM_VALUE_REFERENCE | TRUE_KW | FALSE_KW)
     }
     fn cast(node: Self::Node) -> Option<Self> {
         match *node.value() {
             ENUM_VALUE_REFERENCE => {
                 EnumValueReference::cast(node.clone()).map(Self::EnumValueReference)
             }
-            BOOL_LITERAL => BoolLiteral::cast(node.clone()).map(Self::BoolLiteral),
+            TRUE_KW | FALSE_KW => BoolLiteral::cast(node.clone()).map(Self::BoolLiteral),
             _ => None,
         }
     }
@@ -4626,14 +4686,31 @@ impl<'a> TypedNode for ScenarioMemberItem<'a> {
     type Value = OscDslSyntaxKind;
     type Node = OscDslNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
-        matches!(value, SCENARIO_MEMBER_DECL | BEHAVIOR_SPECIFICATION)
+        matches!(
+            value,
+            EVENT_DECLARATION
+                | PARAMETER_DECLARATION
+                | VARIABLE_DECLARATION
+                | KEEP_CONSTRAINT_DECLARATION
+                | REMOVE_DEFAULT_DECLARATION
+                | METHOD_DECLARATION
+                | COVERAGE_DECLARATION
+                | ON_DIRECTIVE
+                | DO_DIRECTIVE
+        )
     }
     fn cast(node: Self::Node) -> Option<Self> {
         match *node.value() {
-            SCENARIO_MEMBER_DECL => {
+            EVENT_DECLARATION
+            | PARAMETER_DECLARATION
+            | VARIABLE_DECLARATION
+            | KEEP_CONSTRAINT_DECLARATION
+            | REMOVE_DEFAULT_DECLARATION
+            | METHOD_DECLARATION
+            | COVERAGE_DECLARATION => {
                 ScenarioMemberDecl::cast(node.clone()).map(Self::ScenarioMemberDecl)
             }
-            BEHAVIOR_SPECIFICATION => {
+            ON_DIRECTIVE | DO_DIRECTIVE => {
                 BehaviorSpecification::cast(node.clone()).map(Self::BehaviorSpecification)
             }
             _ => None,
@@ -4693,8 +4770,10 @@ impl<'a> TypedNode for ScenarioMemberDecl<'a> {
         matches!(
             value,
             EVENT_DECLARATION
-                | FIELD_DECLARATION
-                | CONSTRAINT_DECLARATION
+                | PARAMETER_DECLARATION
+                | VARIABLE_DECLARATION
+                | KEEP_CONSTRAINT_DECLARATION
+                | REMOVE_DEFAULT_DECLARATION
                 | METHOD_DECLARATION
                 | COVERAGE_DECLARATION
         )
@@ -4702,8 +4781,10 @@ impl<'a> TypedNode for ScenarioMemberDecl<'a> {
     fn cast(node: Self::Node) -> Option<Self> {
         match *node.value() {
             EVENT_DECLARATION => EventDeclaration::cast(node.clone()).map(Self::EventDeclaration),
-            FIELD_DECLARATION => FieldDeclaration::cast(node.clone()).map(Self::FieldDeclaration),
-            CONSTRAINT_DECLARATION => {
+            PARAMETER_DECLARATION | VARIABLE_DECLARATION => {
+                FieldDeclaration::cast(node.clone()).map(Self::FieldDeclaration)
+            }
+            KEEP_CONSTRAINT_DECLARATION | REMOVE_DEFAULT_DECLARATION => {
                 ConstraintDeclaration::cast(node.clone()).map(Self::ConstraintDeclaration)
             }
             METHOD_DECLARATION => {
@@ -4959,14 +5040,14 @@ impl<'a> TypedNode for ActionInheritsConstant<'a> {
     type Value = OscDslSyntaxKind;
     type Node = OscDslNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
-        matches!(value, ENUM_VALUE_REFERENCE | BOOL_LITERAL)
+        matches!(value, ENUM_VALUE_REFERENCE | TRUE_KW | FALSE_KW)
     }
     fn cast(node: Self::Node) -> Option<Self> {
         match *node.value() {
             ENUM_VALUE_REFERENCE => {
                 EnumValueReference::cast(node.clone()).map(Self::EnumValueReference)
             }
-            BOOL_LITERAL => BoolLiteral::cast(node.clone()).map(Self::BoolLiteral),
+            TRUE_KW | FALSE_KW => BoolLiteral::cast(node.clone()).map(Self::BoolLiteral),
             _ => None,
         }
     }
@@ -5020,14 +5101,31 @@ impl<'a> TypedNode for ActionMemberItem<'a> {
     type Value = OscDslSyntaxKind;
     type Node = OscDslNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
-        matches!(value, SCENARIO_MEMBER_DECL | BEHAVIOR_SPECIFICATION)
+        matches!(
+            value,
+            EVENT_DECLARATION
+                | PARAMETER_DECLARATION
+                | VARIABLE_DECLARATION
+                | KEEP_CONSTRAINT_DECLARATION
+                | REMOVE_DEFAULT_DECLARATION
+                | METHOD_DECLARATION
+                | COVERAGE_DECLARATION
+                | ON_DIRECTIVE
+                | DO_DIRECTIVE
+        )
     }
     fn cast(node: Self::Node) -> Option<Self> {
         match *node.value() {
-            SCENARIO_MEMBER_DECL => {
+            EVENT_DECLARATION
+            | PARAMETER_DECLARATION
+            | VARIABLE_DECLARATION
+            | KEEP_CONSTRAINT_DECLARATION
+            | REMOVE_DEFAULT_DECLARATION
+            | METHOD_DECLARATION
+            | COVERAGE_DECLARATION => {
                 ScenarioMemberDecl::cast(node.clone()).map(Self::ScenarioMemberDecl)
             }
-            BEHAVIOR_SPECIFICATION => {
+            ON_DIRECTIVE | DO_DIRECTIVE => {
                 BehaviorSpecification::cast(node.clone()).map(Self::BehaviorSpecification)
             }
             _ => None,
@@ -5220,11 +5318,27 @@ impl<'a> TypedNode for ModifierMemberItem<'a> {
     type Value = OscDslSyntaxKind;
     type Node = OscDslNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
-        matches!(value, SCENARIO_MEMBER_DECL | ON_DIRECTIVE)
+        matches!(
+            value,
+            EVENT_DECLARATION
+                | PARAMETER_DECLARATION
+                | VARIABLE_DECLARATION
+                | KEEP_CONSTRAINT_DECLARATION
+                | REMOVE_DEFAULT_DECLARATION
+                | METHOD_DECLARATION
+                | COVERAGE_DECLARATION
+                | ON_DIRECTIVE
+        )
     }
     fn cast(node: Self::Node) -> Option<Self> {
         match *node.value() {
-            SCENARIO_MEMBER_DECL => {
+            EVENT_DECLARATION
+            | PARAMETER_DECLARATION
+            | VARIABLE_DECLARATION
+            | KEEP_CONSTRAINT_DECLARATION
+            | REMOVE_DEFAULT_DECLARATION
+            | METHOD_DECLARATION
+            | COVERAGE_DECLARATION => {
                 ScenarioMemberDecl::cast(node.clone()).map(Self::ScenarioMemberDecl)
             }
             ON_DIRECTIVE => OnDirective::cast(node.clone()).map(Self::OnDirective),
@@ -5461,17 +5575,61 @@ impl<'a> TypedNode for ExtendableMemberDecl<'a> {
     fn can_cast(value: Self::Value) -> bool {
         matches!(
             value,
-            STRUCT_MEMBER_DECL | ACTOR_MEMBER_DECL | SCENARIO_MEMBER_DECL | BEHAVIOR_SPECIFICATION
+            EVENT_DECLARATION
+                | PARAMETER_DECLARATION
+                | VARIABLE_DECLARATION
+                | KEEP_CONSTRAINT_DECLARATION
+                | REMOVE_DEFAULT_DECLARATION
+                | METHOD_DECLARATION
+                | COVERAGE_DECLARATION
+                | EVENT_DECLARATION
+                | PARAMETER_DECLARATION
+                | VARIABLE_DECLARATION
+                | KEEP_CONSTRAINT_DECLARATION
+                | REMOVE_DEFAULT_DECLARATION
+                | METHOD_DECLARATION
+                | COVERAGE_DECLARATION
+                | EVENT_DECLARATION
+                | PARAMETER_DECLARATION
+                | VARIABLE_DECLARATION
+                | KEEP_CONSTRAINT_DECLARATION
+                | REMOVE_DEFAULT_DECLARATION
+                | METHOD_DECLARATION
+                | COVERAGE_DECLARATION
+                | ON_DIRECTIVE
+                | DO_DIRECTIVE
         )
     }
     fn cast(node: Self::Node) -> Option<Self> {
         match *node.value() {
-            STRUCT_MEMBER_DECL => StructMemberDecl::cast(node.clone()).map(Self::StructMemberDecl),
-            ACTOR_MEMBER_DECL => ActorMemberDecl::cast(node.clone()).map(Self::ActorMemberDecl),
-            SCENARIO_MEMBER_DECL => {
+            EVENT_DECLARATION
+            | PARAMETER_DECLARATION
+            | VARIABLE_DECLARATION
+            | KEEP_CONSTRAINT_DECLARATION
+            | REMOVE_DEFAULT_DECLARATION
+            | METHOD_DECLARATION
+            | COVERAGE_DECLARATION => {
+                StructMemberDecl::cast(node.clone()).map(Self::StructMemberDecl)
+            }
+            EVENT_DECLARATION
+            | PARAMETER_DECLARATION
+            | VARIABLE_DECLARATION
+            | KEEP_CONSTRAINT_DECLARATION
+            | REMOVE_DEFAULT_DECLARATION
+            | METHOD_DECLARATION
+            | COVERAGE_DECLARATION => {
+                ActorMemberDecl::cast(node.clone()).map(Self::ActorMemberDecl)
+            }
+            EVENT_DECLARATION
+            | PARAMETER_DECLARATION
+            | VARIABLE_DECLARATION
+            | KEEP_CONSTRAINT_DECLARATION
+            | REMOVE_DEFAULT_DECLARATION
+            | METHOD_DECLARATION
+            | COVERAGE_DECLARATION => {
                 ScenarioMemberDecl::cast(node.clone()).map(Self::ScenarioMemberDecl)
             }
-            BEHAVIOR_SPECIFICATION => {
+            ON_DIRECTIVE | DO_DIRECTIVE => {
                 BehaviorSpecification::cast(node.clone()).map(Self::BehaviorSpecification)
             }
             _ => None,
@@ -5635,13 +5793,22 @@ impl<'a> TypedNode for EventSpecification<'a> {
     type Value = OscDslSyntaxKind;
     type Node = OscDslNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
-        matches!(value, EVENT_REFERENCE_SPECIFICATION | EVENT_CONDITION)
+        matches!(
+            value,
+            EVENT_REFERENCE_SPECIFICATION
+                | BOOL_EXPRESSION
+                | RISE_EXPRESSION
+                | FALL_EXPRESSION
+                | ELAPSED_EXPRESSION
+                | EVERY_EXPRESSION
+        )
     }
     fn cast(node: Self::Node) -> Option<Self> {
         match *node.value() {
             EVENT_REFERENCE_SPECIFICATION => EventReferenceSpecification::cast(node.clone())
                 .map(Self::EventReferenceSpecification),
-            EVENT_CONDITION => EventCondition::cast(node.clone()).map(Self::EventCondition),
+            BOOL_EXPRESSION | RISE_EXPRESSION | FALL_EXPRESSION | ELAPSED_EXPRESSION
+            | EVERY_EXPRESSION => EventCondition::cast(node.clone()).map(Self::EventCondition),
             _ => None,
         }
     }
@@ -6023,10 +6190,15 @@ impl<'a> TypedNode for Expression<'a> {
                 | IT_EXP
                 | QUALIFIED_IDENTIFIER
                 | PARENTHESIZED_EXP
-                | LITERAL_EXP
+                | INTEGER_LITERAL_EXP
+                | FLOAT_LITERAL_EXP
+                | PHYSICAL_LITERAL_EXP
+                | BOOL_LITERAL_EXP
+                | STRING_LITERAL_EXP
                 | ENUM_VALUE_REFERENCE
                 | LIST_CONSTRUCTOR
-                | RANGE_CONSTRUCTOR
+                | PARENTHESES_RANGE_CONSTRUCTOR
+                | BRACKETS_RANGE_CONSTRUCTOR
         )
     }
     fn cast(node: Self::Node) -> Option<Self> {
@@ -6047,12 +6219,15 @@ impl<'a> TypedNode for Expression<'a> {
                 QualifiedIdentifier::cast(node.clone()).map(Self::QualifiedIdentifier)
             }
             PARENTHESIZED_EXP => ParenthesizedExp::cast(node.clone()).map(Self::ParenthesizedExp),
-            LITERAL_EXP => LiteralExp::cast(node.clone()).map(Self::LiteralExp),
+            INTEGER_LITERAL_EXP | FLOAT_LITERAL_EXP | PHYSICAL_LITERAL_EXP | BOOL_LITERAL_EXP
+            | STRING_LITERAL_EXP => LiteralExp::cast(node.clone()).map(Self::LiteralExp),
             ENUM_VALUE_REFERENCE => {
                 EnumValueReference::cast(node.clone()).map(Self::EnumValueReference)
             }
             LIST_CONSTRUCTOR => ListConstructor::cast(node.clone()).map(Self::ListConstructor),
-            RANGE_CONSTRUCTOR => RangeConstructor::cast(node.clone()).map(Self::RangeConstructor),
+            PARENTHESES_RANGE_CONSTRUCTOR | BRACKETS_RANGE_CONSTRUCTOR => {
+                RangeConstructor::cast(node.clone()).map(Self::RangeConstructor)
+            }
             _ => None,
         }
     }
@@ -7801,12 +7976,15 @@ impl<'a> TypedNode for BehaviorWithMember<'a> {
     fn can_cast(value: Self::Value) -> bool {
         matches!(
             value,
-            CONSTRAINT_DECLARATION | MODIFIER_APPLICATION | UNTIL_DIRECTIVE
+            KEEP_CONSTRAINT_DECLARATION
+                | REMOVE_DEFAULT_DECLARATION
+                | MODIFIER_APPLICATION
+                | UNTIL_DIRECTIVE
         )
     }
     fn cast(node: Self::Node) -> Option<Self> {
         match *node.value() {
-            CONSTRAINT_DECLARATION => {
+            KEEP_CONSTRAINT_DECLARATION | REMOVE_DEFAULT_DECLARATION => {
                 ConstraintDeclaration::cast(node.clone()).map(Self::ConstraintDeclaration)
             }
             MODIFIER_APPLICATION => {

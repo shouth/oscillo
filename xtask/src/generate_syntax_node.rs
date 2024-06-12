@@ -1,13 +1,13 @@
 use quote::{format_ident, quote};
 
 use crate::{
-    grammar::{Grammar, RuleKind, Terminal},
+    grammar::{Grammar, NodeIndex, RuleKind},
     syntax_name::{SyntaxKindName, SyntaxMemberName, SyntaxNodeName},
 };
 
 pub fn generate_syntax_node<T>(grammar: &Grammar<T>) -> String
 where
-    T: Terminal + SyntaxKindName + SyntaxNodeName + SyntaxMemberName,
+    T: SyntaxKindName + SyntaxNodeName + SyntaxMemberName,
 {
     let token_nodes = grammar.tokens().map(|token| {
         let token = &grammar[token];
@@ -101,16 +101,46 @@ where
                         }
                     });
 
-                    let can_cast_idents = nodes.iter().map(|node| {
-                        format_ident!("{}", (grammar, node).syntax_kind_name())
-                    });
+                    fn generate_syntax_kind_name_groups<T>(grammar: &Grammar<T>, nodes: &[NodeIndex]) -> Vec<Vec<String>>
+                    where
+                        T: SyntaxKindName,
+                    {
+                        let mut result = Vec::new();
+                        for node in nodes {
+                            match node {
+                                NodeIndex::Rule(rule) => match &grammar[*rule].kind {
+                                    RuleKind::Choice(nodes) => {
+                                        let group = generate_syntax_kind_name_groups(grammar, nodes)
+                                            .iter()
+                                            .flatten()
+                                            .map(|name| name.to_owned())
+                                            .collect();
+                                        result.push(group);
+                                    }
+                                    _ => {
+                                        let name = grammar[*rule].syntax_kind_name();
+                                        result.push(vec![name]);
+                                    }
+                                }
+                                NodeIndex::Token(token) => {
+                                    let name = grammar[*token].syntax_kind_name();
+                                    result.push(vec![name]);
+                                }
+                            }
+                        }
+                        result
+                    }
+                    let syntax_kind_name_groups = generate_syntax_kind_name_groups(grammar, nodes);
 
-                    let cast_arms = nodes.iter().map(|node| {
-                        let node_kind_ident = format_ident!("{}", (grammar, node).syntax_kind_name());
+                    let can_cast_idents = syntax_kind_name_groups.iter().flatten()
+                        .map(|name| format_ident!("{name}"));
+
+                    let cast_arms = syntax_kind_name_groups.iter().zip(nodes.iter()).map(|(group, node)| {
                         let node_name_ident = format_ident!("{}", (grammar, node).syntax_node_name());
+                        let group_idents = group.iter().map(|name| format_ident!("{}", name));
 
                         quote! {
-                            #node_kind_ident => #node_name_ident::cast(node.clone()).map(Self::#node_name_ident)
+                            #(#group_idents)|* => #node_name_ident::cast(node.clone()).map(Self::#node_name_ident)
                         }
                     });
 
