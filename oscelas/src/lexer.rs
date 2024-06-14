@@ -409,11 +409,174 @@ impl Lexer<'_> {
     }
 }
 
+pub struct LexicalAnalyzer<'a> {
+    source: &'a str,
+    lexer: Lexer<'a>,
+    tokens: VecDeque<LexedToken>,
+    indents: Vec<(&'a str, usize)>,
+    enclosures: Vec<OscDslSyntaxKind>,
+    is_new_line: bool,
+    is_empty_line: bool,
+    diagnostics: Vec<Diagnostic>,
+}
+
+impl<'a> LexicalAnalyzer<'a> {
+    pub fn new(source: &'a str) -> LexicalAnalyzer<'a> {
+        LexicalAnalyzer {
+            source,
+            lexer: Lexer::new(source),
+            tokens: VecDeque::new(),
+            indents: vec![("", 0)],
+            enclosures: Vec::new(),
+            is_new_line: true,
+            is_empty_line: false,
+            diagnostics: Vec::new(),
+        }
+    }
+
+    pub fn offset(&self) -> usize {
+        self.lexer.offset()
+    }
+
+    fn bump(&mut self) -> LexedToken {
+        match self.tokens.pop_front() {
+            Some(token) => token,
+            None => self.lexer.next_token(),
+        }
+    }
+
+    fn alter(&mut self, kind: OscDslSyntaxKind) -> LexedToken {
+        let token = self.bump();
+        LexedToken { kind, ..token }
+    }
+
+    fn spawn(&self, kind: OscDslSyntaxKind) -> LexedToken {
+        LexedToken { kind, length: 0 }
+    }
+
+    fn lookahead(&mut self, n: usize) -> &LexedToken {
+        while self.tokens.len() <= n {
+            let token = self.lexer.next_token();
+            self.tokens.push_back(token);
+        }
+        &self.tokens[n]
+    }
+
+    pub fn next_token(&mut self) -> LexedToken {
+        if self.is_new_line {
+            self.is_new_line = false;
+
+            let (indent, indent_width) = match self.lookahead(0).kind {
+                TRIVIAL_NEWLINE => {
+                    self.is_empty_line = true;
+                    return self.next_token();
+                }
+                WHITESPACE => {
+                    if self.lookahead(1).kind == TRIVIAL_NEWLINE {
+                        self.is_empty_line = true;
+                        return self.bump();
+                    }
+
+                    let whitespace = &self.source[self.offset()..][..self.lookahead(0).length];
+                    let indent_text_width = whitespace
+                        .chars()
+                        .take_while(|c| c == &' ' || c == &'\t')
+                        .count();
+                    let indent = &whitespace[..indent_text_width];
+                    let indent_width = indent.chars().map(|c| if c == '\t' { 8 } else { 1 }).sum();
+                    (indent, indent_width)
+                }
+                _ => ("", 0),
+            };
+
+            let (last_indent, last_indent_width) = self
+                .indents
+                .last()
+                .expect("Indentation stack is empty")
+                .to_owned();
+
+            if indent_width > last_indent_width {
+                self.indents.push((indent, indent_width));
+                self.spawn(INDENT)
+            } else if indent_width < last_indent_width {
+                self.indents.pop();
+                let (_, last_indent_width) = self
+                    .indents
+                    .last()
+                    .expect("Indentation stack is empty")
+                    .to_owned();
+
+                if indent_width <= last_indent_width {
+                    self.is_new_line = true;
+                    self.spawn(DEDENT)
+                } else {
+                    let start = self.offset();
+                    let end = start + self.lookahead(0).length;
+                    self.diagnostics.push(Diagnostic::new(
+                        start..end,
+                        format!("indentation is not aligned with the previous line"),
+                    ));
+                    self.spawn(ERROR)
+                }
+            } else if indent == last_indent {
+                self.bump()
+            } else {
+                let start = self.offset();
+                let end = start + self.lookahead(0).length;
+                self.diagnostics.push(Diagnostic::new(
+                    start..end,
+                    format!("indentation is not aligned with the previous line"),
+                ));
+                self.spawn(ERROR)
+            }
+        } else {
+            match self.lookahead(0).kind.to_owned() {
+                TRIVIAL_NEWLINE => {
+                    self.is_new_line = true;
+                    if !self.is_empty_line && self.enclosures.is_empty() {
+                        self.alter(NEWLINE)
+                    } else {
+                        self.is_empty_line = false;
+                        self.bump()
+                    }
+                }
+                left @ (LEFT_BRACKET | LEFT_PAREN) => {
+                    self.enclosures.push(left);
+                    self.bump()
+                }
+                right @ (RIGHT_BRACKET | RIGHT_PAREN) => {
+                    match self.enclosures.last().map(|left| (left, right)) {
+                        Some((LEFT_BRACKET, RIGHT_BRACKET) | (LEFT_PAREN, RIGHT_PAREN)) => {
+                            self.enclosures.pop();
+                        }
+                        _ => {
+                            // enclosures are mismatched.
+                            // clear enclosures to make suceeding TRIVIAL_NEWLINE to be treated as NEWLINE.
+                            // making error from mismatched enclosures is parser's responsibility.
+                            self.enclosures.clear();
+                        }
+                    }
+                    self.bump()
+                }
+                _ => self.bump(),
+            }
+        }
+    }
+
+    pub fn finish(self) -> Vec<Diagnostic> {
+        let mut diagnostics = self.diagnostics;
+        diagnostics.extend(self.lexer.finish());
+        diagnostics
+    }
+}
+
 #[cfg(test)]
 mod tests {
+    use super::*;
+
     fn tokenize(source: &str) -> Vec<&str> {
         let mut result = Vec::new();
-        let mut lexer = super::Lexer::new(source);
+        let mut lexer = Lexer::new(source);
         let mut offset = 0;
         loop {
             let token = lexer.next_token();
@@ -447,5 +610,31 @@ mod tests {
         assert_eq!(tokenize("1.23e-456"), ["1.23e-456"]);
         assert_eq!(tokenize("1.23ee-456"), ["1.23", "ee", "-456"]);
         assert_eq!(tokenize("1.23e -456"), ["1.23", "e", " ", "-456"]);
+    }
+
+    #[test]
+    fn test() {
+        let source = r#"
+scenario vehicle.two_phases:
+    do serial (duration : [10s..30s]):
+        phase1: actor.drive() with:
+            speed(speed: 0kph, at: start)
+            speed(speed: 10kph, at: end)
+
+        phase2: actor.drive() with:
+            speed(speed: [10kph..15kph])
+"#;
+
+        let mut lexer = LexicalAnalyzer::new(source);
+        let mut offset = 0;
+        loop {
+            let token = lexer.next_token();
+            let fragment = &source[offset..][..token.length];
+            offset += token.length;
+            println!("{:?} {:?}", token.kind, fragment);
+            if token.kind == EOF {
+                break;
+            }
+        }
     }
 }
