@@ -1,5 +1,3 @@
-use std::collections::VecDeque;
-
 use crate::diagnostic::Diagnostic;
 use crate::syntax::OscDslSyntaxKind::{self, *};
 
