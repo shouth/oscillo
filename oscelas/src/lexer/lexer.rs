@@ -1,7 +1,7 @@
 use crate::diagnostic::Diagnostic;
 use crate::syntax::OscDslSyntaxKind::{self, *};
 
-use super::lookahead::{LexedTokenSource, Lookahead};
+use super::lookahead::{LookaheadSource, Lookahead};
 use super::raw_lexer::RawLexer;
 use super::LexedToken;
 
@@ -50,7 +50,7 @@ impl Lexer<'_> {
     }
 }
 
-impl LexedTokenSource for Lexer<'_> {
+impl LookaheadSource for Lexer<'_> {
     fn next_token(&mut self) -> LexedToken {
         self.next_token()
     }

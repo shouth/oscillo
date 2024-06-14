@@ -1,4 +1,4 @@
-use super::lookahead::LexedTokenSource;
+use super::lookahead::LookaheadSource;
 use super::{cursor::Cursor, LexedToken};
 
 use crate::chars::{is_id_char, is_id_start_char};
@@ -280,7 +280,7 @@ impl RawLexer<'_> {
     }
 }
 
-impl LexedTokenSource for RawLexer<'_> {
+impl LookaheadSource for RawLexer<'_> {
     fn next_token(&mut self) -> LexedToken {
         self.next_token()
     }

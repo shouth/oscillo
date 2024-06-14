@@ -1,16 +1,16 @@
 use super::LexedToken;
 
-pub trait LexedTokenSource {
+pub trait LookaheadSource {
     fn next_token(&mut self) -> LexedToken;
 }
 
-pub struct Lookahead<T: LexedTokenSource> {
+pub struct Lookahead<T: LookaheadSource> {
     source: T,
     tokens: Vec<LexedToken>,
     offset: usize,
 }
 
-impl<T: LexedTokenSource> Lookahead<T> {
+impl<T: LookaheadSource> Lookahead<T> {
     pub fn new(source: T) -> Lookahead<T> {
         Lookahead {
             source,
