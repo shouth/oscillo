@@ -71,38 +71,21 @@ impl<'a> Cursor<'_> {
     }
 }
 
-pub struct Lexer<'a> {
+pub struct RawLexer<'a> {
     cursor: Cursor<'a>,
-    tokens: VecDeque<LexedToken>,
     diagnostics: Vec<Diagnostic>,
 }
 
-impl Lexer<'_> {
-    pub fn new(source: &str) -> Lexer {
-        Lexer {
+impl RawLexer<'_> {
+    pub fn new(source: &str) -> RawLexer {
+        RawLexer {
             cursor: Cursor::new(source),
-            tokens: VecDeque::new(),
             diagnostics: Vec::new(),
         }
     }
 
     pub fn offset(&self) -> usize {
         self.cursor.source_offset()
-    }
-
-    fn bump(&mut self) -> LexedToken {
-        match self.tokens.pop_front() {
-            Some(token) => token,
-            None => self.next_simple_token(),
-        }
-    }
-
-    fn lookahead(&mut self, n: usize) -> &LexedToken {
-        while self.tokens.len() <= n {
-            let token = self.next_simple_token();
-            self.tokens.push_back(token);
-        }
-        &self.tokens[n]
     }
 
     fn error(&mut self, message: String) -> LexedToken {
@@ -144,7 +127,7 @@ impl Lexer<'_> {
         }
     }
 
-    fn next_simple_token(&mut self) -> LexedToken {
+    pub fn next_token(&mut self) -> LexedToken {
         if let Some(c) = self.cursor.first() {
             self.cursor.bump();
             match c {
@@ -353,6 +336,43 @@ impl Lexer<'_> {
         }
     }
 
+    pub fn finish(self) -> Vec<Diagnostic> {
+        self.diagnostics
+    }
+}
+
+pub struct Lexer<'a> {
+    inner: RawLexer<'a>,
+    tokens: VecDeque<LexedToken>,
+}
+
+impl Lexer<'_> {
+    pub fn new(source: &str) -> Lexer {
+        Lexer {
+            inner: RawLexer::new(source),
+            tokens: VecDeque::new(),
+        }
+    }
+
+    pub fn offset(&self) -> usize {
+        self.inner.offset()
+    }
+
+    fn bump(&mut self) -> LexedToken {
+        match self.tokens.pop_front() {
+            Some(token) => token,
+            None => self.inner.next_token(),
+        }
+    }
+
+    fn lookahead(&mut self, n: usize) -> &LexedToken {
+        while self.tokens.len() <= n {
+            let token = self.inner.next_token();
+            self.tokens.push_back(token);
+        }
+        &self.tokens[n]
+    }
+
     pub fn next_token(&mut self) -> LexedToken {
         let token = self.bump();
 
@@ -383,7 +403,7 @@ impl Lexer<'_> {
     }
 
     pub fn finish(self) -> Vec<Diagnostic> {
-        self.diagnostics
+        self.inner.finish()
     }
 }
 
