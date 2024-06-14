@@ -367,10 +367,17 @@ impl Lexer<'_> {
 
     fn lookahead(&mut self, n: usize) -> &LexedToken {
         while self.tokens.len() <= n {
-            let token = self.inner.next_token();
-            self.tokens.push_back(token);
+            self.tokens.push_back(self.inner.next_token());
         }
         &self.tokens[n]
+    }
+
+    fn glue(&mut self, kind: OscDslSyntaxKind, prev: LexedToken) -> LexedToken {
+        let next = self.bump();
+        LexedToken {
+            kind,
+            length: prev.length + next.length,
+        }
     }
 
     pub fn next_token(&mut self) -> LexedToken {
@@ -379,23 +386,11 @@ impl Lexer<'_> {
         // glue sign token and adjacent numeric token to meet max munch rule
         match token.kind {
             PLUS => match self.lookahead(0).kind {
-                FLOAT_LITERAL => {
-                    let next_token = self.bump();
-                    LexedToken {
-                        kind: FLOAT_LITERAL,
-                        length: token.length + next_token.length,
-                    }
-                }
+                kind @ FLOAT_LITERAL => self.glue(kind, token),
                 _ => token,
             },
             MINUS => match self.lookahead(0).kind {
-                kind @ (INTEGER_LITERAL | FLOAT_LITERAL) => {
-                    let next_token = self.bump();
-                    LexedToken {
-                        kind,
-                        length: token.length + next_token.length,
-                    }
-                }
+                kind @ (INTEGER_LITERAL | FLOAT_LITERAL) => self.glue(kind, token),
                 _ => token,
             },
             _ => token,
