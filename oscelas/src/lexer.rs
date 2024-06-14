@@ -88,13 +88,6 @@ impl RawLexer<'_> {
         self.cursor.source_offset()
     }
 
-    fn error(&mut self, message: String) -> LexedToken {
-        let start = self.cursor.source_offset();
-        let end = start + self.cursor.token_offset();
-        self.diagnostics.push(Diagnostic::new(start..end, message));
-        self.cursor.token(ERROR)
-    }
-
     fn eat_digits(&mut self, radix: u32) -> bool {
         if self.cursor.first().is_some_and(|c| c.is_digit(radix)) {
             while self.cursor.first().is_some_and(|c| c.is_digit(radix)) {
@@ -138,7 +131,13 @@ impl RawLexer<'_> {
                         } else if self.cursor.eat('\n') {
                             // do nothing
                         } else {
-                            return self.error("stray `\\` in program".into());
+                            let start = self.cursor.source_offset();
+                            let end = start + self.cursor.token_offset();
+                            self.diagnostics.push(Diagnostic::new(
+                                start..end,
+                                "stray `\\` in program",
+                            ));
+                            return self.cursor.token(ERROR);
                         }
                     }
 
@@ -329,7 +328,15 @@ impl RawLexer<'_> {
                         self.cursor.token(ASSIGN)
                     }
                 }
-                _ => self.error(format!("unexpected character `{}`", c)),
+                _ => {
+                    let start = self.cursor.source_offset();
+                    let end = start + self.cursor.token_offset();
+                    self.diagnostics.push(Diagnostic::new(
+                        start..end,
+                        format!("unexpected character `{}`", c),
+                    ));
+                    self.cursor.token(ERROR)
+                }
             }
         } else {
             self.cursor.token(EOF)
