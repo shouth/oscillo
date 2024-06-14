@@ -1,9 +1,8 @@
 use std::{collections::VecDeque, str::Chars};
 
-use crate::{
-    chars::{is_id_char, is_id_start_char},
-    syntax::OscDslSyntaxKind::{self, *},
-};
+use crate::chars::{is_id_char, is_id_start_char};
+use crate::diagnostic::Diagnostic;
+use crate::syntax::OscDslSyntaxKind::{self, *};
 
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Debug, Hash)]
 pub struct LexedToken {
@@ -13,32 +12,42 @@ pub struct LexedToken {
 
 struct Cursor<'a> {
     source: Chars<'a>,
-    offset: usize,
+    token_offset: usize,
+    source_offset: usize,
 }
 
 impl<'a> Cursor<'_> {
     fn new(src: &str) -> Cursor {
         Cursor {
             source: src.chars(),
-            offset: 0,
+            token_offset: 0,
+            source_offset: 0,
         }
     }
 
+    fn token_offset(&self) -> usize {
+        self.token_offset
+    }
+
+    fn source_offset(&self) -> usize {
+        self.source_offset
+    }
+
     fn first(&self) -> Option<char> {
-        self.source.clone().nth(self.offset + 0)
+        self.source.clone().nth(self.token_offset + 0)
     }
 
     fn second(&self) -> Option<char> {
-        self.source.clone().nth(self.offset + 1)
+        self.source.clone().nth(self.token_offset + 1)
     }
 
     fn third(&self) -> Option<char> {
-        self.source.clone().nth(self.offset + 2)
+        self.source.clone().nth(self.token_offset + 2)
     }
 
     fn bump(&mut self) -> Option<char> {
-        let offset = self.offset;
-        self.offset += 1;
+        let offset = self.token_offset;
+        self.token_offset += 1;
         self.source.clone().nth(offset)
     }
 
@@ -52,8 +61,9 @@ impl<'a> Cursor<'_> {
     }
 
     fn token(&mut self, kind: OscDslSyntaxKind) -> LexedToken {
-        let length = self.offset;
-        self.offset = 0;
+        let length = self.token_offset;
+        self.token_offset = 0;
+        self.source_offset += length;
         if length > 0 {
             self.source.nth(length - 1);
         }
@@ -61,250 +71,10 @@ impl<'a> Cursor<'_> {
     }
 }
 
-fn eat_digits(cursor: &mut Cursor, radix: u32) -> bool {
-    if cursor.first().is_some_and(|c| c.is_digit(radix)) {
-        while cursor.first().is_some_and(|c| c.is_digit(radix)) {
-            cursor.bump();
-        }
-        true
-    } else {
-        false
-    }
-}
-
-fn eat_exponent(cursor: &mut Cursor) -> bool {
-    if cursor.first().is_some_and(|c| c != 'e' && c != 'E') {
-        false
-    } else if cursor.second().is_some_and(|c| c == '+' || c == '-')
-        && cursor.third().is_some_and(|c| c.is_digit(10))
-    {
-        // start with 'e+', 'e-', 'E+', 'E-'
-        cursor.bump();
-        cursor.bump();
-        eat_digits(cursor, 10);
-        true
-    } else if cursor.second().is_some_and(|c| c.is_digit(10)) {
-        // start with 'e', 'E'
-        cursor.bump();
-        eat_digits(cursor, 10);
-        true
-    } else {
-        false
-    }
-}
-
-fn next_simple_token(cursor: &mut Cursor) -> LexedToken {
-    if let Some(c) = cursor.first() {
-        cursor.bump();
-        match c {
-            '\t' | '\u{000C}' | ' ' | '\\' => {
-                if c == '\\' {
-                    if cursor.eat('\r') {
-                        cursor.eat('\n');
-                    } else if cursor.eat('\n') {
-                        // do nothing
-                    } else {
-                        return cursor.token(ERROR);
-                    }
-                }
-
-                while let Some(c) = cursor.first() {
-                    match c {
-                        '\t' | '\u{000C}' | ' ' => {
-                            cursor.bump();
-                        }
-                        '\\' => {
-                            if cursor.second().is_some_and(|c| c == '\r') {
-                                cursor.bump();
-                                cursor.bump();
-                                cursor.eat('\n');
-                            } else if cursor.second().is_some_and(|c| c == '\n') {
-                                cursor.bump();
-                                cursor.bump();
-                            } else {
-                                break;
-                            }
-                        }
-                        _ => {
-                            break;
-                        }
-                    }
-                }
-                cursor.token(WHITESPACE)
-            }
-            '\n' => cursor.token(TRIVIAL_NEWLINE),
-            '\r' => {
-                cursor.eat('\n');
-                cursor.token(TRIVIAL_NEWLINE)
-            }
-            '#' => {
-                while cursor.first().is_some_and(|c| c != '\n' && c != '\r') {
-                    cursor.bump();
-                }
-                cursor.token(COMMENT)
-            }
-            '|' => {
-                while cursor.first().is_some_and(|c| c != '|') {
-                    cursor.bump();
-                }
-                cursor.bump();
-                cursor.token(IDENTIFIER)
-            }
-            c if is_id_start_char(c) => {
-                while cursor.first().is_some_and(is_id_char) {
-                    cursor.bump();
-                }
-                cursor.token(IDENTIFIER)
-            }
-            '"' | '\'' => {
-                if !cursor.eat(c) {
-                    // non-empty string
-                    while let Some(e) = cursor.first() {
-                        match e {
-                            '\\' => {
-                                cursor.bump();
-                                cursor.bump();
-                            }
-                            '\n' | '\r' => break,
-                            _ if e == c => {
-                                cursor.bump();
-                                break;
-                            }
-                            _ => {
-                                cursor.bump();
-                            }
-                        }
-                    }
-                } else if !cursor.eat(c) {
-                    // empty string
-                } else {
-                    // long string
-                    while let Some(e) = cursor.first() {
-                        match e {
-                            '\\' => {
-                                cursor.bump();
-                                cursor.bump();
-                            }
-                            _ if e == c => {
-                                cursor.bump();
-                                if cursor.eat(c) && cursor.eat(c) {
-                                    break;
-                                }
-                            }
-                            _ => {
-                                cursor.bump();
-                            }
-                        }
-                    }
-                }
-                cursor.token(STRING_LITERAL)
-            }
-            '0'..='9' => {
-                if c == '0' && cursor.first().is_some_and(|c| c == 'x') {
-                    if cursor.second().is_some_and(|c| c.is_digit(16)) {
-                        // hexadecimal
-                        cursor.bump();
-                        eat_digits(cursor, 16);
-                        cursor.token(INTEGER_LITERAL)
-                    } else {
-                        // just '0'
-                        cursor.token(INTEGER_LITERAL)
-                    }
-                } else {
-                    // decimal
-                    eat_digits(cursor, 10);
-                    if let Some('.') = cursor.first() {
-                        if cursor.second().is_some_and(|c| c.is_digit(10)) {
-                            cursor.bump();
-                            eat_digits(cursor, 10);
-                            eat_exponent(cursor);
-                            cursor.token(FLOAT_LITERAL)
-                        } else {
-                            cursor.token(INTEGER_LITERAL)
-                        }
-                    } else if eat_exponent(cursor) {
-                        cursor.token(FLOAT_LITERAL)
-                    } else {
-                        cursor.token(INTEGER_LITERAL)
-                    }
-                }
-            }
-            '.' => {
-                if cursor.eat('.') {
-                    cursor.token(DOT_DOT)
-                } else if cursor.first().is_some_and(|c| c.is_digit(10)) {
-                    eat_digits(cursor, 10);
-                    eat_exponent(cursor);
-                    cursor.token(FLOAT_LITERAL)
-                } else {
-                    cursor.token(DOT)
-                }
-            }
-            ',' => cursor.token(COMMA),
-            '@' => cursor.token(AT),
-            '(' => cursor.token(LEFT_PAREN),
-            ')' => cursor.token(RIGHT_PAREN),
-            '[' => cursor.token(LEFT_BRACKET),
-            ']' => cursor.token(RIGHT_BRACKET),
-            '?' => cursor.token(QUESTION),
-            '+' => cursor.token(PLUS),
-            '*' => cursor.token(STAR),
-            '/' => cursor.token(SLASH),
-            '%' => cursor.token(PERCENT),
-            ':' => {
-                if cursor.eat(':') {
-                    cursor.token(COLON_COLON)
-                } else {
-                    cursor.token(COLON)
-                }
-            }
-            '<' => {
-                if cursor.eat('=') {
-                    cursor.token(LESS_EQUAL)
-                } else {
-                    cursor.token(LESS)
-                }
-            }
-            '>' => {
-                if cursor.eat('=') {
-                    cursor.token(GREATER_EQUAL)
-                } else {
-                    cursor.token(GREATER)
-                }
-            }
-            '!' => {
-                if cursor.eat('=') {
-                    cursor.token(NOT_EQUAL)
-                } else {
-                    cursor.token(EXCLAMATION)
-                }
-            }
-            '-' => {
-                if cursor.eat('>') {
-                    cursor.token(ARROW)
-                } else {
-                    cursor.token(MINUS)
-                }
-            }
-            '=' => {
-                if cursor.eat('>') {
-                    cursor.token(FAT_ARROW)
-                } else if cursor.eat('=') {
-                    cursor.token(EQUAL)
-                } else {
-                    cursor.token(ASSIGN)
-                }
-            }
-            _ => cursor.token(ERROR),
-        }
-    } else {
-        cursor.token(EOF)
-    }
-}
-
 pub struct Lexer<'a> {
     cursor: Cursor<'a>,
     tokens: VecDeque<LexedToken>,
+    diagnostics: Vec<Diagnostic>,
 }
 
 impl Lexer<'_> {
@@ -312,22 +82,275 @@ impl Lexer<'_> {
         Lexer {
             cursor: Cursor::new(source),
             tokens: VecDeque::new(),
+            diagnostics: Vec::new(),
         }
+    }
+
+    pub fn offset(&self) -> usize {
+        self.cursor.source_offset()
     }
 
     fn bump(&mut self) -> LexedToken {
         match self.tokens.pop_front() {
             Some(token) => token,
-            None => next_simple_token(&mut self.cursor),
+            None => self.next_simple_token(),
         }
     }
 
     fn lookahead(&mut self, n: usize) -> &LexedToken {
         while self.tokens.len() <= n {
-            let token = next_simple_token(&mut self.cursor);
+            let token = self.next_simple_token();
             self.tokens.push_back(token);
         }
         &self.tokens[n]
+    }
+
+    fn error(&mut self, message: String) -> LexedToken {
+        let start = self.cursor.source_offset();
+        let end = start + self.cursor.token_offset();
+        self.diagnostics.push(Diagnostic::new(start..end, message));
+        self.cursor.token(ERROR)
+    }
+
+    fn eat_digits(&mut self, radix: u32) -> bool {
+        if self.cursor.first().is_some_and(|c| c.is_digit(radix)) {
+            while self.cursor.first().is_some_and(|c| c.is_digit(radix)) {
+                self.cursor.bump();
+            }
+            true
+        } else {
+            false
+        }
+    }
+
+    fn eat_exponent(&mut self) -> bool {
+        if self.cursor.first().is_some_and(|c| c != 'e' && c != 'E') {
+            false
+        } else if self.cursor.second().is_some_and(|c| c == '+' || c == '-')
+            && self.cursor.third().is_some_and(|c| c.is_digit(10))
+        {
+            // start with 'e+', 'e-', 'E+', 'E-'
+            self.cursor.bump();
+            self.cursor.bump();
+            self.eat_digits(10);
+            true
+        } else if self.cursor.second().is_some_and(|c| c.is_digit(10)) {
+            // start with 'e', 'E'
+            self.cursor.bump();
+            self.eat_digits(10);
+            true
+        } else {
+            false
+        }
+    }
+
+    fn next_simple_token(&mut self) -> LexedToken {
+        if let Some(c) = self.cursor.first() {
+            self.cursor.bump();
+            match c {
+                '\t' | '\u{000C}' | ' ' | '\\' => {
+                    if c == '\\' {
+                        if self.cursor.eat('\r') {
+                            self.cursor.eat('\n');
+                        } else if self.cursor.eat('\n') {
+                            // do nothing
+                        } else {
+                            return self.error("stray `\\` in program".into());
+                        }
+                    }
+
+                    while let Some(c) = self.cursor.first() {
+                        match c {
+                            '\t' | '\u{000C}' | ' ' => {
+                                self.cursor.bump();
+                            }
+                            '\\' => {
+                                if self.cursor.second().is_some_and(|c| c == '\r') {
+                                    self.cursor.bump();
+                                    self.cursor.bump();
+                                    self.cursor.eat('\n');
+                                } else if self.cursor.second().is_some_and(|c| c == '\n') {
+                                    self.cursor.bump();
+                                    self.cursor.bump();
+                                } else {
+                                    break;
+                                }
+                            }
+                            _ => {
+                                break;
+                            }
+                        }
+                    }
+                    self.cursor.token(WHITESPACE)
+                }
+                '\n' => self.cursor.token(TRIVIAL_NEWLINE),
+                '\r' => {
+                    self.cursor.eat('\n');
+                    self.cursor.token(TRIVIAL_NEWLINE)
+                }
+                '#' => {
+                    while self.cursor.first().is_some_and(|c| c != '\n' && c != '\r') {
+                        self.cursor.bump();
+                    }
+                    self.cursor.token(COMMENT)
+                }
+                '|' => {
+                    while self.cursor.first().is_some_and(|c| c != '|') {
+                        self.cursor.bump();
+                    }
+                    self.cursor.bump();
+                    self.cursor.token(IDENTIFIER)
+                }
+                c if is_id_start_char(c) => {
+                    while self.cursor.first().is_some_and(is_id_char) {
+                        self.cursor.bump();
+                    }
+                    self.cursor.token(IDENTIFIER)
+                }
+                '"' | '\'' => {
+                    if !self.cursor.eat(c) {
+                        // non-empty string
+                        while let Some(e) = self.cursor.first() {
+                            match e {
+                                '\\' => {
+                                    self.cursor.bump();
+                                    self.cursor.bump();
+                                }
+                                '\n' | '\r' => break,
+                                _ if e == c => {
+                                    self.cursor.bump();
+                                    break;
+                                }
+                                _ => {
+                                    self.cursor.bump();
+                                }
+                            }
+                        }
+                    } else if !self.cursor.eat(c) {
+                        // empty string
+                    } else {
+                        // long string
+                        while let Some(e) = self.cursor.first() {
+                            match e {
+                                '\\' => {
+                                    self.cursor.bump();
+                                    self.cursor.bump();
+                                }
+                                _ if e == c => {
+                                    self.cursor.bump();
+                                    if self.cursor.eat(c) && self.cursor.eat(c) {
+                                        break;
+                                    }
+                                }
+                                _ => {
+                                    self.cursor.bump();
+                                }
+                            }
+                        }
+                    }
+                    self.cursor.token(STRING_LITERAL)
+                }
+                '0'..='9' => {
+                    if c == '0' && self.cursor.first().is_some_and(|c| c == 'x') {
+                        if self.cursor.second().is_some_and(|c| c.is_digit(16)) {
+                            // hexadecimal
+                            self.cursor.bump();
+                            self.eat_digits(16);
+                            self.cursor.token(INTEGER_LITERAL)
+                        } else {
+                            // just '0'
+                            self.cursor.token(INTEGER_LITERAL)
+                        }
+                    } else {
+                        // decimal
+                        self.eat_digits(10);
+                        if let Some('.') = self.cursor.first() {
+                            if self.cursor.second().is_some_and(|c| c.is_digit(10)) {
+                                self.cursor.bump();
+                                self.eat_digits(10);
+                                self.eat_exponent();
+                                self.cursor.token(FLOAT_LITERAL)
+                            } else {
+                                self.cursor.token(INTEGER_LITERAL)
+                            }
+                        } else if self.eat_exponent() {
+                            self.cursor.token(FLOAT_LITERAL)
+                        } else {
+                            self.cursor.token(INTEGER_LITERAL)
+                        }
+                    }
+                }
+                '.' => {
+                    if self.cursor.eat('.') {
+                        self.cursor.token(DOT_DOT)
+                    } else if self.cursor.first().is_some_and(|c| c.is_digit(10)) {
+                        self.eat_digits(10);
+                        self.eat_exponent();
+                        self.cursor.token(FLOAT_LITERAL)
+                    } else {
+                        self.cursor.token(DOT)
+                    }
+                }
+                ',' => self.cursor.token(COMMA),
+                '@' => self.cursor.token(AT),
+                '(' => self.cursor.token(LEFT_PAREN),
+                ')' => self.cursor.token(RIGHT_PAREN),
+                '[' => self.cursor.token(LEFT_BRACKET),
+                ']' => self.cursor.token(RIGHT_BRACKET),
+                '?' => self.cursor.token(QUESTION),
+                '+' => self.cursor.token(PLUS),
+                '*' => self.cursor.token(STAR),
+                '/' => self.cursor.token(SLASH),
+                '%' => self.cursor.token(PERCENT),
+                ':' => {
+                    if self.cursor.eat(':') {
+                        self.cursor.token(COLON_COLON)
+                    } else {
+                        self.cursor.token(COLON)
+                    }
+                }
+                '<' => {
+                    if self.cursor.eat('=') {
+                        self.cursor.token(LESS_EQUAL)
+                    } else {
+                        self.cursor.token(LESS)
+                    }
+                }
+                '>' => {
+                    if self.cursor.eat('=') {
+                        self.cursor.token(GREATER_EQUAL)
+                    } else {
+                        self.cursor.token(GREATER)
+                    }
+                }
+                '!' => {
+                    if self.cursor.eat('=') {
+                        self.cursor.token(NOT_EQUAL)
+                    } else {
+                        self.cursor.token(EXCLAMATION)
+                    }
+                }
+                '-' => {
+                    if self.cursor.eat('>') {
+                        self.cursor.token(ARROW)
+                    } else {
+                        self.cursor.token(MINUS)
+                    }
+                }
+                '=' => {
+                    if self.cursor.eat('>') {
+                        self.cursor.token(FAT_ARROW)
+                    } else if self.cursor.eat('=') {
+                        self.cursor.token(EQUAL)
+                    } else {
+                        self.cursor.token(ASSIGN)
+                    }
+                }
+                _ => self.error(format!("unexpected character `{}`", c)),
+            }
+        } else {
+            self.cursor.token(EOF)
+        }
     }
 
     pub fn next_token(&mut self) -> LexedToken {
@@ -357,6 +380,10 @@ impl Lexer<'_> {
             },
             _ => token,
         }
+    }
+
+    pub fn finish(self) -> Vec<Diagnostic> {
+        self.diagnostics
     }
 }
 
