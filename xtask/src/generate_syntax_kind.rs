@@ -20,8 +20,6 @@ where
         #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
         #[repr(u16)]
         pub enum OscDslSyntaxKind {
-            #[doc(hidden)]
-            TOMBSTONE,
             EOF,
             #(#token_kind_idents,)*
             #(#rule_kind_idents,)*

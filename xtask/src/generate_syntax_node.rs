@@ -237,7 +237,7 @@ where
         use crate::syntax::{support, TypedNode};
         use super::OscDslSyntaxKind::{self, *};
 
-        type OscDslNode<'a> = Node<'a, OscDslSyntaxKind, u32, u32>;
+        type OscDslNode<'a> = Node<'a, OscDslSyntaxKind, u32, usize>;
 
         #(#token_nodes)*
         #(#rule_nodes)*
