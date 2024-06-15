@@ -1,7 +1,7 @@
 use super::OscDslSyntaxKind::{self, *};
 use crate::syntax::{support, TypedNode};
 use syntree::Node;
-type OscDslNode<'a> = Node<'a, OscDslSyntaxKind, u32, u32>;
+type OscDslNode<'a> = Node<'a, OscDslSyntaxKind, u32, usize>;
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct DotToken<'a>(OscDslNode<'a>);
 impl<'a> TypedNode for DotToken<'a> {
@@ -1730,13 +1730,13 @@ impl<'a> TypedNode for IdentifierPrefix<'a> {
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum NamespaceName<'a> {
-    SimpleNamespaceName(SimpleNamespaceName<'a>),
+    IdentifierToken(IdentifierToken<'a>),
     GlobalNamespaceName(GlobalNamespaceName<'a>),
 }
 impl NamespaceName<'_> {
-    pub fn as_simple_namespace_name(&self) -> Option<SimpleNamespaceName> {
+    pub fn as_identifier_token(&self) -> Option<IdentifierToken> {
         match self {
-            Self::SimpleNamespaceName(node) => Some(node.clone()),
+            Self::IdentifierToken(node) => Some(node.clone()),
             _ => None,
         }
     }
@@ -1751,13 +1751,11 @@ impl<'a> TypedNode for NamespaceName<'a> {
     type Value = OscDslSyntaxKind;
     type Node = OscDslNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
-        matches!(value, SIMPLE_NAMESPACE_NAME | GLOBAL_NAMESPACE_NAME)
+        matches!(value, IDENTIFIER | GLOBAL_NAMESPACE_NAME)
     }
     fn cast(node: Self::Node) -> Option<Self> {
         match *node.value() {
-            SIMPLE_NAMESPACE_NAME => {
-                SimpleNamespaceName::cast(node.clone()).map(Self::SimpleNamespaceName)
-            }
+            IDENTIFIER => IdentifierToken::cast(node.clone()).map(Self::IdentifierToken),
             GLOBAL_NAMESPACE_NAME => {
                 GlobalNamespaceName::cast(node.clone()).map(Self::GlobalNamespaceName)
             }
@@ -1766,7 +1764,7 @@ impl<'a> TypedNode for NamespaceName<'a> {
     }
     fn syntax(&self) -> &Self::Node {
         match self {
-            Self::SimpleNamespaceName(node) => node.syntax(),
+            Self::IdentifierToken(node) => node.syntax(),
             Self::GlobalNamespaceName(node) => node.syntax(),
         }
     }
@@ -2406,26 +2404,6 @@ impl<'a> TypedNode for NamespaceList<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct SimpleNamespaceName<'a>(OscDslNode<'a>);
-impl SimpleNamespaceName<'_> {
-    pub fn identifier_token(&self) -> Option<IdentifierToken> {
-        support::child(&self.0, 0usize)
-    }
-}
-impl<'a> TypedNode for SimpleNamespaceName<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
-    fn can_cast(value: Self::Value) -> bool {
-        value == SIMPLE_NAMESPACE_NAME
-    }
-    fn cast(node: Self::Node) -> Option<Self> {
-        Self::can_cast(*node.value()).then(|| Self(node))
-    }
-    fn syntax(&self) -> &Self::Node {
-        &self.0
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct GlobalNamespaceName<'a>(OscDslNode<'a>);
 impl GlobalNamespaceName<'_> {
     pub fn null_token(&self) -> Option<NullToken> {
@@ -2910,13 +2888,20 @@ impl<'a> TypedNode for TypeDeclarator<'a> {
                 | FLOAT_KW
                 | BOOL_KW
                 | STRING_KW
+                | QUALIFIED_IDENTIFIER
                 | QUALIFIED_BEHAVIOR_NAME
                 | AGGREGATE_TYPE_DECLARATOR
         )
     }
     fn cast(node: Self::Node) -> Option<Self> {
         match *node.value() {
-            INT_KW | UINT_KW | FLOAT_KW | BOOL_KW | STRING_KW | QUALIFIED_BEHAVIOR_NAME => {
+            INT_KW
+            | UINT_KW
+            | FLOAT_KW
+            | BOOL_KW
+            | STRING_KW
+            | QUALIFIED_IDENTIFIER
+            | QUALIFIED_BEHAVIOR_NAME => {
                 NonAggregateTypeDeclarator::cast(node.clone()).map(Self::NonAggregateTypeDeclarator)
             }
             AGGREGATE_TYPE_DECLARATOR => {
@@ -2935,7 +2920,7 @@ impl<'a> TypedNode for TypeDeclarator<'a> {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum NonAggregateTypeDeclarator<'a> {
     PrimitiveType(PrimitiveType<'a>),
-    QualifiedBehaviorName(QualifiedBehaviorName<'a>),
+    TypeReference(TypeReference<'a>),
 }
 impl NonAggregateTypeDeclarator<'_> {
     pub fn as_primitive_type(&self) -> Option<PrimitiveType> {
@@ -2944,9 +2929,9 @@ impl NonAggregateTypeDeclarator<'_> {
             _ => None,
         }
     }
-    pub fn as_qualified_behavior_name(&self) -> Option<QualifiedBehaviorName> {
+    pub fn as_type_reference(&self) -> Option<TypeReference> {
         match self {
-            Self::QualifiedBehaviorName(node) => Some(node.clone()),
+            Self::TypeReference(node) => Some(node.clone()),
             _ => None,
         }
     }
@@ -2957,7 +2942,13 @@ impl<'a> TypedNode for NonAggregateTypeDeclarator<'a> {
     fn can_cast(value: Self::Value) -> bool {
         matches!(
             value,
-            INT_KW | UINT_KW | FLOAT_KW | BOOL_KW | STRING_KW | QUALIFIED_BEHAVIOR_NAME
+            INT_KW
+                | UINT_KW
+                | FLOAT_KW
+                | BOOL_KW
+                | STRING_KW
+                | QUALIFIED_IDENTIFIER
+                | QUALIFIED_BEHAVIOR_NAME
         )
     }
     fn cast(node: Self::Node) -> Option<Self> {
@@ -2965,8 +2956,8 @@ impl<'a> TypedNode for NonAggregateTypeDeclarator<'a> {
             INT_KW | UINT_KW | FLOAT_KW | BOOL_KW | STRING_KW => {
                 PrimitiveType::cast(node.clone()).map(Self::PrimitiveType)
             }
-            QUALIFIED_BEHAVIOR_NAME => {
-                QualifiedBehaviorName::cast(node.clone()).map(Self::QualifiedBehaviorName)
+            QUALIFIED_IDENTIFIER | QUALIFIED_BEHAVIOR_NAME => {
+                TypeReference::cast(node.clone()).map(Self::TypeReference)
             }
             _ => None,
         }
@@ -2974,7 +2965,7 @@ impl<'a> TypedNode for NonAggregateTypeDeclarator<'a> {
     fn syntax(&self) -> &Self::Node {
         match self {
             Self::PrimitiveType(node) => node.syntax(),
-            Self::QualifiedBehaviorName(node) => node.syntax(),
+            Self::TypeReference(node) => node.syntax(),
         }
     }
 }
@@ -3065,26 +3056,46 @@ impl<'a> TypedNode for PrimitiveType<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct QualifiedBehaviorName<'a>(OscDslNode<'a>);
-impl QualifiedBehaviorName<'_> {
-    pub fn qualified_behavior_name_prefix(&self) -> Option<QualifiedBehaviorNamePrefix> {
-        support::child(&self.0, 0usize)
+pub enum TypeReference<'a> {
+    QualifiedIdentifier(QualifiedIdentifier<'a>),
+    QualifiedBehaviorName(QualifiedBehaviorName<'a>),
+}
+impl TypeReference<'_> {
+    pub fn as_qualified_identifier(&self) -> Option<QualifiedIdentifier> {
+        match self {
+            Self::QualifiedIdentifier(node) => Some(node.clone()),
+            _ => None,
+        }
     }
-    pub fn behavior_name(&self) -> Option<BehaviorName> {
-        support::child(&self.0, 0usize)
+    pub fn as_qualified_behavior_name(&self) -> Option<QualifiedBehaviorName> {
+        match self {
+            Self::QualifiedBehaviorName(node) => Some(node.clone()),
+            _ => None,
+        }
     }
 }
-impl<'a> TypedNode for QualifiedBehaviorName<'a> {
+impl<'a> TypedNode for TypeReference<'a> {
     type Value = OscDslSyntaxKind;
     type Node = OscDslNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
-        value == QUALIFIED_BEHAVIOR_NAME
+        matches!(value, QUALIFIED_IDENTIFIER | QUALIFIED_BEHAVIOR_NAME)
     }
     fn cast(node: Self::Node) -> Option<Self> {
-        Self::can_cast(*node.value()).then(|| Self(node))
+        match *node.value() {
+            QUALIFIED_IDENTIFIER => {
+                QualifiedIdentifier::cast(node.clone()).map(Self::QualifiedIdentifier)
+            }
+            QUALIFIED_BEHAVIOR_NAME => {
+                QualifiedBehaviorName::cast(node.clone()).map(Self::QualifiedBehaviorName)
+            }
+            _ => None,
+        }
     }
     fn syntax(&self) -> &Self::Node {
-        &self.0
+        match self {
+            Self::QualifiedIdentifier(node) => node.syntax(),
+            Self::QualifiedBehaviorName(node) => node.syntax(),
+        }
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -3105,6 +3116,29 @@ impl<'a> TypedNode for ListTypeDeclarator<'a> {
     type Node = OscDslNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == LIST_TYPE_DECLARATOR
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct QualifiedBehaviorName<'a>(OscDslNode<'a>);
+impl QualifiedBehaviorName<'_> {
+    pub fn qualified_behavior_name_prefix(&self) -> Option<QualifiedBehaviorNamePrefix> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn behavior_name(&self) -> Option<BehaviorName> {
+        support::child(&self.0, 0usize)
+    }
+}
+impl<'a> TypedNode for QualifiedBehaviorName<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == QUALIFIED_BEHAVIOR_NAME
     }
     fn cast(node: Self::Node) -> Option<Self> {
         Self::can_cast(*node.value()).then(|| Self(node))
@@ -4637,6 +4671,7 @@ impl<'a> TypedNode for ScenarioMemberItem<'a> {
                 | REMOVE_DEFAULT_DECLARATION
                 | METHOD_DECLARATION
                 | COVERAGE_DECLARATION
+                | MODIFIER_APPLICATION
                 | ON_DIRECTIVE
                 | DO_DIRECTIVE
         )
@@ -4649,7 +4684,8 @@ impl<'a> TypedNode for ScenarioMemberItem<'a> {
             | KEEP_CONSTRAINT_DECLARATION
             | REMOVE_DEFAULT_DECLARATION
             | METHOD_DECLARATION
-            | COVERAGE_DECLARATION => {
+            | COVERAGE_DECLARATION
+            | MODIFIER_APPLICATION => {
                 ScenarioMemberDecl::cast(node.clone()).map(Self::ScenarioMemberDecl)
             }
             ON_DIRECTIVE | DO_DIRECTIVE => {
@@ -4672,6 +4708,7 @@ pub enum ScenarioMemberDecl<'a> {
     ConstraintDeclaration(ConstraintDeclaration<'a>),
     MethodDeclaration(MethodDeclaration<'a>),
     CoverageDeclaration(CoverageDeclaration<'a>),
+    ModifierApplication(ModifierApplication<'a>),
 }
 impl ScenarioMemberDecl<'_> {
     pub fn as_event_declaration(&self) -> Option<EventDeclaration> {
@@ -4704,6 +4741,12 @@ impl ScenarioMemberDecl<'_> {
             _ => None,
         }
     }
+    pub fn as_modifier_application(&self) -> Option<ModifierApplication> {
+        match self {
+            Self::ModifierApplication(node) => Some(node.clone()),
+            _ => None,
+        }
+    }
 }
 impl<'a> TypedNode for ScenarioMemberDecl<'a> {
     type Value = OscDslSyntaxKind;
@@ -4718,6 +4761,7 @@ impl<'a> TypedNode for ScenarioMemberDecl<'a> {
                 | REMOVE_DEFAULT_DECLARATION
                 | METHOD_DECLARATION
                 | COVERAGE_DECLARATION
+                | MODIFIER_APPLICATION
         )
     }
     fn cast(node: Self::Node) -> Option<Self> {
@@ -4735,6 +4779,9 @@ impl<'a> TypedNode for ScenarioMemberDecl<'a> {
             COVERAGE_DECLARATION => {
                 CoverageDeclaration::cast(node.clone()).map(Self::CoverageDeclaration)
             }
+            MODIFIER_APPLICATION => {
+                ModifierApplication::cast(node.clone()).map(Self::ModifierApplication)
+            }
             _ => None,
         }
     }
@@ -4745,6 +4792,7 @@ impl<'a> TypedNode for ScenarioMemberDecl<'a> {
             Self::ConstraintDeclaration(node) => node.syntax(),
             Self::MethodDeclaration(node) => node.syntax(),
             Self::CoverageDeclaration(node) => node.syntax(),
+            Self::ModifierApplication(node) => node.syntax(),
         }
     }
 }
@@ -4785,6 +4833,41 @@ impl<'a> TypedNode for BehaviorSpecification<'a> {
             Self::OnDirective(node) => node.syntax(),
             Self::DoDirective(node) => node.syntax(),
         }
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ModifierApplication<'a>(OscDslNode<'a>);
+impl ModifierApplication<'_> {
+    pub fn modifier_application_prefix(&self) -> Option<ModifierApplicationPrefix> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn modifier_name(&self) -> Option<ModifierName> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn left_paren_token(&self) -> Option<LeftParenToken> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn argument_list(&self) -> Option<ArgumentList> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn right_paren_token(&self) -> Option<RightParenToken> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn newline_token(&self) -> Option<NewlineToken> {
+        support::child(&self.0, 0usize)
+    }
+}
+impl<'a> TypedNode for ModifierApplication<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == MODIFIER_APPLICATION
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -5052,6 +5135,7 @@ impl<'a> TypedNode for ActionMemberItem<'a> {
                 | REMOVE_DEFAULT_DECLARATION
                 | METHOD_DECLARATION
                 | COVERAGE_DECLARATION
+                | MODIFIER_APPLICATION
                 | ON_DIRECTIVE
                 | DO_DIRECTIVE
         )
@@ -5064,7 +5148,8 @@ impl<'a> TypedNode for ActionMemberItem<'a> {
             | KEEP_CONSTRAINT_DECLARATION
             | REMOVE_DEFAULT_DECLARATION
             | METHOD_DECLARATION
-            | COVERAGE_DECLARATION => {
+            | COVERAGE_DECLARATION
+            | MODIFIER_APPLICATION => {
                 ScenarioMemberDecl::cast(node.clone()).map(Self::ScenarioMemberDecl)
             }
             ON_DIRECTIVE | DO_DIRECTIVE => {
@@ -5269,6 +5354,7 @@ impl<'a> TypedNode for ModifierMemberItem<'a> {
                 | REMOVE_DEFAULT_DECLARATION
                 | METHOD_DECLARATION
                 | COVERAGE_DECLARATION
+                | MODIFIER_APPLICATION
                 | ON_DIRECTIVE
         )
     }
@@ -5280,7 +5366,8 @@ impl<'a> TypedNode for ModifierMemberItem<'a> {
             | KEEP_CONSTRAINT_DECLARATION
             | REMOVE_DEFAULT_DECLARATION
             | METHOD_DECLARATION
-            | COVERAGE_DECLARATION => {
+            | COVERAGE_DECLARATION
+            | MODIFIER_APPLICATION => {
                 ScenarioMemberDecl::cast(node.clone()).map(Self::ScenarioMemberDecl)
             }
             ON_DIRECTIVE => OnDirective::cast(node.clone()).map(Self::OnDirective),
@@ -5376,7 +5463,7 @@ impl StructuredTypeExtension<'_> {
     pub fn extend_token(&self) -> Option<ExtendToken> {
         support::child(&self.0, 0usize)
     }
-    pub fn extendable_type_name(&self) -> Option<ExtendableTypeName> {
+    pub fn type_reference(&self) -> Option<TypeReference> {
         support::child(&self.0, 0usize)
     }
     pub fn colon_token(&self) -> Option<ColonToken> {
@@ -5388,7 +5475,7 @@ impl StructuredTypeExtension<'_> {
     pub fn indent_token(&self) -> Option<IndentToken> {
         support::child(&self.0, 0usize)
     }
-    pub fn extendable_member_decl_list(&self) -> Option<ExtendableMemberDeclList> {
+    pub fn extension_member_decl_list(&self) -> Option<ExtensionMemberDeclList> {
         support::child(&self.0, 0usize)
     }
     pub fn dedent_token(&self) -> Option<DedentToken> {
@@ -5409,37 +5496,17 @@ impl<'a> TypedNode for StructuredTypeExtension<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ExtendableTypeName<'a>(OscDslNode<'a>);
-impl ExtendableTypeName<'_> {
-    pub fn qualified_behavior_name(&self) -> Option<QualifiedBehaviorName> {
-        support::child(&self.0, 0usize)
-    }
-}
-impl<'a> TypedNode for ExtendableTypeName<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
-    fn can_cast(value: Self::Value) -> bool {
-        value == EXTENDABLE_TYPE_NAME
-    }
-    fn cast(node: Self::Node) -> Option<Self> {
-        Self::can_cast(*node.value()).then(|| Self(node))
-    }
-    fn syntax(&self) -> &Self::Node {
-        &self.0
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ExtendableMemberDeclList<'a>(OscDslNode<'a>);
-impl<'a> ExtendableMemberDeclList<'a> {
+pub struct ExtensionMemberDeclList<'a>(OscDslNode<'a>);
+impl<'a> ExtensionMemberDeclList<'a> {
     pub fn extension_member_decl(&self) -> impl Iterator<Item = ExtensionMemberDecl<'a>> + 'a {
         support::children(&self.0)
     }
 }
-impl<'a> TypedNode for ExtendableMemberDeclList<'a> {
+impl<'a> TypedNode for ExtensionMemberDeclList<'a> {
     type Value = OscDslSyntaxKind;
     type Node = OscDslNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
-        value == EXTENDABLE_MEMBER_DECL_LIST
+        value == EXTENSION_MEMBER_DECL_LIST
     }
     fn cast(node: Self::Node) -> Option<Self> {
         Self::can_cast(*node.value()).then(|| Self(node))
@@ -5450,6 +5517,68 @@ impl<'a> TypedNode for ExtendableMemberDeclList<'a> {
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ExtensionMemberDecl<'a> {
+    RelaxedExtensionMemberDecl(RelaxedExtensionMemberDecl<'a>),
+    BehaviorSpecification(BehaviorSpecification<'a>),
+}
+impl ExtensionMemberDecl<'_> {
+    pub fn as_relaxed_extension_member_decl(&self) -> Option<RelaxedExtensionMemberDecl> {
+        match self {
+            Self::RelaxedExtensionMemberDecl(node) => Some(node.clone()),
+            _ => None,
+        }
+    }
+    pub fn as_behavior_specification(&self) -> Option<BehaviorSpecification> {
+        match self {
+            Self::BehaviorSpecification(node) => Some(node.clone()),
+            _ => None,
+        }
+    }
+}
+impl<'a> TypedNode for ExtensionMemberDecl<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        matches!(
+            value,
+            EVENT_DECLARATION
+                | PARAMETER_DECLARATION
+                | VARIABLE_DECLARATION
+                | KEEP_CONSTRAINT_DECLARATION
+                | REMOVE_DEFAULT_DECLARATION
+                | METHOD_DECLARATION
+                | COVERAGE_DECLARATION
+                | MODIFIER_APPLICATION
+                | ON_DIRECTIVE
+                | DO_DIRECTIVE
+        )
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        match *node.value() {
+            EVENT_DECLARATION
+            | PARAMETER_DECLARATION
+            | VARIABLE_DECLARATION
+            | KEEP_CONSTRAINT_DECLARATION
+            | REMOVE_DEFAULT_DECLARATION
+            | METHOD_DECLARATION
+            | COVERAGE_DECLARATION
+            | MODIFIER_APPLICATION => {
+                RelaxedExtensionMemberDecl::cast(node.clone()).map(Self::RelaxedExtensionMemberDecl)
+            }
+            ON_DIRECTIVE | DO_DIRECTIVE => {
+                BehaviorSpecification::cast(node.clone()).map(Self::BehaviorSpecification)
+            }
+            _ => None,
+        }
+    }
+    fn syntax(&self) -> &Self::Node {
+        match self {
+            Self::RelaxedExtensionMemberDecl(node) => node.syntax(),
+            Self::BehaviorSpecification(node) => node.syntax(),
+        }
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum RelaxedExtensionMemberDecl<'a> {
     EventDeclaration(EventDeclaration<'a>),
     ParameterDeclaration(ParameterDeclaration<'a>),
     VariableDeclaration(VariableDeclaration<'a>),
@@ -5457,10 +5586,9 @@ pub enum ExtensionMemberDecl<'a> {
     RemoveDefaultDeclaration(RemoveDefaultDeclaration<'a>),
     MethodDeclaration(MethodDeclaration<'a>),
     CoverageDeclaration(CoverageDeclaration<'a>),
-    OnDirective(OnDirective<'a>),
-    DoDirective(DoDirective<'a>),
+    ModifierApplication(ModifierApplication<'a>),
 }
-impl ExtensionMemberDecl<'_> {
+impl RelaxedExtensionMemberDecl<'_> {
     pub fn as_event_declaration(&self) -> Option<EventDeclaration> {
         match self {
             Self::EventDeclaration(node) => Some(node.clone()),
@@ -5503,20 +5631,14 @@ impl ExtensionMemberDecl<'_> {
             _ => None,
         }
     }
-    pub fn as_on_directive(&self) -> Option<OnDirective> {
+    pub fn as_modifier_application(&self) -> Option<ModifierApplication> {
         match self {
-            Self::OnDirective(node) => Some(node.clone()),
-            _ => None,
-        }
-    }
-    pub fn as_do_directive(&self) -> Option<DoDirective> {
-        match self {
-            Self::DoDirective(node) => Some(node.clone()),
+            Self::ModifierApplication(node) => Some(node.clone()),
             _ => None,
         }
     }
 }
-impl<'a> TypedNode for ExtensionMemberDecl<'a> {
+impl<'a> TypedNode for RelaxedExtensionMemberDecl<'a> {
     type Value = OscDslSyntaxKind;
     type Node = OscDslNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
@@ -5529,8 +5651,7 @@ impl<'a> TypedNode for ExtensionMemberDecl<'a> {
                 | REMOVE_DEFAULT_DECLARATION
                 | METHOD_DECLARATION
                 | COVERAGE_DECLARATION
-                | ON_DIRECTIVE
-                | DO_DIRECTIVE
+                | MODIFIER_APPLICATION
         )
     }
     fn cast(node: Self::Node) -> Option<Self> {
@@ -5554,8 +5675,9 @@ impl<'a> TypedNode for ExtensionMemberDecl<'a> {
             COVERAGE_DECLARATION => {
                 CoverageDeclaration::cast(node.clone()).map(Self::CoverageDeclaration)
             }
-            ON_DIRECTIVE => OnDirective::cast(node.clone()).map(Self::OnDirective),
-            DO_DIRECTIVE => DoDirective::cast(node.clone()).map(Self::DoDirective),
+            MODIFIER_APPLICATION => {
+                ModifierApplication::cast(node.clone()).map(Self::ModifierApplication)
+            }
             _ => None,
         }
     }
@@ -5568,8 +5690,7 @@ impl<'a> TypedNode for ExtensionMemberDecl<'a> {
             Self::RemoveDefaultDeclaration(node) => node.syntax(),
             Self::MethodDeclaration(node) => node.syntax(),
             Self::CoverageDeclaration(node) => node.syntax(),
-            Self::OnDirective(node) => node.syntax(),
-            Self::DoDirective(node) => node.syntax(),
+            Self::ModifierApplication(node) => node.syntax(),
         }
     }
 }
@@ -5701,29 +5822,6 @@ impl<'a> TypedNode for RemoveDefaultDeclaration<'a> {
     type Node = OscDslNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == REMOVE_DEFAULT_DECLARATION
-    }
-    fn cast(node: Self::Node) -> Option<Self> {
-        Self::can_cast(*node.value()).then(|| Self(node))
-    }
-    fn syntax(&self) -> &Self::Node {
-        &self.0
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct DoDirective<'a>(OscDslNode<'a>);
-impl DoDirective<'_> {
-    pub fn do_token(&self) -> Option<DoToken> {
-        support::child(&self.0, 0usize)
-    }
-    pub fn do_member(&self) -> Option<DoMember> {
-        support::child(&self.0, 0usize)
-    }
-}
-impl<'a> TypedNode for DoDirective<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
-    fn can_cast(value: Self::Value) -> bool {
-        value == DO_DIRECTIVE
     }
     fn cast(node: Self::Node) -> Option<Self> {
         Self::can_cast(*node.value()).then(|| Self(node))
@@ -6244,11 +6342,12 @@ impl<'a> TypedNode for Expression<'a> {
                 | IT_EXP
                 | QUALIFIED_IDENTIFIER
                 | PARENTHESIZED_EXP
-                | INTEGER_LITERAL_EXP
-                | FLOAT_LITERAL_EXP
-                | PHYSICAL_LITERAL_EXP
-                | BOOL_LITERAL_EXP
-                | STRING_LITERAL_EXP
+                | INTEGER_LITERAL
+                | FLOAT_LITERAL
+                | PHYSICAL_LITERAL
+                | TRUE_KW
+                | FALSE_KW
+                | STRING_LITERAL
                 | ENUM_VALUE_REFERENCE
                 | LIST_CONSTRUCTOR
                 | PARENTHESES_RANGE_CONSTRUCTOR
@@ -6273,8 +6372,8 @@ impl<'a> TypedNode for Expression<'a> {
                 QualifiedIdentifier::cast(node.clone()).map(Self::QualifiedIdentifier)
             }
             PARENTHESIZED_EXP => ParenthesizedExp::cast(node.clone()).map(Self::ParenthesizedExp),
-            INTEGER_LITERAL_EXP | FLOAT_LITERAL_EXP | PHYSICAL_LITERAL_EXP | BOOL_LITERAL_EXP
-            | STRING_LITERAL_EXP => LiteralExp::cast(node.clone()).map(Self::LiteralExp),
+            INTEGER_LITERAL | FLOAT_LITERAL | PHYSICAL_LITERAL | TRUE_KW | FALSE_KW
+            | STRING_LITERAL => LiteralExp::cast(node.clone()).map(Self::LiteralExp),
             ENUM_VALUE_REFERENCE => {
                 EnumValueReference::cast(node.clone()).map(Self::EnumValueReference)
             }
@@ -7207,41 +7306,6 @@ impl<'a> TypedNode for CoverageOperator<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ModifierApplication<'a>(OscDslNode<'a>);
-impl ModifierApplication<'_> {
-    pub fn modifier_application_prefix(&self) -> Option<ModifierApplicationPrefix> {
-        support::child(&self.0, 0usize)
-    }
-    pub fn modifier_name(&self) -> Option<ModifierName> {
-        support::child(&self.0, 0usize)
-    }
-    pub fn left_paren_token(&self) -> Option<LeftParenToken> {
-        support::child(&self.0, 0usize)
-    }
-    pub fn argument_list(&self) -> Option<ArgumentList> {
-        support::child(&self.0, 0usize)
-    }
-    pub fn right_paren_token(&self) -> Option<RightParenToken> {
-        support::child(&self.0, 0usize)
-    }
-    pub fn newline_token(&self) -> Option<NewlineToken> {
-        support::child(&self.0, 0usize)
-    }
-}
-impl<'a> TypedNode for ModifierApplication<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
-    fn can_cast(value: Self::Value) -> bool {
-        value == MODIFIER_APPLICATION
-    }
-    fn cast(node: Self::Node) -> Option<Self> {
-        Self::can_cast(*node.value()).then(|| Self(node))
-    }
-    fn syntax(&self) -> &Self::Node {
-        &self.0
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ModifierApplicationPrefix<'a>(OscDslNode<'a>);
 impl ModifierApplicationPrefix<'_> {
     pub fn actor_expression(&self) -> Option<ActorExpression> {
@@ -7276,6 +7340,29 @@ impl<'a> TypedNode for ActorExpression<'a> {
     type Node = OscDslNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == ACTOR_EXPRESSION
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct DoDirective<'a>(OscDslNode<'a>);
+impl DoDirective<'_> {
+    pub fn do_token(&self) -> Option<DoToken> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn do_member(&self) -> Option<DoMember> {
+        support::child(&self.0, 0usize)
+    }
+}
+impl<'a> TypedNode for DoDirective<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == DO_DIRECTIVE
     }
     fn cast(node: Self::Node) -> Option<Self> {
         Self::can_cast(*node.value()).then(|| Self(node))
@@ -8256,13 +8343,13 @@ impl TernaryOpExp<'_> {
     pub fn question_token(&self) -> Option<QuestionToken> {
         support::child(&self.0, 0usize)
     }
-    pub fn then(&self) -> Option<Expression> {
+    pub fn then_expr(&self) -> Option<Expression> {
         support::child(&self.0, 1usize)
     }
     pub fn colon_token(&self) -> Option<ColonToken> {
         support::child(&self.0, 0usize)
     }
-    pub fn els(&self) -> Option<Expression> {
+    pub fn else_expr(&self) -> Option<Expression> {
         support::child(&self.0, 2usize)
     }
 }
@@ -8282,13 +8369,13 @@ impl<'a> TypedNode for TernaryOpExp<'a> {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct LogicalOpExp<'a>(OscDslNode<'a>);
 impl LogicalOpExp<'_> {
-    pub fn lhs(&self) -> Option<Expression> {
+    pub fn lhs_expr(&self) -> Option<Expression> {
         support::child(&self.0, 0usize)
     }
     pub fn logical_op(&self) -> Option<LogicalOp> {
         support::child(&self.0, 0usize)
     }
-    pub fn rhs(&self) -> Option<Expression> {
+    pub fn rhs_expr(&self) -> Option<Expression> {
         support::child(&self.0, 1usize)
     }
 }
@@ -8308,13 +8395,13 @@ impl<'a> TypedNode for LogicalOpExp<'a> {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct BinaryOpExp<'a>(OscDslNode<'a>);
 impl BinaryOpExp<'_> {
-    pub fn lhs(&self) -> Option<Expression> {
+    pub fn lhs_expr(&self) -> Option<Expression> {
         support::child(&self.0, 0usize)
     }
     pub fn binary_op(&self) -> Option<BinaryOp> {
         support::child(&self.0, 0usize)
     }
-    pub fn rhs(&self) -> Option<Expression> {
+    pub fn rhs_expr(&self) -> Option<Expression> {
         support::child(&self.0, 1usize)
     }
 }
@@ -8427,13 +8514,13 @@ impl<'a> TypedNode for TypeTestExp<'a> {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ElementAccess<'a>(OscDslNode<'a>);
 impl ElementAccess<'_> {
-    pub fn object(&self) -> Option<Expression> {
+    pub fn object_expr(&self) -> Option<Expression> {
         support::child(&self.0, 0usize)
     }
     pub fn left_bracket_token(&self) -> Option<LeftBracketToken> {
         support::child(&self.0, 0usize)
     }
-    pub fn index(&self) -> Option<Expression> {
+    pub fn index_expr(&self) -> Option<Expression> {
         support::child(&self.0, 1usize)
     }
     pub fn right_bracket_token(&self) -> Option<RightBracketToken> {
@@ -8530,40 +8617,40 @@ impl<'a> TypedNode for ParenthesizedExp<'a> {
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum LiteralExp<'a> {
-    IntegerLiteralExp(IntegerLiteralExp<'a>),
-    FloatLiteralExp(FloatLiteralExp<'a>),
-    PhysicalLiteralExp(PhysicalLiteralExp<'a>),
-    BoolLiteralExp(BoolLiteralExp<'a>),
-    StringLiteralExp(StringLiteralExp<'a>),
+    IntegerLiteralToken(IntegerLiteralToken<'a>),
+    FloatLiteralToken(FloatLiteralToken<'a>),
+    PhysicalLiteral(PhysicalLiteral<'a>),
+    BoolLiteral(BoolLiteral<'a>),
+    StringLiteralToken(StringLiteralToken<'a>),
 }
 impl LiteralExp<'_> {
-    pub fn as_integer_literal_exp(&self) -> Option<IntegerLiteralExp> {
+    pub fn as_integer_literal_token(&self) -> Option<IntegerLiteralToken> {
         match self {
-            Self::IntegerLiteralExp(node) => Some(node.clone()),
+            Self::IntegerLiteralToken(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_float_literal_exp(&self) -> Option<FloatLiteralExp> {
+    pub fn as_float_literal_token(&self) -> Option<FloatLiteralToken> {
         match self {
-            Self::FloatLiteralExp(node) => Some(node.clone()),
+            Self::FloatLiteralToken(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_physical_literal_exp(&self) -> Option<PhysicalLiteralExp> {
+    pub fn as_physical_literal(&self) -> Option<PhysicalLiteral> {
         match self {
-            Self::PhysicalLiteralExp(node) => Some(node.clone()),
+            Self::PhysicalLiteral(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_bool_literal_exp(&self) -> Option<BoolLiteralExp> {
+    pub fn as_bool_literal(&self) -> Option<BoolLiteral> {
         match self {
-            Self::BoolLiteralExp(node) => Some(node.clone()),
+            Self::BoolLiteral(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_string_literal_exp(&self) -> Option<StringLiteralExp> {
+    pub fn as_string_literal_token(&self) -> Option<StringLiteralToken> {
         match self {
-            Self::StringLiteralExp(node) => Some(node.clone()),
+            Self::StringLiteralToken(node) => Some(node.clone()),
             _ => None,
         }
     }
@@ -8574,34 +8661,33 @@ impl<'a> TypedNode for LiteralExp<'a> {
     fn can_cast(value: Self::Value) -> bool {
         matches!(
             value,
-            INTEGER_LITERAL_EXP
-                | FLOAT_LITERAL_EXP
-                | PHYSICAL_LITERAL_EXP
-                | BOOL_LITERAL_EXP
-                | STRING_LITERAL_EXP
+            INTEGER_LITERAL
+                | FLOAT_LITERAL
+                | PHYSICAL_LITERAL
+                | TRUE_KW
+                | FALSE_KW
+                | STRING_LITERAL
         )
     }
     fn cast(node: Self::Node) -> Option<Self> {
         match *node.value() {
-            INTEGER_LITERAL_EXP => {
-                IntegerLiteralExp::cast(node.clone()).map(Self::IntegerLiteralExp)
+            INTEGER_LITERAL => {
+                IntegerLiteralToken::cast(node.clone()).map(Self::IntegerLiteralToken)
             }
-            FLOAT_LITERAL_EXP => FloatLiteralExp::cast(node.clone()).map(Self::FloatLiteralExp),
-            PHYSICAL_LITERAL_EXP => {
-                PhysicalLiteralExp::cast(node.clone()).map(Self::PhysicalLiteralExp)
-            }
-            BOOL_LITERAL_EXP => BoolLiteralExp::cast(node.clone()).map(Self::BoolLiteralExp),
-            STRING_LITERAL_EXP => StringLiteralExp::cast(node.clone()).map(Self::StringLiteralExp),
+            FLOAT_LITERAL => FloatLiteralToken::cast(node.clone()).map(Self::FloatLiteralToken),
+            PHYSICAL_LITERAL => PhysicalLiteral::cast(node.clone()).map(Self::PhysicalLiteral),
+            TRUE_KW | FALSE_KW => BoolLiteral::cast(node.clone()).map(Self::BoolLiteral),
+            STRING_LITERAL => StringLiteralToken::cast(node.clone()).map(Self::StringLiteralToken),
             _ => None,
         }
     }
     fn syntax(&self) -> &Self::Node {
         match self {
-            Self::IntegerLiteralExp(node) => node.syntax(),
-            Self::FloatLiteralExp(node) => node.syntax(),
-            Self::PhysicalLiteralExp(node) => node.syntax(),
-            Self::BoolLiteralExp(node) => node.syntax(),
-            Self::StringLiteralExp(node) => node.syntax(),
+            Self::IntegerLiteralToken(node) => node.syntax(),
+            Self::FloatLiteralToken(node) => node.syntax(),
+            Self::PhysicalLiteral(node) => node.syntax(),
+            Self::BoolLiteral(node) => node.syntax(),
+            Self::StringLiteralToken(node) => node.syntax(),
         }
     }
 }
@@ -8907,106 +8993,6 @@ impl<'a> TypedNode for UnaryOp<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct IntegerLiteralExp<'a>(OscDslNode<'a>);
-impl IntegerLiteralExp<'_> {
-    pub fn integer_literal_token(&self) -> Option<IntegerLiteralToken> {
-        support::child(&self.0, 0usize)
-    }
-}
-impl<'a> TypedNode for IntegerLiteralExp<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
-    fn can_cast(value: Self::Value) -> bool {
-        value == INTEGER_LITERAL_EXP
-    }
-    fn cast(node: Self::Node) -> Option<Self> {
-        Self::can_cast(*node.value()).then(|| Self(node))
-    }
-    fn syntax(&self) -> &Self::Node {
-        &self.0
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct FloatLiteralExp<'a>(OscDslNode<'a>);
-impl FloatLiteralExp<'_> {
-    pub fn float_literal_token(&self) -> Option<FloatLiteralToken> {
-        support::child(&self.0, 0usize)
-    }
-}
-impl<'a> TypedNode for FloatLiteralExp<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
-    fn can_cast(value: Self::Value) -> bool {
-        value == FLOAT_LITERAL_EXP
-    }
-    fn cast(node: Self::Node) -> Option<Self> {
-        Self::can_cast(*node.value()).then(|| Self(node))
-    }
-    fn syntax(&self) -> &Self::Node {
-        &self.0
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct PhysicalLiteralExp<'a>(OscDslNode<'a>);
-impl PhysicalLiteralExp<'_> {
-    pub fn physical_literal(&self) -> Option<PhysicalLiteral> {
-        support::child(&self.0, 0usize)
-    }
-}
-impl<'a> TypedNode for PhysicalLiteralExp<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
-    fn can_cast(value: Self::Value) -> bool {
-        value == PHYSICAL_LITERAL_EXP
-    }
-    fn cast(node: Self::Node) -> Option<Self> {
-        Self::can_cast(*node.value()).then(|| Self(node))
-    }
-    fn syntax(&self) -> &Self::Node {
-        &self.0
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct BoolLiteralExp<'a>(OscDslNode<'a>);
-impl BoolLiteralExp<'_> {
-    pub fn bool_literal(&self) -> Option<BoolLiteral> {
-        support::child(&self.0, 0usize)
-    }
-}
-impl<'a> TypedNode for BoolLiteralExp<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
-    fn can_cast(value: Self::Value) -> bool {
-        value == BOOL_LITERAL_EXP
-    }
-    fn cast(node: Self::Node) -> Option<Self> {
-        Self::can_cast(*node.value()).then(|| Self(node))
-    }
-    fn syntax(&self) -> &Self::Node {
-        &self.0
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct StringLiteralExp<'a>(OscDslNode<'a>);
-impl StringLiteralExp<'_> {
-    pub fn string_literal_token(&self) -> Option<StringLiteralToken> {
-        support::child(&self.0, 0usize)
-    }
-}
-impl<'a> TypedNode for StringLiteralExp<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
-    fn can_cast(value: Self::Value) -> bool {
-        value == STRING_LITERAL_EXP
-    }
-    fn cast(node: Self::Node) -> Option<Self> {
-        Self::can_cast(*node.value()).then(|| Self(node))
-    }
-    fn syntax(&self) -> &Self::Node {
-        &self.0
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ExpressionList<'a>(OscDslNode<'a>);
 impl<'a> ExpressionList<'a> {
     pub fn comma_token(&self) -> impl Iterator<Item = CommaToken<'a>> + 'a {
@@ -9038,13 +9024,13 @@ impl ParenthesesRangeConstructor<'_> {
     pub fn left_paren_token(&self) -> Option<LeftParenToken> {
         support::child(&self.0, 0usize)
     }
-    pub fn begin(&self) -> Option<Expression> {
+    pub fn begin_expr(&self) -> Option<Expression> {
         support::child(&self.0, 0usize)
     }
     pub fn comma_token(&self) -> Option<CommaToken> {
         support::child(&self.0, 0usize)
     }
-    pub fn end(&self) -> Option<Expression> {
+    pub fn end_expr(&self) -> Option<Expression> {
         support::child(&self.0, 1usize)
     }
     pub fn right_paren_token(&self) -> Option<RightParenToken> {
@@ -9070,13 +9056,13 @@ impl BracketsRangeConstructor<'_> {
     pub fn left_bracket_token(&self) -> Option<LeftBracketToken> {
         support::child(&self.0, 0usize)
     }
-    pub fn begin(&self) -> Option<Expression> {
+    pub fn begin_expr(&self) -> Option<Expression> {
         support::child(&self.0, 0usize)
     }
     pub fn dot_dot_token(&self) -> Option<DotDotToken> {
         support::child(&self.0, 0usize)
     }
-    pub fn end(&self) -> Option<Expression> {
+    pub fn end_expr(&self) -> Option<Expression> {
         support::child(&self.0, 1usize)
     }
     pub fn right_bracket_token(&self) -> Option<RightBracketToken> {
