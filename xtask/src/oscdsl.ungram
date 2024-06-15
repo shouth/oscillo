@@ -29,13 +29,10 @@ BoolLiteral =
 // Physical type literals
 
 PhysicalLiteral =
-  NumberLiteral UnitName
+  NumberLiteral unit_name:QualifiedIdentifier
 
 NumberLiteral =
   'float_literal' | 'integer_literal'
-
-UnitName =
-  QualifiedIdentifier
 
 
 // Top-level structure
@@ -91,10 +88,7 @@ NamespaceUseClause =
 NamespaceList =
   NamespaceName (',' NamespaceName)*
 
-NamespaceName = 'identifier' | GlobalNamespaceName
-
-GlobalNamespaceName =
-  'null'
+NamespaceName = 'identifier' | 'null'
 
 
 // Export statement
@@ -158,13 +152,10 @@ TypeReference =
 // Physical type and units
 
 PhysicalTypeDeclaration =
-  'type' PhysicalTypeName 'is' BaseUnitSpecifier 'newline'
-
-PhysicalTypeName =
-  QualifiedIdentifier
+  'type' physical_type_name:QualifiedIdentifier 'is' BaseUnitSpecifier 'newline'
 
 UnitDeclaration =
-  'unit' UnitName 'of' PhysicalTypeName 'is' UnitSpecifier 'newline'
+  'unit' unit_name:QualifiedIdentifier 'of' physical_type_name:QualifiedIdentifier 'is' UnitSpecifier 'newline'
 
 BaseUnitSpecifier =
   SiBaseUnitSpecifier
@@ -197,43 +188,37 @@ SiBaseUnitName =
 // Enumerations
 
 EnumDeclaration =
-  'enum' EnumName ':' '[' EnumMemberDeclList ']' 'newline'
+  'enum' enum_name:QualifiedIdentifier ':' '[' EnumMemberDeclList ']' 'newline'
 
 EnumMemberDeclList =
   EnumMemberDecl (',' EnumMemberDecl)*
 
 EnumMemberDecl =
-  EnumMemberName EnumMemberInitializer?
+  enum_member_name:QualifiedIdentifier EnumMemberInitializer?
 
 EnumMemberInitializer =
   '=' EnumMemberValue
-
-EnumName =
-  QualifiedIdentifier
-
-EnumMemberName =
-  QualifiedIdentifier
 
 EnumMemberValue =
   'integer_literal'
 
 EnumValueReference =
-  EnumValueReferencePrefix? EnumMemberName
+  EnumValueReferencePrefix? enum_member_name:QualifiedIdentifier
 
 EnumValueReferencePrefix =
-  EnumName '!'
+  enum_name:QualifiedIdentifier '!'
 
 
 // Structs
 
 StructDeclaration =
-  'struct' StructName StructInheritsClause? StructBodyOrNewline
+  'struct' struct_name:QualifiedIdentifier StructInheritsClause? StructBodyOrNewline
 
 StructInheritsClause =
-  'inherits' StructName StructInheritsCondition?
+  'inherits' struct_name:QualifiedIdentifier StructInheritsCondition?
 
 StructInheritsCondition =
-  '(' FieldName '==' StructInheritsConstant ')'
+  '(' field_name:QualifiedIdentifier '==' StructInheritsConstant ')'
 
 StructInheritsConstant =
   EnumValueReference
@@ -255,23 +240,17 @@ StructMemberDecl =
 | MethodDeclaration
 | CoverageDeclaration
 
-StructName =
-  QualifiedIdentifier
-
-FieldName =
-  QualifiedIdentifier
-
 
 // Actors
 
 ActorDeclaration =
-  'actor' ActorName ActorInheritsClause? ActorBodyOrNewline
+  'actor' actor_name:QualifiedIdentifier ActorInheritsClause? ActorBodyOrNewline
 
 ActorInheritsClause =
-  'inherits' ActorName ActorInheritsCondition?
+  'inherits' actor_name:QualifiedIdentifier ActorInheritsCondition?
 
 ActorInheritsCondition =
-  '(' FieldName '==' ActorInheritsConstant ')'
+  '(' field_name:QualifiedIdentifier '==' ActorInheritsConstant ')'
 
 ActorInheritsConstant =
   EnumValueReference
@@ -293,9 +272,6 @@ ActorMemberDecl =
 | MethodDeclaration
 | CoverageDeclaration
 
-ActorName =
-  QualifiedIdentifier
-
 
 // Scenarios
 
@@ -306,7 +282,7 @@ ScenarioInheritsClause =
   'inherits' QualifiedBehaviorName ScenarioInheritsCondition?
 
 ScenarioInheritsCondition =
-  '(' FieldName '==' ScenarioInheritsConstant ')'
+  '(' field_name:QualifiedIdentifier '==' ScenarioInheritsConstant ')'
 
 ScenarioInheritsConstant =
   EnumValueReference
@@ -334,13 +310,10 @@ ScenarioMemberDecl =
 | ModifierApplication
 
 QualifiedBehaviorName =
-  QualifiedBehaviorNamePrefix? BehaviorName
+  QualifiedBehaviorNamePrefix? behavior_name:QualifiedIdentifier
 
 QualifiedBehaviorNamePrefix =
-  ActorName '.'
-
-BehaviorName =
-  QualifiedIdentifier
+  actor_name:QualifiedIdentifier '.'
 
 
 // Actions
@@ -355,7 +328,7 @@ ActionInheritsClause =
   'inherits' QualifiedBehaviorName ActionInheritsCondition?
 
 ActionInheritsCondition =
-  '(' FieldName '==' ActionInheritsConstant ')'
+  '(' field_name:QualifiedIdentifier '==' ActionInheritsConstant ')'
 
 ActionInheritsConstant =
   EnumValueReference
@@ -374,13 +347,10 @@ ActionMemberItem =
 // Modifiers
 
 ModifierDeclaration =
-  'modifier' ModifierNamePrefix? ModifierName ModifierOfClause? ModifierBodyOrNewline
+  'modifier' ModifierNamePrefix? modifier_name:QualifiedIdentifier ModifierOfClause? ModifierBodyOrNewline
 
 ModifierNamePrefix =
-  ActorName '.'
-
-ModifierName =
-  QualifiedIdentifier
+  actor_name:QualifiedIdentifier '.'
 
 ModifierOfClause =
   'of' QualifiedBehaviorName
@@ -406,7 +376,7 @@ TypeExtension =
 | StructuredTypeExtension
 
 EnumTypeExtension =
-  'extend' EnumName ':' '[' EnumMemberDeclList ']' 'newline'
+  'extend' enum_name:QualifiedIdentifier ':' '[' EnumMemberDeclList ']' 'newline'
 
 StructuredTypeExtension =
   'extend' TypeReference ':' 'newline' 'indent' ExtensionMemberDeclList 'dedent'
@@ -438,7 +408,7 @@ GlobalParameterDeclaration =
 // Events
 
 EventDeclaration =
-  'event' EventName EventArgumentListSpecification? EventIsClause? 'newline'
+  'event' event_name:QualifiedIdentifier EventArgumentListSpecification? EventIsClause? 'newline'
 
 EventArgumentListSpecification =
   '(' ArgumentListSpecification ')'
@@ -460,16 +430,10 @@ EventReference =
   '@' EventPath
 
 EventFieldDecl =
-  'as' EventFieldName
-
-EventFieldName =
-  QualifiedIdentifier
-
-EventName =
-  QualifiedIdentifier
+  'as' event_field_name:QualifiedIdentifier
 
 EventPath =
-  EventPathPrefix? EventName
+  EventPathPrefix? event_name:QualifiedIdentifier
 
 EventPathPrefix =
   Expression '.'
@@ -513,13 +477,13 @@ ParameterDeclaration =
   FieldNameList ':' TypeDeclarator ParameterInitilizerClause? ParameterWithDeclarationOrNewline
 
 FieldNameList =
-  FieldName (',' FieldName)*
+  QualifiedIdentifier (',' QualifiedIdentifier)*
 
 ParameterInitilizerClause =
   '=' DefaultValue
 
 VariableDeclaration =
-  'var' FieldNameList ':' TypeDeclarator VariableInitializer? 'newline'
+  'var' field_name:FieldNameList ':' TypeDeclarator VariableInitializer? 'newline'
 
 VariableInitializer =
   '=' VariableInitializerValue
@@ -566,14 +530,14 @@ RemoveDefaultDeclaration =
   'remove_default' '(' ParameterReference ')' 'newline'
 
 ParameterReference =
-  FieldName
+  QualifiedIdentifier
 | FieldAccess
 
 
 // Methods
 
 MethodDeclaration =
-  'def' MethodName '(' ArgumentListSpecification? ')' MethodReturnType? MethodImplementation 'newline'
+  'def' method_name:QualifiedIdentifier '(' ArgumentListSpecification? ')' MethodReturnType? MethodImplementation 'newline'
 
 MethodReturnType =
   '->' ReturnType
@@ -601,9 +565,6 @@ MethodUndefinedBody =
 MethodExternalBody =
   'external' StructuredIdentifier '(' ArgumentList? ')'
 
-MethodName =
-  QualifiedIdentifier
-
 
 // Coverage
 
@@ -617,7 +578,7 @@ CoverageOperator =
 // Modifier application
 
 ModifierApplication =
-  ModifierApplicationPrefix? ModifierName '(' ArgumentList? ')' 'newline'
+  ModifierApplicationPrefix? modifier_name:QualifiedIdentifier '(' ArgumentList? ')' 'newline'
 
 ModifierApplicationPrefix =
   ActorExpression '.'
@@ -649,7 +610,7 @@ DoMember =
   DoMemberLabel? DoMemberBody
 
 DoMemberLabel =
-  LabelName ':'
+  label_name:QualifiedIdentifier ':'
 
 DoMemberBody =
   Composition
@@ -657,9 +618,6 @@ DoMemberBody =
 | WaitDirective
 | EmitDirective
 | CallDirective
-
-LabelName =
-  QualifiedIdentifier
 
 
 // Composition
@@ -680,7 +638,7 @@ CompositionOperator =
 // Behavior invocation
 
 BehaviorInvocation =
-  BehaviorInvocationPrefix? BehaviorName '(' ArgumentList? ')' BehaviorWithDeclarationOrNewline
+  BehaviorInvocationPrefix? behavior_name:QualifiedIdentifier '(' ArgumentList? ')' BehaviorWithDeclarationOrNewline
 
 BehaviorInvocationPrefix =
   ActorExpression '.'
@@ -712,7 +670,7 @@ WaitDirective =
 // Emit directive
 
 EmitDirective =
-  'emit' EventName EmitArguments? 'newline'
+  'emit' event_name:QualifiedIdentifier EmitArguments? 'newline'
 
 EmitArguments =
   '(' ArgumentList ')'
@@ -739,13 +697,10 @@ ArgumentListSpecification =
   ArgumentSpecification (',' ArgumentSpecification)*
 
 ArgumentSpecification =
-  ArgumentName ':' TypeDeclarator ArgumentInitializer?
+  argument_name:QualifiedIdentifier ':' TypeDeclarator ArgumentInitializer?
 
 ArgumentInitializer =
   '=' DefaultValue
-
-ArgumentName =
-  QualifiedIdentifier
 
 
 // Argument list
@@ -763,7 +718,7 @@ NamedArgumentList =
   NamedArgument (',' NamedArgument)*
 
 NamedArgument =
-  ArgumentName ':' Expression
+  argument_name:QualifiedIdentifier ':' Expression
 
 
 // Unqualified argument list
@@ -774,11 +729,8 @@ UnqualifiedArgumentList =
 UnqualifiedNamedArgumentList =
   UnqualifiedNamedArgument (',' UnqualifiedNamedArgument)*
 
-UnqualifiedArgumentName =
-  'identifier'
-
 UnqualifiedNamedArgument =
-  UnqualifiedArgumentName ':' Expression
+  unqualified_argument_name:QualifiedIdentifier ':' Expression
 
 
 // Expressions
@@ -835,7 +787,7 @@ FunctionApplication =
   Expression '(' ArgumentList? ')'
 
 FieldAccess =
-  Expression '.' FieldName
+  Expression '.' field_name:QualifiedIdentifier
 
 ItExp =
   'it'
