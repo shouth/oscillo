@@ -4,6 +4,9 @@ mod lexical_analyzer;
 mod lookahead;
 mod raw_lexer;
 
+pub use lexical_analyzer::LexicalAnalyzer;
+pub use lookahead::Lookahead;
+
 use crate::syntax::OscDslSyntaxKind;
 
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Debug, Hash)]
