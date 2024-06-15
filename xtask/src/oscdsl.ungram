@@ -91,12 +91,7 @@ NamespaceUseClause =
 NamespaceList =
   NamespaceName (',' NamespaceName)*
 
-NamespaceName =
-  SimpleNamespaceName
-| GlobalNamespaceName
-
-SimpleNamespaceName =
-  'identifier'
+NamespaceName = 'identifier' | GlobalNamespaceName
 
 GlobalNamespaceName =
   'null'
@@ -142,12 +137,12 @@ TypeDeclarator =
   NonAggregateTypeDeclarator
 | AggregateTypeDeclarator
 
-NonAggregateTypeDeclarator = // This grammar is relaxed to remove ambiguity
+NonAggregateTypeDeclarator =
   PrimitiveType
-// | PhysicalTypeName
-// | EnumName
-// | StructName
-// | ActorName
+| PhysicalTypeName
+| EnumName
+| StructName
+| ActorName
 | QualifiedBehaviorName
 
 AggregateTypeDeclarator =
@@ -336,6 +331,7 @@ ScenarioMemberDecl =
 | ConstraintDeclaration
 | MethodDeclaration
 | CoverageDeclaration
+| ModifierApplication
 
 QualifiedBehaviorName =
   QualifiedBehaviorNamePrefix? BehaviorName
@@ -413,17 +409,21 @@ EnumTypeExtension =
   'extend' EnumName ':' '[' EnumMemberDeclList ']' 'newline'
 
 StructuredTypeExtension =
-  'extend' ExtendableTypeName ':' 'newline' 'indent' ExtendableMemberDeclList 'dedent'
+  'extend' ExtendableTypeName ':' 'newline' 'indent' ExtensionMemberDeclList 'dedent'
 
-ExtendableMemberDeclList =
+ExtensionMemberDeclList =
   ExtensionMemberDecl*
 
-ExtendableTypeName = // This grammar is relaxed to remove ambiguity
+ExtendableTypeName =
   QualifiedBehaviorName
-// | StructName
-// | ActorName
+| StructName
+| ActorName
 
-ExtensionMemberDecl = // This grammar is relaxed to remove ambiguity
+ExtensionMemberDecl =
+  RelaxedExtensionMemberDecl
+| BehaviorSpecification
+
+RelaxedExtensionMemberDecl =
   EventDeclaration
 | ParameterDeclaration
 | VariableDeclaration
@@ -431,12 +431,7 @@ ExtensionMemberDecl = // This grammar is relaxed to remove ambiguity
 | RemoveDefaultDeclaration
 | MethodDeclaration
 | CoverageDeclaration
-| OnDirective
-| DoDirective
-//   StructMemberDecl
-// | ActorMemberDecl
-// | ScenarioMemberDecl
-// | BehaviorSpecification
+| ModifierApplication
 
 
 // Global parameter declarations
@@ -812,16 +807,16 @@ Expression =
 | RangeConstructor
 
 TernaryOpExp =
-  condition:Expression '?' then:Expression ':' els:Expression
+  condition:Expression '?' then_expr:Expression ':' else_expr:Expression
 
 LogicalOpExp =
-  lhs:Expression LogicalOp rhs:Expression
+  lhs_expr:Expression LogicalOp rhs_expr:Expression
 
 LogicalOp =
   '=>' | 'or' | 'and'
 
 BinaryOpExp =
-  lhs:Expression BinaryOp rhs:Expression
+  lhs_expr:Expression BinaryOp rhs_expr:Expression
 
 BinaryOp =
   '==' | '!=' | '<' | '<=' | '>' | '>=' | 'in' | '+' | '-' | '*' | '/' | '%'
@@ -839,7 +834,7 @@ TypeTestExp =
   Expression '.' 'is' '(' TypeDeclarator ')'
 
 ElementAccess =
-  object:Expression '[' index:Expression ']'
+  object_expr:Expression '[' index_expr:Expression ']'
 
 FunctionApplication =
   Expression '(' ArgumentList? ')'
@@ -854,26 +849,11 @@ ParenthesizedExp =
   '(' Expression ')'
 
 LiteralExp =
-  IntegerLiteralExp
-| FloatLiteralExp
-| PhysicalLiteralExp
-| BoolLiteralExp
-| StringLiteralExp
-
-IntegerLiteralExp =
   'integer_literal'
-
-FloatLiteralExp =
-  'float_literal'
-
-PhysicalLiteralExp =
-  PhysicalLiteral
-
-BoolLiteralExp =
-  BoolLiteral
-
-StringLiteralExp =
-  'string_literal'
+| 'float_literal'
+| PhysicalLiteral
+| BoolLiteral
+| 'string_literal'
 
 
 // List and range constructors
@@ -889,7 +869,7 @@ RangeConstructor =
 | BracketsRangeConstructor
 
 ParenthesesRangeConstructor =
-  'range' '(' begin:Expression ',' end:Expression ')'
+  'range' '(' begin_expr:Expression ',' end_expr:Expression ')'
 
 BracketsRangeConstructor =
-  '[' begin:Expression '..' end:Expression ']'
+  '[' begin_expr:Expression '..' end_expr:Expression ']'
