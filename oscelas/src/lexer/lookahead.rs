@@ -1,3 +1,5 @@
+use std::collections::VecDeque;
+
 use super::LexedToken;
 
 pub trait LookaheadSource {
@@ -6,7 +8,7 @@ pub trait LookaheadSource {
 
 pub struct Lookahead<T: LookaheadSource> {
     source: T,
-    tokens: Vec<LexedToken>,
+    tokens: VecDeque<LexedToken>,
     offset: usize,
 }
 
@@ -14,7 +16,7 @@ impl<T: LookaheadSource> Lookahead<T> {
     pub fn new(source: T) -> Lookahead<T> {
         Lookahead {
             source,
-            tokens: Vec::new(),
+            tokens: VecDeque::new(),
             offset: 0,
         }
     }
@@ -24,7 +26,7 @@ impl<T: LookaheadSource> Lookahead<T> {
     }
 
     pub fn bump(&mut self) -> LexedToken {
-        let token = match self.tokens.pop() {
+        let token = match self.tokens.pop_front() {
             Some(token) => token,
             None => self.source.next_token(),
         };
@@ -34,7 +36,7 @@ impl<T: LookaheadSource> Lookahead<T> {
 
     pub fn nth(&mut self, n: usize) -> &LexedToken {
         while self.tokens.len() <= n {
-            self.tokens.push(self.source.next_token());
+            self.tokens.push_back(self.source.next_token());
         }
         &self.tokens[n]
     }
