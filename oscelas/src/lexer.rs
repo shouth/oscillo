@@ -61,7 +61,7 @@ mod tests {
     }
 
     #[test]
-    fn test() {
+    fn test_analyzer() {
         let source = r#"
 scenario vehicle.two_phases:
     do serial (duration : [10s..30s]):
@@ -73,16 +73,129 @@ scenario vehicle.two_phases:
             speed(speed: [10kph..15kph])
 "#;
 
+        let expected = [
+            (TRIVIAL_NEWLINE, "\n"),
+            (IDENTIFIER, "scenario"),
+            (WHITESPACE, " "),
+            (IDENTIFIER, "vehicle"),
+            (DOT, "."),
+            (IDENTIFIER, "two_phases"),
+            (COLON, ":"),
+            (NEWLINE, "\n"),
+            (INDENT, ""),
+            (WHITESPACE, "    "),
+            (IDENTIFIER, "do"),
+            (WHITESPACE, " "),
+            (IDENTIFIER, "serial"),
+            (WHITESPACE, " "),
+            (LEFT_PAREN, "("),
+            (IDENTIFIER, "duration"),
+            (WHITESPACE, " "),
+            (COLON, ":"),
+            (WHITESPACE, " "),
+            (LEFT_BRACKET, "["),
+            (INTEGER_LITERAL, "10"),
+            (IDENTIFIER, "s"),
+            (DOT_DOT, ".."),
+            (INTEGER_LITERAL, "30"),
+            (IDENTIFIER, "s"),
+            (RIGHT_BRACKET, "]"),
+            (RIGHT_PAREN, ")"),
+            (COLON, ":"),
+            (NEWLINE, "\n"),
+            (INDENT, ""),
+            (WHITESPACE, "        "),
+            (IDENTIFIER, "phase1"),
+            (COLON, ":"),
+            (WHITESPACE, " "),
+            (IDENTIFIER, "actor"),
+            (DOT, "."),
+            (IDENTIFIER, "drive"),
+            (LEFT_PAREN, "("),
+            (RIGHT_PAREN, ")"),
+            (WHITESPACE, " "),
+            (IDENTIFIER, "with"),
+            (COLON, ":"),
+            (NEWLINE, "\n"),
+            (INDENT, ""),
+            (WHITESPACE, "            "),
+            (IDENTIFIER, "speed"),
+            (LEFT_PAREN, "("),
+            (IDENTIFIER, "speed"),
+            (COLON, ":"),
+            (WHITESPACE, " "),
+            (INTEGER_LITERAL, "0"),
+            (IDENTIFIER, "kph"),
+            (COMMA, ","),
+            (WHITESPACE, " "),
+            (IDENTIFIER, "at"),
+            (COLON, ":"),
+            (WHITESPACE, " "),
+            (IDENTIFIER, "start"),
+            (RIGHT_PAREN, ")"),
+            (NEWLINE, "\n"),
+            (WHITESPACE, "            "),
+            (IDENTIFIER, "speed"),
+            (LEFT_PAREN, "("),
+            (IDENTIFIER, "speed"),
+            (COLON, ":"),
+            (WHITESPACE, " "),
+            (INTEGER_LITERAL, "10"),
+            (IDENTIFIER, "kph"),
+            (COMMA, ","),
+            (WHITESPACE, " "),
+            (IDENTIFIER, "at"),
+            (COLON, ":"),
+            (WHITESPACE, " "),
+            (IDENTIFIER, "end"),
+            (RIGHT_PAREN, ")"),
+            (NEWLINE, "\n"),
+            (TRIVIAL_NEWLINE, "\n"),
+            (DEDENT, ""),
+            (WHITESPACE, "        "),
+            (IDENTIFIER, "phase2"),
+            (COLON, ":"),
+            (WHITESPACE, " "),
+            (IDENTIFIER, "actor"),
+            (DOT, "."),
+            (IDENTIFIER, "drive"),
+            (LEFT_PAREN, "("),
+            (RIGHT_PAREN, ")"),
+            (WHITESPACE, " "),
+            (IDENTIFIER, "with"),
+            (COLON, ":"),
+            (NEWLINE, "\n"),
+            (INDENT, ""),
+            (WHITESPACE, "            "),
+            (IDENTIFIER, "speed"),
+            (LEFT_PAREN, "("),
+            (IDENTIFIER, "speed"),
+            (COLON, ":"),
+            (WHITESPACE, " "),
+            (LEFT_BRACKET, "["),
+            (INTEGER_LITERAL, "10"),
+            (IDENTIFIER, "kph"),
+            (DOT_DOT, ".."),
+            (INTEGER_LITERAL, "15"),
+            (IDENTIFIER, "kph"),
+            (RIGHT_BRACKET, "]"),
+            (RIGHT_PAREN, ")"),
+            (NEWLINE, "\n"),
+            (DEDENT, ""),
+            (DEDENT, ""),
+            (DEDENT, ""),
+            (EOF, ""),
+        ];
+
         let mut lexer = LexicalAnalyzer::new(source);
         let mut offset = 0;
-        loop {
+        for expected in &expected {
             let token = lexer.next_token();
             let fragment = &source[offset..][..token.length];
             offset += token.length;
-            println!("{:?} {:?}", token.kind, fragment);
-            if token.kind == EOF {
-                break;
-            }
+
+            let actual = (token.kind, fragment);
+            assert_eq!(actual, *expected);
         }
     }
 }
