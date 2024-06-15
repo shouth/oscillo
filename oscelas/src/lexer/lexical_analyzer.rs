@@ -1,7 +1,7 @@
 use crate::diagnostic::Diagnostic;
 use crate::syntax::OscDslSyntaxKind::{self, *};
 
-use super::lookahead::Lookahead;
+use super::lookahead::{Lookahead, LookaheadSource};
 use super::LexedToken;
 use super::lexer::Lexer;
 
@@ -109,7 +109,7 @@ impl<'a> LexicalAnalyzer<'a> {
                 self.spawn(ERROR)
             }
         } else {
-            match self.inner.nth(0).kind.to_owned() {
+            match self.inner.nth(0).kind {
                 TRIVIAL_NEWLINE => {
                     self.is_new_line = true;
                     if !self.is_empty_line && self.enclosures.is_empty() {
@@ -146,5 +146,11 @@ impl<'a> LexicalAnalyzer<'a> {
         let mut diagnostics = self.diagnostics;
         diagnostics.extend(self.inner.finish().finish());
         diagnostics
+    }
+}
+
+impl LookaheadSource for LexicalAnalyzer<'_> {
+    fn next_token(&mut self) -> LexedToken {
+        self.next_token()
     }
 }
