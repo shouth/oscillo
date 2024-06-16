@@ -12,6 +12,7 @@ pub struct LexicalAnalyzer<'a> {
     enclosures: Vec<OscDslSyntaxKind>,
     is_new_line: bool,
     is_empty_line: bool,
+    has_indetation_error: bool,
     diagnostics: Vec<Diagnostic>,
 }
 
@@ -24,6 +25,7 @@ impl<'a> LexicalAnalyzer<'a> {
             enclosures: Vec::new(),
             is_new_line: true,
             is_empty_line: false,
+            has_indetation_error: false,
             diagnostics: Vec::new(),
         }
     }
@@ -75,8 +77,12 @@ impl<'a> LexicalAnalyzer<'a> {
                 .to_owned();
 
             if indent_width > last_indent_width {
-                self.indents.push((indent, indent_width));
-                self.spawn(INDENT)
+                if self.has_indetation_error {
+                    self.inner.bump()
+                } else {
+                    self.indents.push((indent, indent_width));
+                    self.spawn(INDENT)
+                }
             } else if indent_width < last_indent_width {
                 self.indents.pop();
                 let (_, last_indent_width) = self
@@ -87,6 +93,7 @@ impl<'a> LexicalAnalyzer<'a> {
 
                 if indent_width <= last_indent_width {
                     self.is_new_line = true;
+                    self.has_indetation_error = false;
                     self.spawn(DEDENT)
                 } else {
                     let start = self.offset();
@@ -95,6 +102,7 @@ impl<'a> LexicalAnalyzer<'a> {
                         start..end,
                         format!("indentation is not aligned with the previous line"),
                     ));
+                    self.has_indetation_error = true;
                     self.spawn(ERROR)
                 }
             } else if indent == last_indent {
@@ -104,7 +112,7 @@ impl<'a> LexicalAnalyzer<'a> {
                 let end = start + self.inner.nth(0).length;
                 self.diagnostics.push(Diagnostic::new(
                     start..end,
-                    format!("indentation is not aligned with the previous line"),
+                    format!("indentation characters is different from the previous line"),
                 ));
                 self.spawn(ERROR)
             }
