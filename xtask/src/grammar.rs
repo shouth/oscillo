@@ -145,6 +145,9 @@ impl GrammarBuilder {
                 let node = &ungrammar[node];
                 let name = node.name.clone();
                 let kind = match &node.rule {
+                    rule @ (UngrammarRule::Token(_) | UngrammarRule::Node(_)) => {
+                        RuleKind::Choice(vec![self.build_node(rule)?])
+                    }
                     rule @ UngrammarRule::Seq(rules) => match self.build_delimited(rule) {
                         Ok(result) => result,
                         Err(_) => {
