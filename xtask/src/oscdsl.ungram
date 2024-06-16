@@ -11,22 +11,26 @@
 //   label:A     -- suggested name for field of AST node
 
 
-// Keywords and identifiers
+// identifier ::= ( id-start-char id-char* ) | ( '|' non-vertical-line-char+ '|' )
+// qualified-identifier ::= identifier | prefixed-identifier
+// prefixed-identifier ::= ( [ namespace-name ] '::' identifier )
 
 QualifiedIdentifier =
-  IdentifierPrefix? 'identifier'
+  'identifier'
+| PrefixedIdentifier
 
-IdentifierPrefix =
-  NamespaceName? '::'
+PrefixedIdentifier =
+  namespace_name:'identifier'? '::' 'identifier'
 
 
-// Boolean literals
+// bool-literal ::= 'true' | 'false'
 
 BoolLiteral =
   'true' | 'false'
 
 
-// Physical type literals
+// physical-literal ::= (float-literal | integer-literal) unit-name
+// unit-name ::= qualified-identifier
 
 PhysicalLiteral =
   NumberLiteral unit_name:QualifiedIdentifier
@@ -35,7 +39,7 @@ NumberLiteral =
   'float_literal' | 'integer_literal'
 
 
-// Top-level structure
+// osc-file ::= prelude-statement* main-statement*
 
 OscFile =
   PreludeStatementList MainStatementList
@@ -47,29 +51,29 @@ MainStatementList =
   MainStatement*
 
 
-// Prelude statements
+// prelude-statement ::= import-statement
 
 PreludeStatement =
   ImportStatement
 
 
-// Import statement
+// import-statement ::= 'import' import-reference NEWLINE
+// import-reference ::= string-literal | structured-identifier
+//
+// structured-identifier ::= identifier | structured-identifier '.' identifier
 
 ImportStatement =
   'import' ImportReference 'newline'
 
 ImportReference =
-  ImportReferenceString
-| StructuredIdentifier
-
-ImportReferenceString =
   'string_literal'
+| StructuredIdentifier
 
 StructuredIdentifier =
   'identifier' ('.' 'identifier')*
 
 
-// Main statements
+// main-statement ::= namespace-statement | export-statement | osc-declaration
 
 MainStatement =
   NamespaceStatement
@@ -77,7 +81,11 @@ MainStatement =
 | OscDeclaration
 
 
-// Namespace statement
+// namespace-statement ::= 'namespace' namespace-name ['use' namespace-list ] NEWLINE
+//
+// namespace-list ::= namespace-name (',' namespace-name)*
+// namespace-name ::= identifier | global-namespace-name
+// global-namespace-name ::= 'null'
 
 NamespaceStatement =
   'namespace' NamespaceName NamespaceUseClause? 'newline'
@@ -91,7 +99,9 @@ NamespaceList =
 NamespaceName = 'identifier' | 'null'
 
 
-// Export statement
+// export-statement ::= 'export' export-specification (',' export-specification)* NEWLINE
+// export-specification ::= qualified-identifier | export-wildcard-specification
+// export-wildcard-specification ::=[ [ namespace-name ] '::' ] '*'
 
 ExportStatement =
   'export' ExportSpecificationList 'newline'
@@ -104,13 +114,23 @@ ExportSpecification =
 | ExportWildcardSpecification
 
 ExportWildcardSpecification =
-  ExportWildcardSpecificationPrefix? '*'
+  '*'
+| PrefixedExportWildcardSpecification
 
-ExportWildcardSpecificationPrefix =
-  NamespaceName? '::'
+PrefixedExportWildcardSpecification =
+  namespace_name:QualifiedIdentifier? '::' '*'
 
 
-// Top-level declarations
+// osc-declaration ::=   physical-type-declaration
+//                     | unit-declaration
+//                     | enum-declaration
+//                     | struct-declaration
+//                     | actor-declaration
+//                     | action-declaration
+//                     | scenario-declaration
+//                     | modifier-declaration
+//                     | type-extension
+//                     | global-parameter-declaration
 
 OscDeclaration =
   PhysicalTypeDeclaration
@@ -125,7 +145,14 @@ OscDeclaration =
 | GlobalParameterDeclaration
 
 
-// Type declarations
+// type-declarator ::= non-aggregate-type-declarator | aggregate-type-declarator
+//
+// non-aggregate-type-declarator ::= primitive-type | physical-type-name | enum-name | struct-name | actor-name | qualified-behavior-name
+//
+// aggregate-type-declarator ::= list-type-declarator
+// list-type-declarator ::= 'list' 'of' non-aggregate-type-declarator
+//
+// primitive-type ::= 'int' | 'uint' | 'float' | 'bool' | 'string'
 
 TypeDeclarator =
   NonAggregateTypeDeclarator
@@ -149,7 +176,22 @@ TypeReference =
 | QualifiedBehaviorName
 
 
-// Physical type and units
+// physical-type-declaration ::= 'type' physical-type-name 'is' base-unit-specifier NEWLINE
+// physical-type-name ::= qualified-identifier
+//
+// unit-declaration ::= 'unit' unit-name 'of' physical-type-name 'is' unit-specifier NEWLINE
+//
+// base-unit-specifier ::= SI-base-unit-specifier
+// unit-specifier ::= SI-unit-specifier
+//
+// SI-base-unit-specifier ::= 'SI' '(' SI-base-exponent-list ')'
+// SI-base-exponent-list ::= SI-base-exponent (',' SI-base-exponent)*
+// SI-base-exponent ::= SI-base-unit-name ':' integer-literal
+//
+// SI-unit-specifier ::= 'SI' '(' SI-base-exponent-list [',' SI-factor] [',' SI-offset] ')'
+// SI-factor ::= 'factor' ':' ( float-literal | integer-literal )
+// SI-offset ::= 'offset' ':' ( float-literal | integer-literal )
+// SI-base-unit-name ::= 'kg' | 'm' | 's' | 'A' | 'K' | 'mol' | 'cd' | 'rad'
 
 PhysicalTypeDeclaration =
   'type' physical_type_name:QualifiedIdentifier 'is' BaseUnitSpecifier 'newline'
@@ -170,22 +212,28 @@ SiBaseExponentList =
   SiBaseExponent (',' SiBaseExponent)*
 
 SiBaseExponent =
-  SiBaseUnitName ':' 'integer_literal'
+  SiBaseUnitName ':' Expression
 
 SiUnitSpecifier =
   'SI' '(' SiBaseExponentList TrailingSiFactor? TrailingSiOffset? ')'
 
 TrailingSiFactor =
-  ',' 'factor' ':' NumberLiteral
+  ',' 'factor' ':' Expression
 
 TrailingSiOffset =
-  ',' 'offset' ':' NumberLiteral
+  ',' 'offset' ':' Expression
 
 SiBaseUnitName =
   'kg' | 'm' | 's' | 'A' | 'K' | 'mol' | 'cd' | 'rad'
 
 
-// Enumerations
+// enum-declaration ::= 'enum' enum-name ':' '[' enum-member-decl (',' enum-member-decl)* ']' NEWLINE
+// enum-member-decl ::= enum-member-name [ '=' enum-member-value ]
+// enum-name ::= qualified-identifier
+// enum-member-name ::= qualified-identifier
+// enum-member-value ::= uint-literal | hex-uint-literal
+//
+// enum-value-reference ::= [enum-name '!'] enum-member-name
 
 EnumDeclaration =
   'enum' enum_name:QualifiedIdentifier ':' '[' EnumMemberDeclList ']' 'newline'
@@ -197,32 +245,31 @@ EnumMemberDecl =
   enum_member_name:QualifiedIdentifier EnumMemberInitializer?
 
 EnumMemberInitializer =
-  '=' EnumMemberValue
-
-EnumMemberValue =
-  'integer_literal'
+  '=' enum_member_value:Expression
 
 EnumValueReference =
-  EnumValueReferencePrefix? enum_member_name:QualifiedIdentifier
+  QualifiedIdentifier
+| PrefixedEnumValueReference
 
-EnumValueReferencePrefix =
-  enum_name:QualifiedIdentifier '!'
+PrefixedEnumValueReference =
+  enum_name:QualifiedIdentifier '!' enum_member_name:QualifiedIdentifier
 
 
-// Structs
+// struct-declaration ::= 'struct' struct-name ['inherits' struct-name ['(' field-name '=='  (enum-value-reference | bool-literal) ')']] ( (':' NEWLINE INDENT
+//       struct-member-decl+ DEDENT) | NEWLINE )
+//
+// struct-member-decl ::= event-declaration | field-declaration | constraint-declaration | method-declaration | coverage-declaration
+// struct-name ::= qualified-identifier
+// field-name ::= qualified-identifier
 
 StructDeclaration =
   'struct' struct_name:QualifiedIdentifier StructInheritsClause? StructBodyOrNewline
 
 StructInheritsClause =
-  'inherits' struct_name:QualifiedIdentifier StructInheritsCondition?
+  'inherits' base_name:QualifiedIdentifier StructInheritsCondition?
 
 StructInheritsCondition =
-  '(' field_name:QualifiedIdentifier '==' StructInheritsConstant ')'
-
-StructInheritsConstant =
-  EnumValueReference
-| BoolLiteral
+  '(' field_name:QualifiedIdentifier '==' field_value:Expression ')'
 
 StructBodyOrNewline =
   StructBody | 'newline'
@@ -241,20 +288,20 @@ StructMemberDecl =
 | CoverageDeclaration
 
 
-// Actors
+// actor-declaration ::= 'actor' actor-name ['inherits' actor-name ['(' field-name '==' (enum-value-reference | bool-literal) ')']] ( (':' NEWLINE INDENT
+//       actor-member-decl+ DEDENT) | NEWLINE )
+//
+// actor-member-decl ::= event-declaration | field-declaration | constraint-declaration | method-declaration | coverage-declaration
+// actor-name ::= qualified-identifier
 
 ActorDeclaration =
   'actor' actor_name:QualifiedIdentifier ActorInheritsClause? ActorBodyOrNewline
 
 ActorInheritsClause =
-  'inherits' actor_name:QualifiedIdentifier ActorInheritsCondition?
+  'inherits' base_name:QualifiedIdentifier ActorInheritsCondition?
 
 ActorInheritsCondition =
-  '(' field_name:QualifiedIdentifier '==' ActorInheritsConstant ')'
-
-ActorInheritsConstant =
-  EnumValueReference
-| BoolLiteral
+  '(' field_name:QualifiedIdentifier '==' field_value:Expression ')'
 
 ActorBodyOrNewline =
   ActorBody | 'newline'
@@ -273,20 +320,23 @@ ActorMemberDecl =
 | CoverageDeclaration
 
 
-// Scenarios
+// scenario-declaration ::= 'scenario' qualified-behavior-name ['inherits' qualified-behavior-name ['(' field-name '==' (enum-value-reference | bool-literal) ')']] ( (':' NEWLINE INDENT
+//       (scenario-member-decl | behavior-specification)+
+//       DEDENT) | NEWLINE )
+//
+// scenario-member-decl ::= event-declaration | field-declaration | constraint-declaration | method-declaration | coverage-declaration | modifier-application
+//
+// qualified-behavior-name ::= [actor-name '.'] behavior-name
+// behavior-name ::= qualified-identifier
 
 ScenarioDeclaration =
-  'scenario' QualifiedBehaviorName ScenarioInheritsClause? ScenarioBodyOrNewline
+  'scenario' scenario_name:QualifiedBehaviorName ScenarioInheritsClause? ScenarioBodyOrNewline
 
 ScenarioInheritsClause =
-  'inherits' QualifiedBehaviorName ScenarioInheritsCondition?
+  'inherits' base_name:QualifiedBehaviorName ScenarioInheritsCondition?
 
 ScenarioInheritsCondition =
-  '(' field_name:QualifiedIdentifier '==' ScenarioInheritsConstant ')'
-
-ScenarioInheritsConstant =
-  EnumValueReference
-| BoolLiteral
+  '(' field_name:QualifiedIdentifier '==' field_value:Expression ')'
 
 ScenarioBodyOrNewline =
   ScenarioBody | 'newline'
@@ -310,29 +360,28 @@ ScenarioMemberDecl =
 | ModifierApplication
 
 QualifiedBehaviorName =
-  QualifiedBehaviorNamePrefix? behavior_name:QualifiedIdentifier
+  QualifiedIdentifier
+| PrefixedBehaviorName
 
-QualifiedBehaviorNamePrefix =
-  actor_name:QualifiedIdentifier '.'
+PrefixedBehaviorName =
+  actor_name:QualifiedIdentifier '.' behavior_name:QualifiedIdentifier
 
 
-// Actions
+// action-declaration ::= 'action' qualified-behavior-name ['inherits' qualified-behavior-name ['(' field-name '==' (enum-value-reference | bool-literal) ')']] ( (':' NEWLINE INDENT
+//       (scenario-member-decl | behavior-specification)+
+//       DEDENT) | NEWLINE )
 
 ActionDeclaration =
-  'action' QualifiedBehaviorName ActionInheritsClause? ActionBodyOrNewline
+  'action' action_name:QualifiedBehaviorName ActionInheritsClause? ActionBodyOrNewline
 
 ActionBodyOrNewline =
   ActionBody | 'newline'
 
 ActionInheritsClause =
-  'inherits' QualifiedBehaviorName ActionInheritsCondition?
+  'inherits' base_name:QualifiedBehaviorName ActionInheritsCondition?
 
 ActionInheritsCondition =
-  '(' field_name:QualifiedIdentifier '==' ActionInheritsConstant ')'
-
-ActionInheritsConstant =
-  EnumValueReference
-| BoolLiteral
+  '(' field_name:QualifiedIdentifier '==' field_value:Expression ')'
 
 ActionBody =
   ':' 'newline' 'indent' ActionMemberItemList 'dedent'
@@ -344,13 +393,15 @@ ActionMemberItem =
   ScenarioMemberDecl
 | BehaviorSpecification
 
-// Modifiers
+
+// modifier-declaration ::= 'modifier' [actor-name '.'] modifier-name ['of' qualified-behavior-name] ( (':' NEWLINE INDENT
+//       (scenario-member-decl | on-directive)+
+//       DEDENT) | NEWLINE )
+//
+// modifier-name ::= qualified-identifier
 
 ModifierDeclaration =
-  'modifier' ModifierNamePrefix? modifier_name:QualifiedIdentifier ModifierOfClause? ModifierBodyOrNewline
-
-ModifierNamePrefix =
-  actor_name:QualifiedIdentifier '.'
+  'modifier' modifier_name:QualifiedBehaviorName ModifierOfClause? ModifierBodyOrNewline
 
 ModifierOfClause =
   'of' QualifiedBehaviorName
@@ -369,7 +420,15 @@ ModifierMemberItem =
 | OnDirective
 
 
-// Type extension
+// type-extension ::= enum-type-extension | structured-type-extension
+//
+// enum-type-extension ::= 'extend' enum-name ':' '[' enum-member-decl (',' enum-member-decl)* ']' NEWLINE
+//
+// structured-type-extension ::= 'extend' extendable-type-name ':' NEWLINE INDENT
+//       extension-member-decl+ DEDENT
+//
+// extendable-type-name ::= struct-name | actor-name | qualified-behavior-name
+// extension-member-decl ::= struct-member-decl | actor-member-decl | scenario-member-decl | behavior-specification
 
 TypeExtension =
   EnumTypeExtension
@@ -379,7 +438,7 @@ EnumTypeExtension =
   'extend' enum_name:QualifiedIdentifier ':' '[' EnumMemberDeclList ']' 'newline'
 
 StructuredTypeExtension =
-  'extend' TypeReference ':' 'newline' 'indent' ExtensionMemberDeclList 'dedent'
+  'extend' extendable_type_name:TypeReference ':' 'newline' 'indent' ExtensionMemberDeclList 'dedent'
 
 ExtensionMemberDeclList =
   ExtensionMemberDecl*
@@ -399,13 +458,30 @@ RelaxedExtensionMemberDecl =
 | ModifierApplication
 
 
-// Global parameter declarations
+// global-parameter-declaration ::= 'global' parameter-declaration
 
 GlobalParameterDeclaration =
   'global' ParameterDeclaration
 
 
-// Events
+// event-declaration ::= 'event' event-name ['(' argument-list-specification ')'] ['is' event-specification] NEWLINE
+// event-specification ::= event-reference [ [event-field-decl] 'if' event-condition ]
+//                        | event-condition
+//
+// event-reference ::= '@' event-path
+// event-field-decl ::= 'as' event-field-name
+// event-field-name ::= qualified-identifier
+// event-name ::= qualified-identifier
+// event-path ::= [expression '.'] event-name
+//
+// event-condition ::= bool-expression | rise-expression | fall-expression | elapsed-expression | every-expression
+// rise-expression ::= 'rise' '(' bool-expression ')'
+// fall-expression ::= 'fall' '(' bool-expression ')'
+// elapsed-expression ::= 'elapsed' '(' duration-expression ')'
+// every-expression ::= 'every' '(' duration-expression [',' 'offset' ':' duration-expression] ')'
+//
+// bool-expression ::= expression
+// duration-expression ::= expression
 
 EventDeclaration =
   'event' event_name:QualifiedIdentifier EventArgumentListSpecification? EventIsClause? 'newline'
@@ -433,41 +509,45 @@ EventFieldDecl =
   'as' event_field_name:QualifiedIdentifier
 
 EventPath =
-  EventPathPrefix? event_name:QualifiedIdentifier
+  QualifiedIdentifier
+| PrefixedEventPath
 
-EventPathPrefix =
-  Expression '.'
+PrefixedEventPath =
+  Expression '.' event_name:QualifiedIdentifier
 
 EventCondition =
-  BoolExpression
+  Expression
 | RiseExpression
 | FallExpression
 | ElapsedExpression
 | EveryExpression
 
 RiseExpression =
-  'rise' '(' BoolExpression ')'
+  'rise' '(' condition:Expression ')'
 
 FallExpression =
-  'fall' '(' BoolExpression ')'
+  'fall' '(' condition:Expression ')'
 
 ElapsedExpression =
-  'elapsed' '(' DurationExpression ')'
+  'elapsed' '(' duration:Expression ')'
 
 EveryExpression =
-  'every' '(' DurationExpression TrailingEveryExpOffset? ')'
+  'every' '(' duration:Expression TrailingEveryExpOffset? ')'
 
 TrailingEveryExpOffset =
-  ',' 'offset' ':' DurationExpression
-
-BoolExpression =
-  Expression
-
-DurationExpression =
-  Expression
+  ',' 'offset' ':' duration:Expression
 
 
-// Fields
+// field-declaration ::=  parameter-declaration | variable-declaration
+// parameter-declaration ::= field-name (',' field-name)* ':' type-declarator ['=' default-value] ( parameter-with-declaration | NEWLINE )
+// variable-declaration ::= 'var' field-name (',' field-name)* ':' type-declarator ['=' (default-value | sample-expression) ] NEWLINE
+//
+// sample-expression ::= 'sample' '(' expression ',' event-specification [',' default-value] ')'
+// default-value ::= expression
+//
+// parameter-with-declaration ::= 'with' ':' NEWLINE INDENT
+//       parameter-with-member+ DEDENT
+// parameter-with-member ::= constraint-declaration
 
 FieldDeclaration =
   ParameterDeclaration
@@ -480,7 +560,7 @@ FieldNameList =
   QualifiedIdentifier (',' QualifiedIdentifier)*
 
 ParameterInitilizerClause =
-  '=' DefaultValue
+  '=' default_value:Expression
 
 VariableDeclaration =
   'var' field_name:FieldNameList ':' TypeDeclarator VariableInitializer? 'newline'
@@ -489,17 +569,14 @@ VariableInitializer =
   '=' VariableInitializerValue
 
 VariableInitializerValue =
-  DefaultValue
+  Expression
 | SampleExpression
 
 SampleExpression =
   'sample' '(' Expression ',' EventSpecification SampleDefaultValue? ')'
 
 SampleDefaultValue =
-  ',' DefaultValue
-
-DefaultValue =
-  Expression
+  ',' default_value:Expression
 
 ParameterWithDeclarationOrNewline =
   ParameterWithDeclaration | 'newline'
@@ -511,20 +588,26 @@ ParameterWithMember =
   ConstraintDeclaration
 
 
-// Constraints
+// constraint-declaration ::= keep-constraint-declaration | remove-default-declaration
+//
+// keep-constraint-declaration ::= 'keep' '(' [constraint-qualifier] constraint-expression ')' NEWLINE
+// constraint-qualifier ::= 'default' | 'hard'
+//
+// constraint-expression ::= expression
+//
+// remove-default-declaration ::= 'remove_default' '(' parameter-reference ')' NEWLINE
+//
+// parameter-reference ::= field-name | field-access
 
 ConstraintDeclaration =
   KeepConstraintDeclaration
 | RemoveDefaultDeclaration
 
 KeepConstraintDeclaration =
-  'keep' '(' ConstraintQualifier? ConstraintExpression ')' 'newline'
+  'keep' '(' ConstraintQualifier? constraint:Expression ')' 'newline'
 
 ConstraintQualifier =
   'default' | 'hard'
-
-ConstraintExpression =
-  Expression
 
 RemoveDefaultDeclaration =
   'remove_default' '(' ParameterReference ')' 'newline'
@@ -534,16 +617,20 @@ ParameterReference =
 | FieldAccess
 
 
-// Methods
+// method-declaration ::= 'def' method-name '(' [argument-list-specification] ')' ['->' return-type] method-implementation NEWLINE
+//
+// return-type ::= type-declarator
+//
+// method-implementation ::= 'is' [method-qualifier] ('expression' expression | 'undefined' | 'external' structured-identifier '(' [argument-list] ')')
+//
+// method-qualifier ::= 'only'
+// method-name ::= qualified-identifier
 
 MethodDeclaration =
   'def' method_name:QualifiedIdentifier '(' ArgumentListSpecification? ')' MethodReturnType? MethodImplementation 'newline'
 
 MethodReturnType =
-  '->' ReturnType
-
-ReturnType =
-  TypeDeclarator
+  '->' return_type:TypeDeclarator
 
 MethodImplementation =
   'is' MethodQualifier? MethodBody
@@ -553,20 +640,17 @@ MethodQualifier =
 
 MethodBody =
   MethodExpressionBody
-| MethodUndefinedBody
+| 'undefined'
 | MethodExternalBody
 
 MethodExpressionBody =
   'expression' Expression
 
-MethodUndefinedBody =
-  'undefined'
-
 MethodExternalBody =
   'external' StructuredIdentifier '(' ArgumentList? ')'
 
 
-// Coverage
+// coverage-declaration ::= ('cover' | 'record') '(' argument-list ')' NEWLINE
 
 CoverageDeclaration =
   CoverageOperator '(' ArgumentList ')' 'newline'
@@ -575,23 +659,30 @@ CoverageOperator =
   'cover' | 'record'
 
 
-// Modifier application
+// modifier-application ::= [actor-expression '.'] modifier-name '(' [argument-list] ')' NEWLINE
 
 ModifierApplication =
-  ModifierApplicationPrefix? modifier_name:QualifiedIdentifier '(' ArgumentList? ')' 'newline'
+  ActorPath '(' ArgumentList? ')' 'newline'
 
-ModifierApplicationPrefix =
-  ActorExpression '.'
+ActorPath =
+  QualifiedIdentifier
+| PrefixedActorPath
+
+PrefixedActorPath =
+  Expression '.' actor_name:QualifiedIdentifier
 
 
-// Behavior specification
+// behavior-specification ::= on-directive | do-directive
 
 BehaviorSpecification =
   OnDirective
 | DoDirective
 
 
-// On directive
+// on-directive ::= 'on' event-specification ':' NEWLINE INDENT
+//      on-member+ DEDENT
+//
+// on-member ::= call-directive | emit-directive
 
 OnDirective =
   'on' EventSpecification ':' 'newline' 'indent' OnMemberList 'dedent'
@@ -602,6 +693,13 @@ OnMemberList =
 OnMember =
   CallDirective
 | EmitDirective
+
+
+// do-directive ::= 'do' do-member
+//
+// do-member ::= [label-name ':'] ( composition | behavior-invocation | wait-directive | emit-directive | call-directive )
+//
+// label-name ::= qualified-identifier
 
 DoDirective =
   'do' DoMember
@@ -620,7 +718,10 @@ DoMemberBody =
 | CallDirective
 
 
-// Composition
+// composition ::= composition-operator ['(' [unqualified-argument-list] ')']':' NEWLINE INDENT
+//      do-member+ DEDENT [behavior-with-declaration]
+//
+// composition-operator ::= 'serial' | 'one_of' | 'parallel'
 
 Composition =
   CompositionOperator CompositionArguments? ':' 'newline' 'indent' DoMemberList 'dedent' BehaviorWithDeclaration?
@@ -635,13 +736,25 @@ CompositionOperator =
   'serial' | 'one_of' | 'parallel'
 
 
-// Behavior invocation
+// behavior-invocation ::= [actor-expression '.'] behavior-name '(' [argument-list] ')' ( behavior-with-declaration | NEWLINE )
+//
+// behavior-with-declaration ::= 'with' ':' NEWLINE INDENT
+//       behavior-with-member+ DEDENT
+// behavior-with-member ::= constraint-declaration
+//                        | modifier-application
+//                        | until-directive
+//
+// actor-expression ::= expression
 
 BehaviorInvocation =
-  BehaviorInvocationPrefix? behavior_name:QualifiedIdentifier '(' ArgumentList? ')' BehaviorWithDeclarationOrNewline
+  BehaviorPath '(' ArgumentList? ')' BehaviorWithDeclarationOrNewline
 
-BehaviorInvocationPrefix =
-  ActorExpression '.'
+BehaviorPath =
+  QualifiedBehaviorName
+| PrefixedBehaviorPath
+
+PrefixedBehaviorPath =
+  actor_expr:Expression '.' behavior_name:QualifiedIdentifier
 
 BehaviorWithDeclarationOrNewline =
   BehaviorWithDeclaration | 'newline'
@@ -657,17 +770,14 @@ BehaviorWithMember =
 | ModifierApplication
 | UntilDirective
 
-ActorExpression =
-  Expression
 
-
-// Wait directive
+// wait-directive ::= 'wait' event-specification NEWLINE
 
 WaitDirective =
   'wait' EventSpecification 'newline'
 
 
-// Emit directive
+// emit-directive ::= 'emit' event-name ['(' argument-list ')'] NEWLINE
 
 EmitDirective =
   'emit' event_name:QualifiedIdentifier EmitArguments? 'newline'
@@ -676,7 +786,9 @@ EmitArguments =
   '(' ArgumentList ')'
 
 
-// Call directive
+// call-directive ::= 'call' method-invocation NEWLINE
+//
+// method-invocation ::= postfix-exp '(' [argument-list] ')'
 
 CallDirective =
   'call' MethodInvocation 'newline'
@@ -685,13 +797,17 @@ MethodInvocation =
   Expression '(' ArgumentList? ')'
 
 
-// Until directive
+// until-directive ::= 'until' event-specification NEWLINE
 
 UntilDirective =
   'until' EventSpecification 'newline'
 
 
-// Argumen list specification
+// argument-list-specification ::= argument-specification (',' argument-specification)*
+//
+// argument-specification ::= argument-name ':' type-declarator ['=' default-value]
+//
+// argument-name ::= qualified-identifier
 
 ArgumentListSpecification =
   ArgumentSpecification (',' ArgumentSpecification)*
@@ -700,19 +816,20 @@ ArgumentSpecification =
   argument_name:QualifiedIdentifier ':' TypeDeclarator ArgumentInitializer?
 
 ArgumentInitializer =
-  '=' DefaultValue
+  '=' default_value:Expression
 
 
-// Argument list
+// argument-list ::= positional-argument (',' positional-argument)* (',' named-argument)*
+//                 | named-argument (',' named-argument)*
+//
+// positional-argument ::= expression
+// named-argument ::= argument-name ':' expression
 
 ArgumentList =
   PositionalArgumentList? NamedArgumentList?
 
 PositionalArgumentList =
-  PositionalArgument (',' PositionalArgument)* ','?
-
-PositionalArgument =
-  Expression
+  Expression (',' Expression)* ','?
 
 NamedArgumentList =
   NamedArgument (',' NamedArgument)*
@@ -721,7 +838,11 @@ NamedArgument =
   argument_name:QualifiedIdentifier ':' Expression
 
 
-// Unqualified argument list
+// unqualified-argument-list ::= positional-argument (',' positional-argument)* (',' unqualified-named-argument)*
+//                             | unqualified-named-argument (',' unqualified-named-argument)*
+//
+// unqualified-argument-name ::= identifier
+// unqualified-named-argument ::= unqualified-argument-name ':' expression
 
 UnqualifiedArgumentList =
   PositionalArgumentList? UnqualifiedNamedArgumentList?
@@ -730,10 +851,10 @@ UnqualifiedNamedArgumentList =
   UnqualifiedNamedArgument (',' UnqualifiedNamedArgument)*
 
 UnqualifiedNamedArgument =
-  unqualified_argument_name:QualifiedIdentifier ':' Expression
+  unqualified_argument_name:'identifier' ':' Expression
 
 
-// Expressions
+// expression ::= implication | ternary-op-exp
 
 Expression =
   TernaryOpExp
@@ -753,14 +874,35 @@ Expression =
 | ListConstructor
 | RangeConstructor
 
+
+// ternary-op-exp ::= implication '?' expression ':' expression
+
 TernaryOpExp =
   condition:Expression '?' then_expr:Expression ':' else_expr:Expression
+
+
+// implication ::= disjunction ('=>' disjunction)*
+// disjunction ::= conjunction ('or' conjunction)*
+// conjunction ::= inversion ('and' inversion)*
+// inversion ::= 'not' inversion | relation
 
 LogicalOpExp =
   lhs_expr:Expression LogicalOp rhs_expr:Expression
 
 LogicalOp =
   '=>' | 'or' | 'and'
+
+
+// relation ::= sum | relation relational-op sum
+// relational-op ::= '==' | '!=' | '<' | '<=' | '>' | '>=' | 'in'
+//
+// sum ::= term | sum additive-op term
+// additive-op ::= '+' | '-'
+//
+// term ::= factor | term multiplicative-op factor
+// multiplicative-op ::= '*' | '/' | '%'
+//
+// factor ::= postfix-exp | '-' factor
 
 BinaryOpExp =
   lhs_expr:Expression BinaryOp rhs_expr:Expression
@@ -773,6 +915,20 @@ UnaryOpExp =
 
 UnaryOp =
   'not' | '-'
+
+
+// postfix-exp ::= primary-exp
+//               | cast-exp
+//               | type-test-exp
+//               | element-access
+//               | function-application
+//               | field-access
+//
+// cast-exp ::= postfix-exp '.' 'as' '(' type-declarator ')'
+// type-test-exp ::= postfix-exp '.' 'is' '(' type-declarator ')'
+// element-access ::= postfix-exp '[' expression ']'
+// function-application ::= postfix-exp '(' [argument-list] ')'
+// field-access ::= postfix-exp '.' field-name
 
 CastExp =
   Expression '.' 'as' '(' TypeDeclarator ')'
@@ -789,6 +945,18 @@ FunctionApplication =
 FieldAccess =
   Expression '.' field_name:QualifiedIdentifier
 
+
+// primary-exp ::= value-exp | 'it' | qualified-identifier | '(' expression ')'
+//
+// value-exp ::= integer-literal
+//             | float-literal
+//             | physical-literal
+//             | bool-literal
+//             | string-literal
+//             | enum-value-reference
+//             | list-constructor
+//             | range-constructor
+
 ItExp =
   'it'
 
@@ -803,7 +971,9 @@ LiteralExp =
 | 'string_literal'
 
 
-// List and range constructors
+// list-constructor ::= '[' expression (',' expression)* ']'
+//
+// range-constructor ::= 'range' '(' expression ',' expression ')' | '[' expression '..' expression ']'
 
 ListConstructor =
   '[' ExpressionList ']'
