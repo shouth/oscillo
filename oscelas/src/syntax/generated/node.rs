@@ -1916,23 +1916,33 @@ impl<'a> TypedNode for MainStatementList<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct PreludeStatement<'a>(OscDslNode<'a>);
+pub enum PreludeStatement<'a> {
+    ImportStatement(ImportStatement<'a>),
+}
 impl PreludeStatement<'_> {
-    pub fn import_statement(&self) -> Option<ImportStatement> {
-        support::child(&self.0, 0usize)
+    pub fn as_import_statement(&self) -> Option<ImportStatement> {
+        match self {
+            Self::ImportStatement(node) => Some(node.clone()),
+            _ => None,
+        }
     }
 }
 impl<'a> TypedNode for PreludeStatement<'a> {
     type Value = OscDslSyntaxKind;
     type Node = OscDslNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
-        value == PRELUDE_STATEMENT
+        matches!(value, IMPORT_STATEMENT)
     }
     fn cast(node: Self::Node) -> Option<Self> {
-        Self::can_cast(*node.value()).then(|| Self(node))
+        match *node.value() {
+            IMPORT_STATEMENT => ImportStatement::cast(node.clone()).map(Self::ImportStatement),
+            _ => None,
+        }
     }
     fn syntax(&self) -> &Self::Node {
-        &self.0
+        match self {
+            Self::ImportStatement(node) => node.syntax(),
+        }
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -2874,7 +2884,7 @@ impl<'a> TypedNode for TypeDeclarator<'a> {
                 | IDENTIFIER
                 | PREFIXED_IDENTIFIER
                 | PREFIXED_BEHAVIOR_NAME
-                | AGGREGATE_TYPE_DECLARATOR
+                | LIST_TYPE_DECLARATOR
         )
     }
     fn cast(node: Self::Node) -> Option<Self> {
@@ -2891,7 +2901,7 @@ impl<'a> TypedNode for TypeDeclarator<'a> {
             | PREFIXED_BEHAVIOR_NAME => {
                 NonAggregateTypeDeclarator::cast(node.clone()).map(Self::NonAggregateTypeDeclarator)
             }
-            AGGREGATE_TYPE_DECLARATOR => {
+            LIST_TYPE_DECLARATOR => {
                 AggregateTypeDeclarator::cast(node.clone()).map(Self::AggregateTypeDeclarator)
             }
             _ => None,
@@ -2962,23 +2972,35 @@ impl<'a> TypedNode for NonAggregateTypeDeclarator<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct AggregateTypeDeclarator<'a>(OscDslNode<'a>);
+pub enum AggregateTypeDeclarator<'a> {
+    ListTypeDeclarator(ListTypeDeclarator<'a>),
+}
 impl AggregateTypeDeclarator<'_> {
-    pub fn list_type_declarator(&self) -> Option<ListTypeDeclarator> {
-        support::child(&self.0, 0usize)
+    pub fn as_list_type_declarator(&self) -> Option<ListTypeDeclarator> {
+        match self {
+            Self::ListTypeDeclarator(node) => Some(node.clone()),
+            _ => None,
+        }
     }
 }
 impl<'a> TypedNode for AggregateTypeDeclarator<'a> {
     type Value = OscDslSyntaxKind;
     type Node = OscDslNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
-        value == AGGREGATE_TYPE_DECLARATOR
+        matches!(value, LIST_TYPE_DECLARATOR)
     }
     fn cast(node: Self::Node) -> Option<Self> {
-        Self::can_cast(*node.value()).then(|| Self(node))
+        match *node.value() {
+            LIST_TYPE_DECLARATOR => {
+                ListTypeDeclarator::cast(node.clone()).map(Self::ListTypeDeclarator)
+            }
+            _ => None,
+        }
     }
     fn syntax(&self) -> &Self::Node {
-        &self.0
+        match self {
+            Self::ListTypeDeclarator(node) => node.syntax(),
+        }
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -3170,43 +3192,65 @@ impl<'a> TypedNode for QualifiedBehaviorName<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct BaseUnitSpecifier<'a>(OscDslNode<'a>);
+pub enum BaseUnitSpecifier<'a> {
+    SiBaseUnitSpecifier(SiBaseUnitSpecifier<'a>),
+}
 impl BaseUnitSpecifier<'_> {
-    pub fn si_base_unit_specifier(&self) -> Option<SiBaseUnitSpecifier> {
-        support::child(&self.0, 0usize)
+    pub fn as_si_base_unit_specifier(&self) -> Option<SiBaseUnitSpecifier> {
+        match self {
+            Self::SiBaseUnitSpecifier(node) => Some(node.clone()),
+            _ => None,
+        }
     }
 }
 impl<'a> TypedNode for BaseUnitSpecifier<'a> {
     type Value = OscDslSyntaxKind;
     type Node = OscDslNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
-        value == BASE_UNIT_SPECIFIER
+        matches!(value, SI_BASE_UNIT_SPECIFIER)
     }
     fn cast(node: Self::Node) -> Option<Self> {
-        Self::can_cast(*node.value()).then(|| Self(node))
+        match *node.value() {
+            SI_BASE_UNIT_SPECIFIER => {
+                SiBaseUnitSpecifier::cast(node.clone()).map(Self::SiBaseUnitSpecifier)
+            }
+            _ => None,
+        }
     }
     fn syntax(&self) -> &Self::Node {
-        &self.0
+        match self {
+            Self::SiBaseUnitSpecifier(node) => node.syntax(),
+        }
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct UnitSpecifier<'a>(OscDslNode<'a>);
+pub enum UnitSpecifier<'a> {
+    SiUnitSpecifier(SiUnitSpecifier<'a>),
+}
 impl UnitSpecifier<'_> {
-    pub fn si_unit_specifier(&self) -> Option<SiUnitSpecifier> {
-        support::child(&self.0, 0usize)
+    pub fn as_si_unit_specifier(&self) -> Option<SiUnitSpecifier> {
+        match self {
+            Self::SiUnitSpecifier(node) => Some(node.clone()),
+            _ => None,
+        }
     }
 }
 impl<'a> TypedNode for UnitSpecifier<'a> {
     type Value = OscDslSyntaxKind;
     type Node = OscDslNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
-        value == UNIT_SPECIFIER
+        matches!(value, SI_UNIT_SPECIFIER)
     }
     fn cast(node: Self::Node) -> Option<Self> {
-        Self::can_cast(*node.value()).then(|| Self(node))
+        match *node.value() {
+            SI_UNIT_SPECIFIER => SiUnitSpecifier::cast(node.clone()).map(Self::SiUnitSpecifier),
+            _ => None,
+        }
     }
     fn syntax(&self) -> &Self::Node {
-        &self.0
+        match self {
+            Self::SiUnitSpecifier(node) => node.syntax(),
+        }
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -3550,7 +3594,7 @@ impl<'a> TypedNode for Expression<'a> {
                 | ELEMENT_ACCESS
                 | FUNCTION_APPLICATION
                 | FIELD_ACCESS
-                | IT_EXP
+                | IT_KW
                 | IDENTIFIER
                 | PREFIXED_IDENTIFIER
                 | PARENTHESIZED_EXP
@@ -3581,7 +3625,7 @@ impl<'a> TypedNode for Expression<'a> {
                 FunctionApplication::cast(node.clone()).map(Self::FunctionApplication)
             }
             FIELD_ACCESS => FieldAccess::cast(node.clone()).map(Self::FieldAccess),
-            IT_EXP => ItExp::cast(node.clone()).map(Self::ItExp),
+            IT_KW => ItExp::cast(node.clone()).map(Self::ItExp),
             IDENTIFIER | PREFIXED_IDENTIFIER => {
                 QualifiedIdentifier::cast(node.clone()).map(Self::QualifiedIdentifier)
             }
@@ -5819,7 +5863,7 @@ impl<'a> TypedNode for EventSpecification<'a> {
                 | ELEMENT_ACCESS
                 | FUNCTION_APPLICATION
                 | FIELD_ACCESS
-                | IT_EXP
+                | IT_KW
                 | IDENTIFIER
                 | PREFIXED_IDENTIFIER
                 | PARENTHESIZED_EXP
@@ -5854,7 +5898,7 @@ impl<'a> TypedNode for EventSpecification<'a> {
             | ELEMENT_ACCESS
             | FUNCTION_APPLICATION
             | FIELD_ACCESS
-            | IT_EXP
+            | IT_KW
             | IDENTIFIER
             | PREFIXED_IDENTIFIER
             | PARENTHESIZED_EXP
@@ -5962,7 +6006,7 @@ impl<'a> TypedNode for EventCondition<'a> {
                 | ELEMENT_ACCESS
                 | FUNCTION_APPLICATION
                 | FIELD_ACCESS
-                | IT_EXP
+                | IT_KW
                 | IDENTIFIER
                 | PREFIXED_IDENTIFIER
                 | PARENTHESIZED_EXP
@@ -5995,7 +6039,7 @@ impl<'a> TypedNode for EventCondition<'a> {
             | ELEMENT_ACCESS
             | FUNCTION_APPLICATION
             | FIELD_ACCESS
-            | IT_EXP
+            | IT_KW
             | IDENTIFIER
             | PREFIXED_IDENTIFIER
             | PARENTHESIZED_EXP
@@ -6466,7 +6510,7 @@ impl<'a> TypedNode for VariableInitializerValue<'a> {
                 | ELEMENT_ACCESS
                 | FUNCTION_APPLICATION
                 | FIELD_ACCESS
-                | IT_EXP
+                | IT_KW
                 | IDENTIFIER
                 | PREFIXED_IDENTIFIER
                 | PARENTHESIZED_EXP
@@ -6496,7 +6540,7 @@ impl<'a> TypedNode for VariableInitializerValue<'a> {
             | ELEMENT_ACCESS
             | FUNCTION_APPLICATION
             | FIELD_ACCESS
-            | IT_EXP
+            | IT_KW
             | IDENTIFIER
             | PREFIXED_IDENTIFIER
             | PARENTHESIZED_EXP
@@ -6620,23 +6664,38 @@ impl<'a> TypedNode for ParameterWithDeclaration<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ParameterWithMember<'a>(OscDslNode<'a>);
+pub enum ParameterWithMember<'a> {
+    ConstraintDeclaration(ConstraintDeclaration<'a>),
+}
 impl ParameterWithMember<'_> {
-    pub fn constraint_declaration(&self) -> Option<ConstraintDeclaration> {
-        support::child(&self.0, 0usize)
+    pub fn as_constraint_declaration(&self) -> Option<ConstraintDeclaration> {
+        match self {
+            Self::ConstraintDeclaration(node) => Some(node.clone()),
+            _ => None,
+        }
     }
 }
 impl<'a> TypedNode for ParameterWithMember<'a> {
     type Value = OscDslSyntaxKind;
     type Node = OscDslNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
-        value == PARAMETER_WITH_MEMBER
+        matches!(
+            value,
+            KEEP_CONSTRAINT_DECLARATION | REMOVE_DEFAULT_DECLARATION
+        )
     }
     fn cast(node: Self::Node) -> Option<Self> {
-        Self::can_cast(*node.value()).then(|| Self(node))
+        match *node.value() {
+            KEEP_CONSTRAINT_DECLARATION | REMOVE_DEFAULT_DECLARATION => {
+                ConstraintDeclaration::cast(node.clone()).map(Self::ConstraintDeclaration)
+            }
+            _ => None,
+        }
     }
     fn syntax(&self) -> &Self::Node {
-        &self.0
+        match self {
+            Self::ConstraintDeclaration(node) => node.syntax(),
+        }
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -6795,23 +6854,33 @@ impl<'a> TypedNode for MethodImplementation<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct MethodQualifier<'a>(OscDslNode<'a>);
+pub enum MethodQualifier<'a> {
+    OnlyToken(OnlyToken<'a>),
+}
 impl MethodQualifier<'_> {
-    pub fn only_token(&self) -> Option<OnlyToken> {
-        support::child(&self.0, 0usize)
+    pub fn as_only_token(&self) -> Option<OnlyToken> {
+        match self {
+            Self::OnlyToken(node) => Some(node.clone()),
+            _ => None,
+        }
     }
 }
 impl<'a> TypedNode for MethodQualifier<'a> {
     type Value = OscDslSyntaxKind;
     type Node = OscDslNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
-        value == METHOD_QUALIFIER
+        matches!(value, ONLY_KW)
     }
     fn cast(node: Self::Node) -> Option<Self> {
-        Self::can_cast(*node.value()).then(|| Self(node))
+        match *node.value() {
+            ONLY_KW => OnlyToken::cast(node.clone()).map(Self::OnlyToken),
+            _ => None,
+        }
     }
     fn syntax(&self) -> &Self::Node {
-        &self.0
+        match self {
+            Self::OnlyToken(node) => node.syntax(),
+        }
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -8246,23 +8315,33 @@ impl<'a> TypedNode for FunctionApplication<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ItExp<'a>(OscDslNode<'a>);
+pub enum ItExp<'a> {
+    ItToken(ItToken<'a>),
+}
 impl ItExp<'_> {
-    pub fn it_token(&self) -> Option<ItToken> {
-        support::child(&self.0, 0usize)
+    pub fn as_it_token(&self) -> Option<ItToken> {
+        match self {
+            Self::ItToken(node) => Some(node.clone()),
+            _ => None,
+        }
     }
 }
 impl<'a> TypedNode for ItExp<'a> {
     type Value = OscDslSyntaxKind;
     type Node = OscDslNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
-        value == IT_EXP
+        matches!(value, IT_KW)
     }
     fn cast(node: Self::Node) -> Option<Self> {
-        Self::can_cast(*node.value()).then(|| Self(node))
+        match *node.value() {
+            IT_KW => ItToken::cast(node.clone()).map(Self::ItToken),
+            _ => None,
+        }
     }
     fn syntax(&self) -> &Self::Node {
-        &self.0
+        match self {
+            Self::ItToken(node) => node.syntax(),
+        }
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
