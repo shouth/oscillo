@@ -1726,14 +1726,14 @@ impl<'a> TypedNode for QualifiedIdentifier<'a> {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PrefixedIdentifier<'a>(OscDslNode<'a>);
 impl PrefixedIdentifier<'_> {
-    pub fn namespace_name(&self) -> Option<IdentifierToken> {
+    pub fn namespace_name(&self) -> Option<NamespaceName> {
         support::child(&self.0, 0usize)
     }
     pub fn colon_colon_token(&self) -> Option<ColonColonToken> {
         support::child(&self.0, 0usize)
     }
     pub fn identifier_token(&self) -> Option<IdentifierToken> {
-        support::child(&self.0, 1usize)
+        support::child(&self.0, 0usize)
     }
 }
 impl<'a> TypedNode for PrefixedIdentifier<'a> {
@@ -1747,6 +1747,45 @@ impl<'a> TypedNode for PrefixedIdentifier<'a> {
     }
     fn syntax(&self) -> &Self::Node {
         &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum NamespaceName<'a> {
+    IdentifierToken(IdentifierToken<'a>),
+    NullToken(NullToken<'a>),
+}
+impl NamespaceName<'_> {
+    pub fn as_identifier_token(&self) -> Option<IdentifierToken> {
+        match self {
+            Self::IdentifierToken(node) => Some(node.clone()),
+            _ => None,
+        }
+    }
+    pub fn as_null_token(&self) -> Option<NullToken> {
+        match self {
+            Self::NullToken(node) => Some(node.clone()),
+            _ => None,
+        }
+    }
+}
+impl<'a> TypedNode for NamespaceName<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        matches!(value, IDENTIFIER | NULL_KW)
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        match *node.value() {
+            IDENTIFIER => IdentifierToken::cast(node.clone()).map(Self::IdentifierToken),
+            NULL_KW => NullToken::cast(node.clone()).map(Self::NullToken),
+            _ => None,
+        }
+    }
+    fn syntax(&self) -> &Self::Node {
+        match self {
+            Self::IdentifierToken(node) => node.syntax(),
+            Self::NullToken(node) => node.syntax(),
+        }
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -2302,45 +2341,6 @@ impl<'a> TypedNode for OscDeclaration<'a> {
             Self::ModifierDeclaration(node) => node.syntax(),
             Self::TypeExtension(node) => node.syntax(),
             Self::GlobalParameterDeclaration(node) => node.syntax(),
-        }
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum NamespaceName<'a> {
-    IdentifierToken(IdentifierToken<'a>),
-    NullToken(NullToken<'a>),
-}
-impl NamespaceName<'_> {
-    pub fn as_identifier_token(&self) -> Option<IdentifierToken> {
-        match self {
-            Self::IdentifierToken(node) => Some(node.clone()),
-            _ => None,
-        }
-    }
-    pub fn as_null_token(&self) -> Option<NullToken> {
-        match self {
-            Self::NullToken(node) => Some(node.clone()),
-            _ => None,
-        }
-    }
-}
-impl<'a> TypedNode for NamespaceName<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
-    fn can_cast(value: Self::Value) -> bool {
-        matches!(value, IDENTIFIER | NULL_KW)
-    }
-    fn cast(node: Self::Node) -> Option<Self> {
-        match *node.value() {
-            IDENTIFIER => IdentifierToken::cast(node.clone()).map(Self::IdentifierToken),
-            NULL_KW => NullToken::cast(node.clone()).map(Self::NullToken),
-            _ => None,
-        }
-    }
-    fn syntax(&self) -> &Self::Node {
-        match self {
-            Self::IdentifierToken(node) => node.syntax(),
-            Self::NullToken(node) => node.syntax(),
         }
     }
 }

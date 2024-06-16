@@ -20,7 +20,7 @@ QualifiedIdentifier =
 | PrefixedIdentifier
 
 PrefixedIdentifier =
-  namespace_name:'identifier'? '::' 'identifier'
+  namespace_name:NamespaceName? '::' 'identifier'
 
 
 // bool-literal ::= 'true' | 'false'
