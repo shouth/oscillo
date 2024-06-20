@@ -16,11 +16,7 @@
 // prefixed-identifier ::= ( [ namespace-name ] '::' identifier )
 
 QualifiedIdentifier =
-  'identifier'
-| PrefixedIdentifier
-
-PrefixedIdentifier =
-  namespace_name:NamespaceName? '::' 'identifier'
+  namespace_name:NamespaceName? '::'? 'identifier'
 
 
 // bool-literal ::= 'true' | 'false'
@@ -70,7 +66,10 @@ ImportReference =
 | StructuredIdentifier
 
 StructuredIdentifier =
-  'identifier' ('.' 'identifier')*
+  StructuredIdentifierElement*
+
+StructuredIdentifierElement =
+  'identifier' '.'?
 
 
 // main-statement ::= namespace-statement | export-statement | osc-declaration
@@ -94,7 +93,10 @@ NamespaceUseClause =
   'use' NamespaceList
 
 NamespaceList =
-  NamespaceName (',' NamespaceName)*
+  NamespaceListElement*
+
+NamespaceListElement =
+  NamespaceName ','?
 
 NamespaceName = 'identifier' | 'null'
 
@@ -107,18 +109,17 @@ ExportStatement =
   'export' ExportSpecificationList 'newline'
 
 ExportSpecificationList =
-  ExportSpecification (',' ExportSpecification)*
+  ExportSpecificationListElement*
+
+ExportSpecificationListElement =
+  ExportSpecification ','?
 
 ExportSpecification =
   QualifiedIdentifier
 | ExportWildcardSpecification
 
 ExportWildcardSpecification =
-  '*'
-| PrefixedExportWildcardSpecification
-
-PrefixedExportWildcardSpecification =
-  namespace_name:QualifiedIdentifier? '::' '*'
+  namespace_name:QualifiedIdentifier? '::'? '*'
 
 
 // osc-declaration ::=   physical-type-declaration
@@ -209,19 +210,22 @@ SiBaseUnitSpecifier =
   'SI' '(' SiBaseExponentList ')'
 
 SiBaseExponentList =
-  SiBaseExponent (',' SiBaseExponent)*
+  SiBaseExponentListElement*
 
-SiBaseExponent =
-  SiBaseUnitName ':' Expression
+SiBaseExponentListElement =
+  SiBaseUnitName ':' Expression ','?
 
 SiUnitSpecifier =
-  'SI' '(' SiBaseExponentList TrailingSiFactor? TrailingSiOffset? ')'
+  'SI' '(' SiUnitSpecifierArgumentList ')'
 
-TrailingSiFactor =
-  ',' 'factor' ':' Expression
+SiUnitSpecifierArgumentList =
+  SiUnitSpecifierArgumentListElement*
 
-TrailingSiOffset =
-  ',' 'offset' ':' Expression
+SiUnitSpecifierArgumentListElement =
+  SiUnitSpecifierArgumentName ':' Expression ','?
+
+SiUnitSpecifierArgumentName =
+  'factor' | 'offset' | SiBaseUnitName
 
 SiBaseUnitName =
   'kg' | 'm' | 's' | 'A' | 'K' | 'mol' | 'cd' | 'rad'
@@ -239,20 +243,16 @@ EnumDeclaration =
   'enum' enum_name:QualifiedIdentifier ':' '[' EnumMemberDeclList ']' 'newline'
 
 EnumMemberDeclList =
-  EnumMemberDecl (',' EnumMemberDecl)*
+  EnumMemberDecl*
 
 EnumMemberDecl =
-  enum_member_name:QualifiedIdentifier EnumMemberInitializer?
+  enum_member_name:QualifiedIdentifier EnumInitializerClause? ','?
 
-EnumMemberInitializer =
+EnumInitializerClause =
   '=' enum_member_value:Expression
 
 EnumValueReference =
-  QualifiedIdentifier
-| PrefixedEnumValueReference
-
-PrefixedEnumValueReference =
-  enum_name:QualifiedIdentifier '!' enum_member_name:QualifiedIdentifier
+  enum_name:QualifiedIdentifier? '!'? enum_member_name:QualifiedIdentifier
 
 
 // struct-declaration ::= 'struct' struct-name ['inherits' struct-name ['(' field-name '=='  (enum-value-reference | bool-literal) ')']] ( (':' NEWLINE INDENT
@@ -269,7 +269,7 @@ StructInheritsClause =
   'inherits' base_name:QualifiedIdentifier StructInheritsCondition?
 
 StructInheritsCondition =
-  '(' field_name:QualifiedIdentifier '==' field_value:Expression ')'
+  '(' condition:Expression ')'
 
 StructBodyOrNewline =
   StructBody | 'newline'
@@ -301,7 +301,7 @@ ActorInheritsClause =
   'inherits' base_name:QualifiedIdentifier ActorInheritsCondition?
 
 ActorInheritsCondition =
-  '(' field_name:QualifiedIdentifier '==' field_value:Expression ')'
+  '(' condition:Expression ')'
 
 ActorBodyOrNewline =
   ActorBody | 'newline'
@@ -336,7 +336,7 @@ ScenarioInheritsClause =
   'inherits' base_name:QualifiedBehaviorName ScenarioInheritsCondition?
 
 ScenarioInheritsCondition =
-  '(' field_name:QualifiedIdentifier '==' field_value:Expression ')'
+  '(' condition:Expression ')'
 
 ScenarioBodyOrNewline =
   ScenarioBody | 'newline'
@@ -360,11 +360,7 @@ ScenarioMemberDecl =
 | ModifierApplication
 
 QualifiedBehaviorName =
-  QualifiedIdentifier
-| PrefixedBehaviorName
-
-PrefixedBehaviorName =
-  actor_name:QualifiedIdentifier '.' behavior_name:QualifiedIdentifier
+  actor_name:QualifiedIdentifier? '.'? behavior_name:QualifiedIdentifier
 
 
 // action-declaration ::= 'action' qualified-behavior-name ['inherits' qualified-behavior-name ['(' field-name '==' (enum-value-reference | bool-literal) ')']] ( (':' NEWLINE INDENT
@@ -381,7 +377,7 @@ ActionInheritsClause =
   'inherits' base_name:QualifiedBehaviorName ActionInheritsCondition?
 
 ActionInheritsCondition =
-  '(' field_name:QualifiedIdentifier '==' field_value:Expression ')'
+  '(' condition:Expression ')'
 
 ActionBody =
   ':' 'newline' 'indent' ActionMemberItemList 'dedent'
@@ -503,17 +499,10 @@ EventReferenceCondition =
   EventFieldDecl? 'if' EventCondition
 
 EventReference =
-  '@' EventPath
+  '@' MemberReference
 
 EventFieldDecl =
   'as' event_field_name:QualifiedIdentifier
-
-EventPath =
-  QualifiedIdentifier
-| PrefixedEventPath
-
-PrefixedEventPath =
-  Expression '.' event_name:QualifiedIdentifier
 
 EventCondition =
   Expression
@@ -532,10 +521,10 @@ ElapsedExpression =
   'elapsed' '(' duration:Expression ')'
 
 EveryExpression =
-  'every' '(' duration:Expression TrailingEveryExpOffset? ')'
+  'every' '(' duration:Expression ','? EveryExpOffset? ')'
 
-TrailingEveryExpOffset =
-  ',' 'offset' ':' duration:Expression
+EveryExpOffset =
+  'offset' ':' duration:Expression
 
 
 // field-declaration ::=  parameter-declaration | variable-declaration
@@ -554,29 +543,29 @@ FieldDeclaration =
 | VariableDeclaration
 
 ParameterDeclaration =
-  FieldNameList ':' TypeDeclarator ParameterInitilizerClause? ParameterWithDeclarationOrNewline
+  FieldNameList ':' TypeDeclarator ParameterInitializerClause? ParameterWithDeclarationOrNewline
 
-FieldNameList =
-  QualifiedIdentifier (',' QualifiedIdentifier)*
-
-ParameterInitilizerClause =
+ParameterInitializerClause =
   '=' default_value:Expression
 
+FieldNameList =
+  FieldNameListElement*
+
+FieldNameListElement =
+  field_name:QualifiedIdentifier ','?
+
 VariableDeclaration =
-  'var' field_name:FieldNameList ':' TypeDeclarator VariableInitializer? 'newline'
+  'var' FieldNameList ':' TypeDeclarator VariableInitializerClause? 'newline'
 
-VariableInitializer =
-  '=' VariableInitializerValue
+VariableInitializerClause =
+  '=' VariableDefaultValue
 
-VariableInitializerValue =
+VariableDefaultValue =
   Expression
 | SampleExpression
 
 SampleExpression =
-  'sample' '(' Expression ',' EventSpecification SampleDefaultValue? ')'
-
-SampleDefaultValue =
-  ',' default_value:Expression
+  'sample' '(' Expression ',' EventSpecification ','? default_value:Expression? ')'
 
 ParameterWithDeclarationOrNewline =
   ParameterWithDeclaration | 'newline'
@@ -610,11 +599,7 @@ ConstraintQualifier =
   'default' | 'hard'
 
 RemoveDefaultDeclaration =
-  'remove_default' '(' ParameterReference ')' 'newline'
-
-ParameterReference =
-  QualifiedIdentifier
-| FieldAccess
+  'remove_default' '(' MemberReference ')' 'newline'
 
 
 // method-declaration ::= 'def' method-name '(' [argument-list-specification] ')' ['->' return-type] method-implementation NEWLINE
@@ -627,7 +612,7 @@ ParameterReference =
 // method-name ::= qualified-identifier
 
 MethodDeclaration =
-  'def' method_name:QualifiedIdentifier '(' ArgumentListSpecification? ')' MethodReturnType? MethodImplementation 'newline'
+  'def' method_name:QualifiedIdentifier '(' ArgumentListSpecification ')' MethodReturnType? MethodImplementation 'newline'
 
 MethodReturnType =
   '->' return_type:TypeDeclarator
@@ -647,7 +632,7 @@ MethodExpressionBody =
   'expression' Expression
 
 MethodExternalBody =
-  'external' StructuredIdentifier '(' ArgumentList? ')'
+  'external' StructuredIdentifier '(' ArgumentList ')'
 
 
 // coverage-declaration ::= ('cover' | 'record') '(' argument-list ')' NEWLINE
@@ -662,14 +647,7 @@ CoverageOperator =
 // modifier-application ::= [actor-expression '.'] modifier-name '(' [argument-list] ')' NEWLINE
 
 ModifierApplication =
-  ActorPath '(' ArgumentList? ')' 'newline'
-
-ActorPath =
-  QualifiedIdentifier
-| PrefixedActorPath
-
-PrefixedActorPath =
-  Expression '.' actor_name:QualifiedIdentifier
+  MemberReference '(' ArgumentList ')' 'newline'
 
 
 // behavior-specification ::= on-directive | do-directive
@@ -705,10 +683,7 @@ DoDirective =
   'do' DoMember
 
 DoMember =
-  DoMemberLabel? DoMemberBody
-
-DoMemberLabel =
-  label_name:QualifiedIdentifier ':'
+  label_name:QualifiedIdentifier? ':'? DoMemberBody
 
 DoMemberBody =
   Composition
@@ -727,7 +702,7 @@ Composition =
   CompositionOperator CompositionArguments? ':' 'newline' 'indent' DoMemberList 'dedent' BehaviorWithDeclaration?
 
 CompositionArguments =
-  '(' UnqualifiedArgumentList ')'
+  '(' ArgumentList ')'
 
 DoMemberList =
   DoMember*
@@ -747,14 +722,7 @@ CompositionOperator =
 // actor-expression ::= expression
 
 BehaviorInvocation =
-  BehaviorPath '(' ArgumentList? ')' BehaviorWithDeclarationOrNewline
-
-BehaviorPath =
-  QualifiedBehaviorName
-| PrefixedBehaviorPath
-
-PrefixedBehaviorPath =
-  actor_expr:Expression '.' behavior_name:QualifiedIdentifier
+  MemberReference '(' ArgumentList ')' BehaviorWithDeclarationOrNewline
 
 BehaviorWithDeclarationOrNewline =
   BehaviorWithDeclaration | 'newline'
@@ -794,7 +762,7 @@ CallDirective =
   'call' MethodInvocation 'newline'
 
 MethodInvocation =
-  Expression '(' ArgumentList? ')'
+  Expression '(' ArgumentList ')'
 
 
 // until-directive ::= 'until' event-specification NEWLINE
@@ -810,49 +778,34 @@ UntilDirective =
 // argument-name ::= qualified-identifier
 
 ArgumentListSpecification =
-  ArgumentSpecification (',' ArgumentSpecification)*
+  ArgumentListSpecificationElement*
+
+ArgumentListSpecificationElement =
+  ArgumentSpecification ','?
 
 ArgumentSpecification =
-  argument_name:QualifiedIdentifier ':' TypeDeclarator ArgumentInitializer?
+  argument_name:QualifiedIdentifier ':' TypeDeclarator ArgumentInitializerClause?
 
-ArgumentInitializer =
+ArgumentInitializerClause =
   '=' default_value:Expression
-
 
 // argument-list ::= positional-argument (',' positional-argument)* (',' named-argument)*
 //                 | named-argument (',' named-argument)*
 //
 // positional-argument ::= expression
 // named-argument ::= argument-name ':' expression
-
-ArgumentList =
-  PositionalArgumentList? NamedArgumentList?
-
-PositionalArgumentList =
-  Expression (',' Expression)* ','?
-
-NamedArgumentList =
-  NamedArgument (',' NamedArgument)*
-
-NamedArgument =
-  argument_name:QualifiedIdentifier ':' Expression
-
-
+//
 // unqualified-argument-list ::= positional-argument (',' positional-argument)* (',' unqualified-named-argument)*
 //                             | unqualified-named-argument (',' unqualified-named-argument)*
 //
 // unqualified-argument-name ::= identifier
 // unqualified-named-argument ::= unqualified-argument-name ':' expression
 
-UnqualifiedArgumentList =
-  PositionalArgumentList? UnqualifiedNamedArgumentList?
+ArgumentList =
+  LabeledArgument*
 
-UnqualifiedNamedArgumentList =
-  UnqualifiedNamedArgument (',' UnqualifiedNamedArgument)*
-
-UnqualifiedNamedArgument =
-  unqualified_argument_name:'identifier' ':' Expression
-
+LabeledArgument =
+  label:QualifiedIdentifier? ':'? argument:Expression ','?
 
 // expression ::= implication | ternary-op-exp
 
@@ -865,9 +818,8 @@ Expression =
 | TypeTestExp
 | ElementAccess
 | FunctionApplication
-| FieldAccess
+| MemberReference
 | ItExp
-| QualifiedIdentifier
 | ParenthesizedExp
 | LiteralExp
 | EnumValueReference
@@ -940,10 +892,10 @@ ElementAccess =
   object_expr:Expression '[' index_expr:Expression ']'
 
 FunctionApplication =
-  Expression '(' ArgumentList? ')'
+  Expression '(' ArgumentList ')'
 
-FieldAccess =
-  Expression '.' field_name:QualifiedIdentifier
+MemberReference =
+  object_expr:Expression? '.'? field_name:QualifiedIdentifier
 
 
 // primary-exp ::= value-exp | 'it' | qualified-identifier | '(' expression ')'
@@ -979,7 +931,10 @@ ListConstructor =
   '[' ExpressionList ']'
 
 ExpressionList =
-  Expression (',' Expression)*
+  ExpressionListElement*
+
+ExpressionListElement =
+  Expression ','?
 
 RangeConstructor =
   ParenthesesRangeConstructor
