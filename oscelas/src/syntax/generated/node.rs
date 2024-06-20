@@ -3250,9 +3250,7 @@ impl<'a> TypedNode for SiUnitSpecifier<'a> {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SiBaseExponentList<'a>(OscDslNode<'a>);
 impl<'a> SiBaseExponentList<'a> {
-    pub fn si_base_exponent_list_element(
-        &self,
-    ) -> impl Iterator<Item = SiBaseExponentListElement<'a>> + 'a {
+    pub fn si_base_exponent(&self) -> impl Iterator<Item = SiBaseExponent<'a>> + 'a {
         support::children(&self.0)
     }
 }
@@ -3270,8 +3268,8 @@ impl<'a> TypedNode for SiBaseExponentList<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct SiBaseExponentListElement<'a>(OscDslNode<'a>);
-impl SiBaseExponentListElement<'_> {
+pub struct SiBaseExponent<'a>(OscDslNode<'a>);
+impl SiBaseExponent<'_> {
     pub fn si_base_unit_name(&self) -> Option<SiBaseUnitName> {
         support::child(&self.0, 0usize)
     }
@@ -3285,11 +3283,11 @@ impl SiBaseExponentListElement<'_> {
         support::child(&self.0, 0usize)
     }
 }
-impl<'a> TypedNode for SiBaseExponentListElement<'a> {
+impl<'a> TypedNode for SiBaseExponent<'a> {
     type Value = OscDslSyntaxKind;
     type Node = OscDslNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
-        value == SI_BASE_EXPONENT_LIST_ELEMENT
+        value == SI_BASE_EXPONENT
     }
     fn cast(node: Self::Node) -> Option<Self> {
         Self::can_cast(*node.value()).then(|| Self(node))
@@ -3583,9 +3581,9 @@ impl<'a> TypedNode for Expression<'a> {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SiUnitSpecifierArgumentList<'a>(OscDslNode<'a>);
 impl<'a> SiUnitSpecifierArgumentList<'a> {
-    pub fn si_unit_specifier_argument_list_element(
+    pub fn si_unit_specifier_argument(
         &self,
-    ) -> impl Iterator<Item = SiUnitSpecifierArgumentListElement<'a>> + 'a {
+    ) -> impl Iterator<Item = SiUnitSpecifierArgument<'a>> + 'a {
         support::children(&self.0)
     }
 }
@@ -3603,8 +3601,8 @@ impl<'a> TypedNode for SiUnitSpecifierArgumentList<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct SiUnitSpecifierArgumentListElement<'a>(OscDslNode<'a>);
-impl SiUnitSpecifierArgumentListElement<'_> {
+pub struct SiUnitSpecifierArgument<'a>(OscDslNode<'a>);
+impl SiUnitSpecifierArgument<'_> {
     pub fn si_unit_specifier_argument_name(&self) -> Option<SiUnitSpecifierArgumentName> {
         support::child(&self.0, 0usize)
     }
@@ -3618,11 +3616,11 @@ impl SiUnitSpecifierArgumentListElement<'_> {
         support::child(&self.0, 0usize)
     }
 }
-impl<'a> TypedNode for SiUnitSpecifierArgumentListElement<'a> {
+impl<'a> TypedNode for SiUnitSpecifierArgument<'a> {
     type Value = OscDslSyntaxKind;
     type Node = OscDslNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
-        value == SI_UNIT_SPECIFIER_ARGUMENT_LIST_ELEMENT
+        value == SI_UNIT_SPECIFIER_ARGUMENT
     }
     fn cast(node: Self::Node) -> Option<Self> {
         Self::can_cast(*node.value()).then(|| Self(node))
@@ -5675,9 +5673,7 @@ impl<'a> TypedNode for EventIsClause<'a> {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ArgumentListSpecification<'a>(OscDslNode<'a>);
 impl<'a> ArgumentListSpecification<'a> {
-    pub fn argument_list_specification_element(
-        &self,
-    ) -> impl Iterator<Item = ArgumentListSpecificationElement<'a>> + 'a {
+    pub fn argument_specification(&self) -> impl Iterator<Item = ArgumentSpecification<'a>> + 'a {
         support::children(&self.0)
     }
 }
@@ -7444,29 +7440,6 @@ impl<'a> TypedNode for MethodInvocation<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ArgumentListSpecificationElement<'a>(OscDslNode<'a>);
-impl ArgumentListSpecificationElement<'_> {
-    pub fn argument_specification(&self) -> Option<ArgumentSpecification> {
-        support::child(&self.0, 0usize)
-    }
-    pub fn comma_token(&self) -> Option<CommaToken> {
-        support::child(&self.0, 0usize)
-    }
-}
-impl<'a> TypedNode for ArgumentListSpecificationElement<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
-    fn can_cast(value: Self::Value) -> bool {
-        value == ARGUMENT_LIST_SPECIFICATION_ELEMENT
-    }
-    fn cast(node: Self::Node) -> Option<Self> {
-        Self::can_cast(*node.value()).then(|| Self(node))
-    }
-    fn syntax(&self) -> &Self::Node {
-        &self.0
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ArgumentSpecification<'a>(OscDslNode<'a>);
 impl ArgumentSpecification<'_> {
     pub fn argument_name(&self) -> Option<QualifiedIdentifier> {
@@ -7479,6 +7452,9 @@ impl ArgumentSpecification<'_> {
         support::child(&self.0, 0usize)
     }
     pub fn argument_initializer_clause(&self) -> Option<ArgumentInitializerClause> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn comma_token(&self) -> Option<CommaToken> {
         support::child(&self.0, 0usize)
     }
 }
