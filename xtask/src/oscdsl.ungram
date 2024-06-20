@@ -210,18 +210,18 @@ SiBaseUnitSpecifier =
   'SI' '(' SiBaseExponentList ')'
 
 SiBaseExponentList =
-  SiBaseExponentListElement*
+  SiBaseExponent*
 
-SiBaseExponentListElement =
+SiBaseExponent =
   SiBaseUnitName ':' Expression ','?
 
 SiUnitSpecifier =
   'SI' '(' SiUnitSpecifierArgumentList ')'
 
 SiUnitSpecifierArgumentList =
-  SiUnitSpecifierArgumentListElement*
+  SiUnitSpecifierArgument*
 
-SiUnitSpecifierArgumentListElement =
+SiUnitSpecifierArgument =
   SiUnitSpecifierArgumentName ':' Expression ','?
 
 SiUnitSpecifierArgumentName =
@@ -778,13 +778,10 @@ UntilDirective =
 // argument-name ::= qualified-identifier
 
 ArgumentListSpecification =
-  ArgumentListSpecificationElement*
-
-ArgumentListSpecificationElement =
-  ArgumentSpecification ','?
+  ArgumentSpecification*
 
 ArgumentSpecification =
-  argument_name:QualifiedIdentifier ':' TypeDeclarator ArgumentInitializerClause?
+  argument_name:QualifiedIdentifier ':' TypeDeclarator ArgumentInitializerClause? ','?
 
 ArgumentInitializerClause =
   '=' default_value:Expression
