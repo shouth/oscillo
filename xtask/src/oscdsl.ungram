@@ -164,7 +164,7 @@ TypeDeclarator =
 
 NonAggregateTypeDeclarator =
   PrimitiveType
-| TypeReference
+| QualifiedBehaviorName
 
 AggregateTypeDeclarator =
   ListTypeDeclarator
@@ -174,10 +174,6 @@ ListTypeDeclarator =
 
 PrimitiveType =
   'int' | 'uint' | 'float' | 'bool' | 'string'
-
-TypeReference =
-  QualifiedIdentifier
-| QualifiedBehaviorName
 
 
 // physical-type-declaration ::= 'type' physical-type-name 'is' base-unit-specifier NEWLINE
@@ -438,7 +434,7 @@ EnumTypeExtension =
   'extend' enum_name:QualifiedIdentifier ':' '[' EnumMemberDeclList ']' 'newline'
 
 StructuredTypeExtension =
-  'extend' extendable_type_name:TypeReference ':' 'newline' 'indent' ExtensionMemberDeclList 'dedent'
+  'extend' extendable_type_name:QualifiedBehaviorName ':' 'newline' 'indent' ExtensionMemberDeclList 'dedent'
 
 ExtensionMemberDeclList =
   ExtensionMemberDecl*
