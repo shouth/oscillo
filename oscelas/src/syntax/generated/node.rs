@@ -6469,7 +6469,7 @@ impl ParameterWithDeclaration<'_> {
     pub fn indent_token(&self) -> Option<IndentToken> {
         support::child(&self.0, 0usize)
     }
-    pub fn parameter_with_member(&self) -> Option<ParameterWithMember> {
+    pub fn parameter_with_member_list(&self) -> Option<ParameterWithMemberList> {
         support::child(&self.0, 0usize)
     }
     pub fn dedent_token(&self) -> Option<DedentToken> {
@@ -6481,6 +6481,26 @@ impl<'a> TypedNode for ParameterWithDeclaration<'a> {
     type Node = OscDslNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == PARAMETER_WITH_DECLARATION
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ParameterWithMemberList<'a>(OscDslNode<'a>);
+impl<'a> ParameterWithMemberList<'a> {
+    pub fn parameter_with_member(&self) -> impl Iterator<Item = ParameterWithMember<'a>> + 'a {
+        support::children(&self.0)
+    }
+}
+impl<'a> TypedNode for ParameterWithMemberList<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == PARAMETER_WITH_MEMBER_LIST
     }
     fn cast(node: Self::Node) -> Option<Self> {
         Self::can_cast(*node.value()).then(|| Self(node))
