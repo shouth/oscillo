@@ -800,10 +800,17 @@ ArgumentInitializerClause =
 // unqualified-named-argument ::= unqualified-argument-name ':' expression
 
 ArgumentList =
-  LabeledArgument*
+  Argument*
 
-LabeledArgument =
-  label:QualifiedIdentifier? ':'? argument:Expression ','?
+Argument =
+  PositionalArgument
+| NamedArgument
+
+PositionalArgument =
+  Expression ','?
+
+NamedArgument =
+  label:QualifiedIdentifier ':' argument:Expression ','?
 
 
 // expression ::= implication | ternary-op-exp
@@ -818,6 +825,7 @@ Expression =
 | ElementAccess
 | FunctionApplication
 | MemberReference
+| QualifiedIdentifier
 | 'it'
 | ParenthesizedExp
 | LiteralExp
@@ -894,7 +902,7 @@ FunctionApplication =
   function_expr:Expression '(' ArgumentList ')'
 
 MemberReference =
-  object_expr:Expression? '.'? field_name:QualifiedIdentifier
+  object_expr:Expression '.' field_name:QualifiedIdentifier
 
 EnumValueReference =
   enum_name:QualifiedIdentifier '!' enum_member_name:QualifiedIdentifier
