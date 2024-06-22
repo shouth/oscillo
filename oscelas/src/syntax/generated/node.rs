@@ -2906,8 +2906,6 @@ impl<'a> TypedNode for TypeDeclarator<'a> {
                 | STRING_KW
                 | IDENTIFIER
                 | PREFIXED_IDENTIFIER
-                | IDENTIFIER
-                | PREFIXED_IDENTIFIER
                 | PREFIXED_BEHAVIOR_NAME
                 | LIST_TYPE_DECLARATOR
         )
@@ -2919,8 +2917,6 @@ impl<'a> TypedNode for TypeDeclarator<'a> {
             | FLOAT_KW
             | BOOL_KW
             | STRING_KW
-            | IDENTIFIER
-            | PREFIXED_IDENTIFIER
             | IDENTIFIER
             | PREFIXED_IDENTIFIER
             | PREFIXED_BEHAVIOR_NAME => Some(Self::NonAggregateTypeDeclarator(
@@ -2942,7 +2938,7 @@ impl<'a> TypedNode for TypeDeclarator<'a> {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum NonAggregateTypeDeclarator<'a> {
     PrimitiveType(PrimitiveType<'a>),
-    TypeReference(TypeReference<'a>),
+    QualifiedBehaviorName(QualifiedBehaviorName<'a>),
 }
 impl NonAggregateTypeDeclarator<'_> {
     pub fn as_primitive_type(&self) -> Option<PrimitiveType> {
@@ -2951,9 +2947,9 @@ impl NonAggregateTypeDeclarator<'_> {
             _ => None,
         }
     }
-    pub fn as_type_reference(&self) -> Option<TypeReference> {
+    pub fn as_qualified_behavior_name(&self) -> Option<QualifiedBehaviorName> {
         match self {
-            Self::TypeReference(node) => Some(node.clone()),
+            Self::QualifiedBehaviorName(node) => Some(node.clone()),
             _ => None,
         }
     }
@@ -2971,8 +2967,6 @@ impl<'a> TypedNode for NonAggregateTypeDeclarator<'a> {
                 | STRING_KW
                 | IDENTIFIER
                 | PREFIXED_IDENTIFIER
-                | IDENTIFIER
-                | PREFIXED_IDENTIFIER
                 | PREFIXED_BEHAVIOR_NAME
         )
     }
@@ -2981,20 +2975,16 @@ impl<'a> TypedNode for NonAggregateTypeDeclarator<'a> {
             INT_KW | UINT_KW | FLOAT_KW | BOOL_KW | STRING_KW => {
                 Some(Self::PrimitiveType(PrimitiveType::cast(node.clone())?))
             }
-            IDENTIFIER
-            | PREFIXED_IDENTIFIER
-            | IDENTIFIER
-            | PREFIXED_IDENTIFIER
-            | PREFIXED_BEHAVIOR_NAME => {
-                Some(Self::TypeReference(TypeReference::cast(node.clone())?))
-            }
+            IDENTIFIER | PREFIXED_IDENTIFIER | PREFIXED_BEHAVIOR_NAME => Some(
+                Self::QualifiedBehaviorName(QualifiedBehaviorName::cast(node.clone())?),
+            ),
             _ => None,
         }
     }
     fn syntax(&self) -> &Self::Node {
         match self {
             Self::PrimitiveType(node) => node.syntax(),
-            Self::TypeReference(node) => node.syntax(),
+            Self::QualifiedBehaviorName(node) => node.syntax(),
         }
     }
 }
@@ -3097,82 +3087,6 @@ impl<'a> TypedNode for PrimitiveType<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum TypeReference<'a> {
-    QualifiedIdentifier(QualifiedIdentifier<'a>),
-    QualifiedBehaviorName(QualifiedBehaviorName<'a>),
-}
-impl TypeReference<'_> {
-    pub fn as_qualified_identifier(&self) -> Option<QualifiedIdentifier> {
-        match self {
-            Self::QualifiedIdentifier(node) => Some(node.clone()),
-            _ => None,
-        }
-    }
-    pub fn as_qualified_behavior_name(&self) -> Option<QualifiedBehaviorName> {
-        match self {
-            Self::QualifiedBehaviorName(node) => Some(node.clone()),
-            _ => None,
-        }
-    }
-}
-impl<'a> TypedNode for TypeReference<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
-    fn can_cast(value: Self::Value) -> bool {
-        matches!(
-            value,
-            IDENTIFIER
-                | PREFIXED_IDENTIFIER
-                | IDENTIFIER
-                | PREFIXED_IDENTIFIER
-                | PREFIXED_BEHAVIOR_NAME
-        )
-    }
-    fn cast(node: Self::Node) -> Option<Self> {
-        match *node.value() {
-            IDENTIFIER | PREFIXED_IDENTIFIER => Some(Self::QualifiedIdentifier(
-                QualifiedIdentifier::cast(node.clone())?,
-            )),
-            IDENTIFIER | PREFIXED_IDENTIFIER | PREFIXED_BEHAVIOR_NAME => Some(
-                Self::QualifiedBehaviorName(QualifiedBehaviorName::cast(node.clone())?),
-            ),
-            _ => None,
-        }
-    }
-    fn syntax(&self) -> &Self::Node {
-        match self {
-            Self::QualifiedIdentifier(node) => node.syntax(),
-            Self::QualifiedBehaviorName(node) => node.syntax(),
-        }
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ListTypeDeclarator<'a>(OscDslNode<'a>);
-impl ListTypeDeclarator<'_> {
-    pub fn list_token(&self) -> Option<ListToken> {
-        support::child(&self.0, 0usize)
-    }
-    pub fn of_token(&self) -> Option<OfToken> {
-        support::child(&self.0, 0usize)
-    }
-    pub fn non_aggregate_type_declarator(&self) -> Option<NonAggregateTypeDeclarator> {
-        support::child(&self.0, 0usize)
-    }
-}
-impl<'a> TypedNode for ListTypeDeclarator<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
-    fn can_cast(value: Self::Value) -> bool {
-        value == LIST_TYPE_DECLARATOR
-    }
-    fn cast(node: Self::Node) -> Option<Self> {
-        Self::can_cast(*node.value()).then(|| Self(node))
-    }
-    fn syntax(&self) -> &Self::Node {
-        &self.0
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum QualifiedBehaviorName<'a> {
     QualifiedIdentifier(QualifiedIdentifier<'a>),
     PrefixedBehaviorName(PrefixedBehaviorName<'a>),
@@ -3216,6 +3130,32 @@ impl<'a> TypedNode for QualifiedBehaviorName<'a> {
             Self::QualifiedIdentifier(node) => node.syntax(),
             Self::PrefixedBehaviorName(node) => node.syntax(),
         }
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ListTypeDeclarator<'a>(OscDslNode<'a>);
+impl ListTypeDeclarator<'_> {
+    pub fn list_token(&self) -> Option<ListToken> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn of_token(&self) -> Option<OfToken> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn non_aggregate_type_declarator(&self) -> Option<NonAggregateTypeDeclarator> {
+        support::child(&self.0, 0usize)
+    }
+}
+impl<'a> TypedNode for ListTypeDeclarator<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == LIST_TYPE_DECLARATOR
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -5353,7 +5293,7 @@ impl StructuredTypeExtension<'_> {
     pub fn extend_token(&self) -> Option<ExtendToken> {
         support::child(&self.0, 0usize)
     }
-    pub fn extendable_type_name(&self) -> Option<TypeReference> {
+    pub fn extendable_type_name(&self) -> Option<QualifiedBehaviorName> {
         support::child(&self.0, 0usize)
     }
     pub fn colon_token(&self) -> Option<ColonToken> {
