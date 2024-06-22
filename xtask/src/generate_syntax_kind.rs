@@ -1,10 +1,14 @@
 use quote::{format_ident, quote};
 
-use crate::{grammar::{Grammar, RuleKind, Terminal}, syntax_name::SyntaxKindName};
+use crate::{grammar::{Grammar, RuleKind}, syntax_name::SyntaxKindName};
+
+pub trait StaticToken {
+    fn static_token(&self) -> Option<&str>;
+}
 
 pub fn generate_syntax_kind<T>(grammar: &Grammar<T>) -> String
 where
-    T: Terminal + SyntaxKindName,
+    T: StaticToken + SyntaxKindName,
 {
     let token_kind_idents = grammar
         .tokens()
@@ -14,6 +18,18 @@ where
         .rules()
         .filter(|index| !matches!(grammar[*index].kind, RuleKind::Choice(_)))
         .map(|index| format_ident!("{}", grammar[index].syntax_kind_name()));
+
+    let static_token_arms = grammar
+        .tokens()
+        .filter_map(|index| {
+            grammar[index].static_token()
+                .map(|token| {
+                    let kind = format_ident!("{}", grammar[index].syntax_kind_name());
+                    quote! {
+                        #kind => Some(#token),
+                    }
+                })
+        });
 
     let code = quote! {
         #![allow(bad_style, missing_docs, unreachable_pub)]
@@ -26,6 +42,16 @@ where
 
             #[doc(hidden)]
             __LAST,
+        }
+
+        use OscDslSyntaxKind::*;
+        impl OscDslSyntaxKind {
+            pub fn static_token(&self) -> Option<&'static str> {
+                match self {
+                    #(#static_token_arms)*
+                    _ => None,
+                }
+            }
         }
     };
 

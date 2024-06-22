@@ -1,6 +1,9 @@
-use crate::{grammar::{Grammar, Terminal}, syntax_name::{SyntaxKindName, SyntaxMemberName, SyntaxNodeName}};
 use convert_case::{Case, Casing};
 use ungrammar::Grammar as Ungrammar;
+
+use crate::generate_syntax_kind::StaticToken;
+use crate::grammar::{Grammar, Terminal};
+use crate::syntax_name::{SyntaxKindName, SyntaxMemberName, SyntaxNodeName};
 
 const PUNCTS: &[(&str, &str)] = &[
     (".", "dot"),
@@ -119,6 +122,13 @@ pub struct Token {
     name: String,
     terminal: String,
     kind: TokenKind,
+}
+
+impl StaticToken for Token {
+    fn static_token(&self) -> Option<&str> {
+        matches!(self.kind, TokenKind::Punctuation | TokenKind::Keyword)
+            .then(|| self.terminal.as_str())
+    }
 }
 
 impl Terminal for Token {
