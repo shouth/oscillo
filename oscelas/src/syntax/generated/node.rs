@@ -3485,16 +3485,16 @@ impl<'a> TypedNode for SiBaseUnitName<'a> {
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Expression<'a> {
-    TernaryOpExp(TernaryOpExp<'a>),
-    LogicalOpExp(LogicalOpExp<'a>),
-    BinaryOpExp(BinaryOpExp<'a>),
-    UnaryOpExp(UnaryOpExp<'a>),
+    TernaryExp(TernaryExp<'a>),
+    LogicalExp(LogicalExp<'a>),
+    BinaryExp(BinaryExp<'a>),
+    UnaryExp(UnaryExp<'a>),
     CastExp(CastExp<'a>),
     TypeTestExp(TypeTestExp<'a>),
     ElementAccess(ElementAccess<'a>),
     FunctionApplication(FunctionApplication<'a>),
     MemberReference(MemberReference<'a>),
-    ItExp(ItExp<'a>),
+    ItToken(ItToken<'a>),
     ParenthesizedExp(ParenthesizedExp<'a>),
     LiteralExp(LiteralExp<'a>),
     EnumValueReference(EnumValueReference<'a>),
@@ -3502,27 +3502,27 @@ pub enum Expression<'a> {
     RangeConstructor(RangeConstructor<'a>),
 }
 impl Expression<'_> {
-    pub fn as_ternary_op_exp(&self) -> Option<TernaryOpExp> {
+    pub fn as_ternary_exp(&self) -> Option<TernaryExp> {
         match self {
-            Self::TernaryOpExp(node) => Some(node.clone()),
+            Self::TernaryExp(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_logical_op_exp(&self) -> Option<LogicalOpExp> {
+    pub fn as_logical_exp(&self) -> Option<LogicalExp> {
         match self {
-            Self::LogicalOpExp(node) => Some(node.clone()),
+            Self::LogicalExp(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_binary_op_exp(&self) -> Option<BinaryOpExp> {
+    pub fn as_binary_exp(&self) -> Option<BinaryExp> {
         match self {
-            Self::BinaryOpExp(node) => Some(node.clone()),
+            Self::BinaryExp(node) => Some(node.clone()),
             _ => None,
         }
     }
-    pub fn as_unary_op_exp(&self) -> Option<UnaryOpExp> {
+    pub fn as_unary_exp(&self) -> Option<UnaryExp> {
         match self {
-            Self::UnaryOpExp(node) => Some(node.clone()),
+            Self::UnaryExp(node) => Some(node.clone()),
             _ => None,
         }
     }
@@ -3556,9 +3556,9 @@ impl Expression<'_> {
             _ => None,
         }
     }
-    pub fn as_it_exp(&self) -> Option<ItExp> {
+    pub fn as_it_token(&self) -> Option<ItToken> {
         match self {
-            Self::ItExp(node) => Some(node.clone()),
+            Self::ItToken(node) => Some(node.clone()),
             _ => None,
         }
     }
@@ -3599,10 +3599,10 @@ impl<'a> TypedNode for Expression<'a> {
     fn can_cast(value: Self::Value) -> bool {
         matches!(
             value,
-            TERNARY_OP_EXP
-                | LOGICAL_OP_EXP
-                | BINARY_OP_EXP
-                | UNARY_OP_EXP
+            TERNARY_EXP
+                | LOGICAL_EXP
+                | BINARY_EXP
+                | UNARY_EXP
                 | CAST_EXP
                 | TYPE_TEST_EXP
                 | ELEMENT_ACCESS
@@ -3624,10 +3624,10 @@ impl<'a> TypedNode for Expression<'a> {
     }
     fn cast(node: Self::Node) -> Option<Self> {
         match *node.value() {
-            TERNARY_OP_EXP => Some(Self::TernaryOpExp(TernaryOpExp::cast(node.clone())?)),
-            LOGICAL_OP_EXP => Some(Self::LogicalOpExp(LogicalOpExp::cast(node.clone())?)),
-            BINARY_OP_EXP => Some(Self::BinaryOpExp(BinaryOpExp::cast(node.clone())?)),
-            UNARY_OP_EXP => Some(Self::UnaryOpExp(UnaryOpExp::cast(node.clone())?)),
+            TERNARY_EXP => Some(Self::TernaryExp(TernaryExp::cast(node.clone())?)),
+            LOGICAL_EXP => Some(Self::LogicalExp(LogicalExp::cast(node.clone())?)),
+            BINARY_EXP => Some(Self::BinaryExp(BinaryExp::cast(node.clone())?)),
+            UNARY_EXP => Some(Self::UnaryExp(UnaryExp::cast(node.clone())?)),
             CAST_EXP => Some(Self::CastExp(CastExp::cast(node.clone())?)),
             TYPE_TEST_EXP => Some(Self::TypeTestExp(TypeTestExp::cast(node.clone())?)),
             ELEMENT_ACCESS => Some(Self::ElementAccess(ElementAccess::cast(node.clone())?)),
@@ -3635,7 +3635,7 @@ impl<'a> TypedNode for Expression<'a> {
                 node.clone(),
             )?)),
             MEMBER_REFERENCE => Some(Self::MemberReference(MemberReference::cast(node.clone())?)),
-            IT_KW => Some(Self::ItExp(ItExp::cast(node.clone())?)),
+            IT_KW => Some(Self::ItToken(ItToken::cast(node.clone())?)),
             PARENTHESIZED_EXP => Some(Self::ParenthesizedExp(ParenthesizedExp::cast(
                 node.clone(),
             )?)),
@@ -3653,16 +3653,16 @@ impl<'a> TypedNode for Expression<'a> {
     }
     fn syntax(&self) -> &Self::Node {
         match self {
-            Self::TernaryOpExp(node) => node.syntax(),
-            Self::LogicalOpExp(node) => node.syntax(),
-            Self::BinaryOpExp(node) => node.syntax(),
-            Self::UnaryOpExp(node) => node.syntax(),
+            Self::TernaryExp(node) => node.syntax(),
+            Self::LogicalExp(node) => node.syntax(),
+            Self::BinaryExp(node) => node.syntax(),
+            Self::UnaryExp(node) => node.syntax(),
             Self::CastExp(node) => node.syntax(),
             Self::TypeTestExp(node) => node.syntax(),
             Self::ElementAccess(node) => node.syntax(),
             Self::FunctionApplication(node) => node.syntax(),
             Self::MemberReference(node) => node.syntax(),
-            Self::ItExp(node) => node.syntax(),
+            Self::ItToken(node) => node.syntax(),
             Self::ParenthesizedExp(node) => node.syntax(),
             Self::LiteralExp(node) => node.syntax(),
             Self::EnumValueReference(node) => node.syntax(),
@@ -5817,10 +5817,10 @@ impl<'a> TypedNode for EventSpecification<'a> {
         matches!(
             value,
             EVENT_REFERENCE_SPECIFICATION
-                | TERNARY_OP_EXP
-                | LOGICAL_OP_EXP
-                | BINARY_OP_EXP
-                | UNARY_OP_EXP
+                | TERNARY_EXP
+                | LOGICAL_EXP
+                | BINARY_EXP
+                | UNARY_EXP
                 | CAST_EXP
                 | TYPE_TEST_EXP
                 | ELEMENT_ACCESS
@@ -5849,10 +5849,10 @@ impl<'a> TypedNode for EventSpecification<'a> {
             EVENT_REFERENCE_SPECIFICATION => Some(Self::EventReferenceSpecification(
                 EventReferenceSpecification::cast(node.clone())?,
             )),
-            TERNARY_OP_EXP
-            | LOGICAL_OP_EXP
-            | BINARY_OP_EXP
-            | UNARY_OP_EXP
+            TERNARY_EXP
+            | LOGICAL_EXP
+            | BINARY_EXP
+            | UNARY_EXP
             | CAST_EXP
             | TYPE_TEST_EXP
             | ELEMENT_ACCESS
@@ -5953,10 +5953,10 @@ impl<'a> TypedNode for EventCondition<'a> {
     fn can_cast(value: Self::Value) -> bool {
         matches!(
             value,
-            TERNARY_OP_EXP
-                | LOGICAL_OP_EXP
-                | BINARY_OP_EXP
-                | UNARY_OP_EXP
+            TERNARY_EXP
+                | LOGICAL_EXP
+                | BINARY_EXP
+                | UNARY_EXP
                 | CAST_EXP
                 | TYPE_TEST_EXP
                 | ELEMENT_ACCESS
@@ -5982,10 +5982,10 @@ impl<'a> TypedNode for EventCondition<'a> {
     }
     fn cast(node: Self::Node) -> Option<Self> {
         match *node.value() {
-            TERNARY_OP_EXP
-            | LOGICAL_OP_EXP
-            | BINARY_OP_EXP
-            | UNARY_OP_EXP
+            TERNARY_EXP
+            | LOGICAL_EXP
+            | BINARY_EXP
+            | UNARY_EXP
             | CAST_EXP
             | TYPE_TEST_EXP
             | ELEMENT_ACCESS
@@ -6397,10 +6397,10 @@ impl<'a> TypedNode for VariableDefaultValue<'a> {
     fn can_cast(value: Self::Value) -> bool {
         matches!(
             value,
-            TERNARY_OP_EXP
-                | LOGICAL_OP_EXP
-                | BINARY_OP_EXP
-                | UNARY_OP_EXP
+            TERNARY_EXP
+                | LOGICAL_EXP
+                | BINARY_EXP
+                | UNARY_EXP
                 | CAST_EXP
                 | TYPE_TEST_EXP
                 | ELEMENT_ACCESS
@@ -6423,10 +6423,10 @@ impl<'a> TypedNode for VariableDefaultValue<'a> {
     }
     fn cast(node: Self::Node) -> Option<Self> {
         match *node.value() {
-            TERNARY_OP_EXP
-            | LOGICAL_OP_EXP
-            | BINARY_OP_EXP
-            | UNARY_OP_EXP
+            TERNARY_EXP
+            | LOGICAL_EXP
+            | BINARY_EXP
+            | UNARY_EXP
             | CAST_EXP
             | TYPE_TEST_EXP
             | ELEMENT_ACCESS
@@ -7602,8 +7602,8 @@ impl<'a> TypedNode for LabeledArgument<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct TernaryOpExp<'a>(OscDslNode<'a>);
-impl TernaryOpExp<'_> {
+pub struct TernaryExp<'a>(OscDslNode<'a>);
+impl TernaryExp<'_> {
     pub fn condition(&self) -> Option<Expression> {
         support::child(&self.0, 0usize)
     }
@@ -7620,11 +7620,11 @@ impl TernaryOpExp<'_> {
         support::child(&self.0, 2usize)
     }
 }
-impl<'a> TypedNode for TernaryOpExp<'a> {
+impl<'a> TypedNode for TernaryExp<'a> {
     type Value = OscDslSyntaxKind;
     type Node = OscDslNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
-        value == TERNARY_OP_EXP
+        value == TERNARY_EXP
     }
     fn cast(node: Self::Node) -> Option<Self> {
         Self::can_cast(*node.value()).then(|| Self(node))
@@ -7634,8 +7634,8 @@ impl<'a> TypedNode for TernaryOpExp<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct LogicalOpExp<'a>(OscDslNode<'a>);
-impl LogicalOpExp<'_> {
+pub struct LogicalExp<'a>(OscDslNode<'a>);
+impl LogicalExp<'_> {
     pub fn lhs_expr(&self) -> Option<Expression> {
         support::child(&self.0, 0usize)
     }
@@ -7646,11 +7646,11 @@ impl LogicalOpExp<'_> {
         support::child(&self.0, 1usize)
     }
 }
-impl<'a> TypedNode for LogicalOpExp<'a> {
+impl<'a> TypedNode for LogicalExp<'a> {
     type Value = OscDslSyntaxKind;
     type Node = OscDslNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
-        value == LOGICAL_OP_EXP
+        value == LOGICAL_EXP
     }
     fn cast(node: Self::Node) -> Option<Self> {
         Self::can_cast(*node.value()).then(|| Self(node))
@@ -7660,8 +7660,8 @@ impl<'a> TypedNode for LogicalOpExp<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct BinaryOpExp<'a>(OscDslNode<'a>);
-impl BinaryOpExp<'_> {
+pub struct BinaryExp<'a>(OscDslNode<'a>);
+impl BinaryExp<'_> {
     pub fn lhs_expr(&self) -> Option<Expression> {
         support::child(&self.0, 0usize)
     }
@@ -7672,11 +7672,11 @@ impl BinaryOpExp<'_> {
         support::child(&self.0, 1usize)
     }
 }
-impl<'a> TypedNode for BinaryOpExp<'a> {
+impl<'a> TypedNode for BinaryExp<'a> {
     type Value = OscDslSyntaxKind;
     type Node = OscDslNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
-        value == BINARY_OP_EXP
+        value == BINARY_EXP
     }
     fn cast(node: Self::Node) -> Option<Self> {
         Self::can_cast(*node.value()).then(|| Self(node))
@@ -7686,8 +7686,8 @@ impl<'a> TypedNode for BinaryOpExp<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct UnaryOpExp<'a>(OscDslNode<'a>);
-impl UnaryOpExp<'_> {
+pub struct UnaryExp<'a>(OscDslNode<'a>);
+impl UnaryExp<'_> {
     pub fn unary_op(&self) -> Option<UnaryOp> {
         support::child(&self.0, 0usize)
     }
@@ -7695,11 +7695,11 @@ impl UnaryOpExp<'_> {
         support::child(&self.0, 0usize)
     }
 }
-impl<'a> TypedNode for UnaryOpExp<'a> {
+impl<'a> TypedNode for UnaryExp<'a> {
     type Value = OscDslSyntaxKind;
     type Node = OscDslNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
-        value == UNARY_OP_EXP
+        value == UNARY_EXP
     }
     fn cast(node: Self::Node) -> Option<Self> {
         Self::can_cast(*node.value()).then(|| Self(node))
@@ -7781,7 +7781,7 @@ impl<'a> TypedNode for TypeTestExp<'a> {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ElementAccess<'a>(OscDslNode<'a>);
 impl ElementAccess<'_> {
-    pub fn object_expr(&self) -> Option<Expression> {
+    pub fn list_expr(&self) -> Option<Expression> {
         support::child(&self.0, 0usize)
     }
     pub fn left_bracket_token(&self) -> Option<LeftBracketToken> {
@@ -7810,7 +7810,7 @@ impl<'a> TypedNode for ElementAccess<'a> {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct FunctionApplication<'a>(OscDslNode<'a>);
 impl FunctionApplication<'_> {
-    pub fn expression(&self) -> Option<Expression> {
+    pub fn function_expr(&self) -> Option<Expression> {
         support::child(&self.0, 0usize)
     }
     pub fn left_paren_token(&self) -> Option<LeftParenToken> {
@@ -7860,36 +7860,6 @@ impl<'a> TypedNode for MemberReference<'a> {
     }
     fn syntax(&self) -> &Self::Node {
         &self.0
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum ItExp<'a> {
-    ItToken(ItToken<'a>),
-}
-impl ItExp<'_> {
-    pub fn as_it_token(&self) -> Option<ItToken> {
-        match self {
-            Self::ItToken(node) => Some(node.clone()),
-            _ => None,
-        }
-    }
-}
-impl<'a> TypedNode for ItExp<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
-    fn can_cast(value: Self::Value) -> bool {
-        matches!(value, IT_KW)
-    }
-    fn cast(node: Self::Node) -> Option<Self> {
-        match *node.value() {
-            IT_KW => Some(Self::ItToken(ItToken::cast(node.clone())?)),
-            _ => None,
-        }
-    }
-    fn syntax(&self) -> &Self::Node {
-        match self {
-            Self::ItToken(node) => node.syntax(),
-        }
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
