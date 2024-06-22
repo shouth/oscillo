@@ -4794,15 +4794,6 @@ impl ModifierApplication<'_> {
     pub fn expression(&self) -> Option<Expression> {
         support::child(&self.0, 0usize)
     }
-    pub fn left_paren_token(&self) -> Option<LeftParenToken> {
-        support::child(&self.0, 0usize)
-    }
-    pub fn argument_list(&self) -> Option<ArgumentList> {
-        support::child(&self.0, 0usize)
-    }
-    pub fn right_paren_token(&self) -> Option<RightParenToken> {
-        support::child(&self.0, 0usize)
-    }
     pub fn newline_token(&self) -> Option<NewlineToken> {
         support::child(&self.0, 0usize)
     }
@@ -6908,7 +6899,7 @@ impl CallDirective<'_> {
     pub fn call_token(&self) -> Option<CallToken> {
         support::child(&self.0, 0usize)
     }
-    pub fn method_invocation(&self) -> Option<MethodInvocation> {
+    pub fn expression(&self) -> Option<Expression> {
         support::child(&self.0, 0usize)
     }
     pub fn newline_token(&self) -> Option<NewlineToken> {
@@ -7099,15 +7090,6 @@ impl<'a> TypedNode for Composition<'a> {
 pub struct BehaviorInvocation<'a>(OscDslNode<'a>);
 impl BehaviorInvocation<'_> {
     pub fn expression(&self) -> Option<Expression> {
-        support::child(&self.0, 0usize)
-    }
-    pub fn left_paren_token(&self) -> Option<LeftParenToken> {
-        support::child(&self.0, 0usize)
-    }
-    pub fn argument_list(&self) -> Option<ArgumentList> {
-        support::child(&self.0, 0usize)
-    }
-    pub fn right_paren_token(&self) -> Option<RightParenToken> {
         support::child(&self.0, 0usize)
     }
     pub fn behavior_with_declaration_or_newline(&self) -> Option<BehaviorWithDeclarationOrNewline> {
@@ -7445,35 +7427,6 @@ impl<'a> TypedNode for EmitArguments<'a> {
     type Node = OscDslNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == EMIT_ARGUMENTS
-    }
-    fn cast(node: Self::Node) -> Option<Self> {
-        Self::can_cast(*node.value()).then(|| Self(node))
-    }
-    fn syntax(&self) -> &Self::Node {
-        &self.0
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct MethodInvocation<'a>(OscDslNode<'a>);
-impl MethodInvocation<'_> {
-    pub fn expression(&self) -> Option<Expression> {
-        support::child(&self.0, 0usize)
-    }
-    pub fn left_paren_token(&self) -> Option<LeftParenToken> {
-        support::child(&self.0, 0usize)
-    }
-    pub fn argument_list(&self) -> Option<ArgumentList> {
-        support::child(&self.0, 0usize)
-    }
-    pub fn right_paren_token(&self) -> Option<RightParenToken> {
-        support::child(&self.0, 0usize)
-    }
-}
-impl<'a> TypedNode for MethodInvocation<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
-    fn can_cast(value: Self::Value) -> bool {
-        value == METHOD_INVOCATION
     }
     fn cast(node: Self::Node) -> Option<Self> {
         Self::can_cast(*node.value()).then(|| Self(node))
