@@ -647,7 +647,7 @@ CoverageOperator =
 // modifier-application ::= [actor-expression '.'] modifier-name '(' [argument-list] ')' NEWLINE
 
 ModifierApplication =
-  Expression '(' ArgumentList ')' 'newline'
+  Expression 'newline'
 
 
 // behavior-specification ::= on-directive | do-directive
@@ -722,7 +722,7 @@ CompositionOperator =
 // actor-expression ::= expression
 
 BehaviorInvocation =
-  Expression '(' ArgumentList ')' BehaviorWithDeclarationOrNewline
+  Expression BehaviorWithDeclarationOrNewline
 
 BehaviorWithDeclarationOrNewline =
   BehaviorWithDeclaration | 'newline'
@@ -759,10 +759,7 @@ EmitArguments =
 // method-invocation ::= postfix-exp '(' [argument-list] ')'
 
 CallDirective =
-  'call' MethodInvocation 'newline'
-
-MethodInvocation =
-  Expression '(' ArgumentList ')'
+  'call' Expression 'newline'
 
 
 // until-directive ::= 'until' event-specification NEWLINE
