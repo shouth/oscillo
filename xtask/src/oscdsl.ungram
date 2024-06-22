@@ -571,7 +571,10 @@ ParameterWithDeclarationOrNewline =
   ParameterWithDeclaration | 'newline'
 
 ParameterWithDeclaration =
-  'with' ':' 'newline' 'indent' ParameterWithMember 'dedent'
+  'with' ':' 'newline' 'indent' ParameterWithMemberList 'dedent'
+
+ParameterWithMemberList =
+  ParameterWithMember*
 
 ParameterWithMember =
   ConstraintDeclaration
