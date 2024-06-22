@@ -1,3 +1,4 @@
+use std::collections::hash_map::Entry;
 use std::collections::HashMap;
 use std::error::Error;
 use std::ops::Index;
@@ -148,15 +149,28 @@ impl GrammarBuilder {
                     rule @ (UngrammarRule::Token(_) | UngrammarRule::Node(_)) => {
                         RuleKind::Choice(vec![self.build_node(rule)?])
                     }
-                    rule @ UngrammarRule::Seq(rules) => match self.build_delimited(rule) {
-                        Ok(result) => result,
-                        Err(_) => {
-                            let items = rules
-                                .iter()
-                                .map(|rule| self.build_sequence_item(rule))
-                                .collect::<Result<_, _>>()?;
-                            RuleKind::Sequence(items)
+                    UngrammarRule::Seq(rules) => {
+                        let items = rules
+                            .iter()
+                            .map(|rule| self.build_sequence_item(rule))
+                            .collect::<Result<Vec<_>, _>>()?;
+
+                        let mut checker = HashMap::new();
+                        for item in items.iter() {
+                            match checker.entry(item.node) {
+                                Entry::Occupied(ref mut entry) => {
+                                    if !entry.get() {
+                                        return Err(format!("rule `{:?}` is ambiguous", rules).into());
+                                    } else {
+                                        *entry.get_mut() = item.mandatory;
+                                    }
+                                }
+                                Entry::Vacant(entry) => {
+                                    entry.insert(item.mandatory);
+                                }
+                            }
                         }
+                        RuleKind::Sequence(items)
                     },
                     UngrammarRule::Alt(rules) => {
                         let items = rules
@@ -171,67 +185,6 @@ impl GrammarBuilder {
                 Ok(Rule { name, kind })
             })
             .collect::<Result<_, _>>()
-    }
-
-    fn build_delimited(&mut self, rule: &UngrammarRule) -> GrammarResult<RuleKind> {
-        let mut rules = match rule {
-            UngrammarRule::Seq(rules) => rules.iter(),
-            _ => return Err(format!("rule `{:?}` cannot be a delimited", rule).into()),
-        };
-
-        let element = match rules.next() {
-            Some(element) => self.build_node(element)?,
-            _ => return Err(format!("rule `{:?}` cannot be a delimited", rule).into()),
-        };
-
-        let separator = match rules.next() {
-            Some(rule) => match &rule {
-                UngrammarRule::Rep(repeat) => match repeat.as_ref() {
-                    UngrammarRule::Seq(rules) => {
-                        let mut rules = rules.iter();
-
-                        let separator = rules.next()
-                            .ok_or_else(|| format!("rule `{:?}` cannot be a delimited", rule).into())
-                            .and_then(|rule| self.build_node(rule))?;
-
-                        let second_element = rules.next()
-                            .ok_or_else(|| format!("rule `{:?}` cannot be a delimited", rule).into())
-                            .and_then(|rule| self.build_node(rule))?;
-
-                        if !rules.next().is_none() {
-                            return Err(format!("rule `{:?}` cannot be a delimited", rule).into());
-                        }
-
-                        if second_element != element {
-                            return Err(format!("rule `{:?}` cannot be a delimited", rule).into());
-                        }
-
-                        separator
-                    }
-                    _ => return Err(format!("rule `{:?}` cannot be a delimited", rule).into()),
-                }
-                _ => return Err(format!("rule `{:?}` cannot be a delimited", rule).into()),
-            }
-            _ => return Err(format!("rule `{:?}` cannot be a delimited", rule).into()),
-        };
-
-        match rules.next() {
-            Some(rule) => match rule {
-                UngrammarRule::Opt(rule) => {
-                    if self.build_node(rule)? != separator {
-                        return Err(format!("rule `{:?}` cannot be a delimited", rule).into());
-                    }
-                }
-                _ => return Err(format!("rule `{:?}` cannot be a delimited", rule).into()),
-            }
-            _ => (),
-        }
-
-        if !rules.next().is_none() {
-            return Err(format!("rule `{:?}` cannot be a delimited", rule).into());
-        }
-
-        Ok(RuleKind::Repeat(element, Some(separator)))
     }
 
     fn build_node(&mut self, rule: &UngrammarRule) -> GrammarResult<NodeIndex> {
