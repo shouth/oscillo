@@ -16,8 +16,11 @@
 // prefixed-identifier ::= ( [ namespace-name ] '::' identifier )
 
 QualifiedIdentifier =
-  namespace_name:NamespaceName? '::'? 'identifier'
+  'identifier'
+| PrefixedIdentifier
 
+PrefixedIdentifier =
+  namespace_name:NamespaceName? '::' 'identifier'
 
 // bool-literal ::= 'true' | 'false'
 
@@ -119,7 +122,7 @@ ExportSpecification =
 | ExportWildcardSpecification
 
 ExportWildcardSpecification =
-  namespace_name:QualifiedIdentifier? '::'? '*'
+  namespace_name:NamespaceName? '::'? '*'
 
 
 // osc-declaration ::=   physical-type-declaration
@@ -251,10 +254,6 @@ EnumMemberDecl =
 EnumInitializerClause =
   '=' enum_member_value:Expression
 
-EnumValueReference =
-  enum_name:QualifiedIdentifier? '!'? enum_member_name:QualifiedIdentifier
-
-
 // struct-declaration ::= 'struct' struct-name ['inherits' struct-name ['(' field-name '=='  (enum-value-reference | bool-literal) ')']] ( (':' NEWLINE INDENT
 //       struct-member-decl+ DEDENT) | NEWLINE )
 //
@@ -360,7 +359,11 @@ ScenarioMemberDecl =
 | ModifierApplication
 
 QualifiedBehaviorName =
-  actor_name:QualifiedIdentifier? '.'? behavior_name:QualifiedIdentifier
+  QualifiedIdentifier
+| PrefixedBehaviorName
+
+PrefixedBehaviorName =
+  actor_name:QualifiedIdentifier '.' behavior_name:QualifiedIdentifier
 
 
 // action-declaration ::= 'action' qualified-behavior-name ['inherits' qualified-behavior-name ['(' field-name '==' (enum-value-reference | bool-literal) ')']] ( (':' NEWLINE INDENT
@@ -499,7 +502,7 @@ EventReferenceCondition =
   EventFieldDecl? 'if' EventCondition
 
 EventReference =
-  '@' MemberReference
+  '@' Expression
 
 EventFieldDecl =
   'as' event_field_name:QualifiedIdentifier
@@ -565,7 +568,7 @@ VariableDefaultValue =
 | SampleExpression
 
 SampleExpression =
-  'sample' '(' Expression ',' EventSpecification ','? default_value:Expression? ')'
+  'sample' '(' Expression first_comma_token:',' EventSpecification second_comma_token:','? default_value:Expression? ')'
 
 ParameterWithDeclarationOrNewline =
   ParameterWithDeclaration | 'newline'
@@ -599,7 +602,7 @@ ConstraintQualifier =
   'default' | 'hard'
 
 RemoveDefaultDeclaration =
-  'remove_default' '(' MemberReference ')' 'newline'
+  'remove_default' '(' Expression ')' 'newline'
 
 
 // method-declaration ::= 'def' method-name '(' [argument-list-specification] ')' ['->' return-type] method-implementation NEWLINE
@@ -647,7 +650,7 @@ CoverageOperator =
 // modifier-application ::= [actor-expression '.'] modifier-name '(' [argument-list] ')' NEWLINE
 
 ModifierApplication =
-  MemberReference '(' ArgumentList ')' 'newline'
+  Expression '(' ArgumentList ')' 'newline'
 
 
 // behavior-specification ::= on-directive | do-directive
@@ -722,7 +725,7 @@ CompositionOperator =
 // actor-expression ::= expression
 
 BehaviorInvocation =
-  MemberReference '(' ArgumentList ')' BehaviorWithDeclarationOrNewline
+  Expression '(' ArgumentList ')' BehaviorWithDeclarationOrNewline
 
 BehaviorWithDeclarationOrNewline =
   BehaviorWithDeclaration | 'newline'
@@ -892,8 +895,10 @@ FunctionApplication =
   Expression '(' ArgumentList ')'
 
 MemberReference =
-  object_expr:Expression? '.'? field_name:QualifiedIdentifier
+  object_expr:Expression '.' field_name:QualifiedIdentifier
 
+EnumValueReference =
+  enum_name:QualifiedIdentifier '!' enum_member_name:QualifiedIdentifier
 
 // primary-exp ::= value-exp | 'it' | qualified-identifier | '(' expression ')'
 //
