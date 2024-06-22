@@ -254,6 +254,7 @@ EnumMemberDecl =
 EnumInitializerClause =
   '=' enum_member_value:Expression
 
+
 // struct-declaration ::= 'struct' struct-name ['inherits' struct-name ['(' field-name '=='  (enum-value-reference | bool-literal) ')']] ( (':' NEWLINE INDENT
 //       struct-member-decl+ DEDENT) | NEWLINE )
 //
@@ -789,6 +790,7 @@ ArgumentSpecification =
 ArgumentInitializerClause =
   '=' default_value:Expression
 
+
 // argument-list ::= positional-argument (',' positional-argument)* (',' named-argument)*
 //                 | named-argument (',' named-argument)*
 //
@@ -807,19 +809,20 @@ ArgumentList =
 LabeledArgument =
   label:QualifiedIdentifier? ':'? argument:Expression ','?
 
+
 // expression ::= implication | ternary-op-exp
 
 Expression =
-  TernaryOpExp
-| LogicalOpExp
-| BinaryOpExp
-| UnaryOpExp
+  TernaryExp
+| LogicalExp
+| BinaryExp
+| UnaryExp
 | CastExp
 | TypeTestExp
 | ElementAccess
 | FunctionApplication
 | MemberReference
-| ItExp
+| 'it'
 | ParenthesizedExp
 | LiteralExp
 | EnumValueReference
@@ -829,7 +832,7 @@ Expression =
 
 // ternary-op-exp ::= implication '?' expression ':' expression
 
-TernaryOpExp =
+TernaryExp =
   condition:Expression '?' then_expr:Expression ':' else_expr:Expression
 
 
@@ -838,7 +841,7 @@ TernaryOpExp =
 // conjunction ::= inversion ('and' inversion)*
 // inversion ::= 'not' inversion | relation
 
-LogicalOpExp =
+LogicalExp =
   lhs_expr:Expression LogicalOp rhs_expr:Expression
 
 LogicalOp =
@@ -856,13 +859,13 @@ LogicalOp =
 //
 // factor ::= postfix-exp | '-' factor
 
-BinaryOpExp =
+BinaryExp =
   lhs_expr:Expression BinaryOp rhs_expr:Expression
 
 BinaryOp =
   '==' | '!=' | '<' | '<=' | '>' | '>=' | 'in' | '+' | '-' | '*' | '/' | '%'
 
-UnaryOpExp =
+UnaryExp =
   UnaryOp Expression
 
 UnaryOp =
@@ -889,16 +892,17 @@ TypeTestExp =
   Expression '.' 'is' '(' TypeDeclarator ')'
 
 ElementAccess =
-  object_expr:Expression '[' index_expr:Expression ']'
+  list_expr:Expression '[' index_expr:Expression ']'
 
 FunctionApplication =
-  Expression '(' ArgumentList ')'
+  function_expr:Expression '(' ArgumentList ')'
 
 MemberReference =
-  object_expr:Expression '.' field_name:QualifiedIdentifier
+  object_expr:Expression? '.'? field_name:QualifiedIdentifier
 
 EnumValueReference =
   enum_name:QualifiedIdentifier '!' enum_member_name:QualifiedIdentifier
+
 
 // primary-exp ::= value-exp | 'it' | qualified-identifier | '(' expression ')'
 //
@@ -910,9 +914,6 @@ EnumValueReference =
 //             | enum-value-reference
 //             | list-constructor
 //             | range-constructor
-
-ItExp =
-  'it'
 
 ParenthesizedExp =
   '(' Expression ')'
