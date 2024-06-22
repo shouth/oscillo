@@ -215,15 +215,15 @@ SiBaseExponent =
   SiBaseUnitName ':' Expression ','?
 
 SiUnitSpecifier =
-  'SI' '(' SiUnitSpecifierArgumentList ')'
+  'SI' '(' SiUnitArgumentList ')'
 
-SiUnitSpecifierArgumentList =
-  SiUnitSpecifierArgument*
+SiUnitArgumentList =
+  SiUnitArgument*
 
-SiUnitSpecifierArgument =
-  SiUnitSpecifierArgumentName ':' Expression ','?
+SiUnitArgument =
+  SiUnitArgumentName ':' Expression ','?
 
-SiUnitSpecifierArgumentName =
+SiUnitArgumentName =
   'factor' | 'offset' | SiBaseUnitName
 
 SiBaseUnitName =
@@ -271,12 +271,12 @@ StructBodyOrNewline =
   StructBody | 'newline'
 
 StructBody =
-  ':' 'newline' 'indent' StructMemberDeclList 'dedent'
+  ':' 'newline' 'indent' StructMemberList 'dedent'
 
-StructMemberDeclList =
-  StructMemberDecl*
+StructMemberList =
+  StructMember*
 
-StructMemberDecl =
+StructMember =
   EventDeclaration
 | FieldDeclaration
 | ConstraintDeclaration
@@ -303,9 +303,9 @@ ActorBodyOrNewline =
   ActorBody | 'newline'
 
 ActorBody =
-  ':' 'newline' 'indent' ActorMemberDeclList 'dedent'
+  ':' 'newline' 'indent' ActorMemberList 'dedent'
 
-ActorMemberDeclList =
+ActorMemberList =
   ActorMemberDecl*
 
 ActorMemberDecl =
@@ -338,12 +338,12 @@ ScenarioBodyOrNewline =
   ScenarioBody | 'newline'
 
 ScenarioBody =
-  ':' 'newline' 'indent' ScenarioMemberItemList 'dedent'
+  ':' 'newline' 'indent' ScenarioMemberList 'dedent'
 
-ScenarioMemberItemList =
-  ScenarioMemberItem*
+ScenarioMemberList =
+  ScenarioMember*
 
-ScenarioMemberItem =
+ScenarioMember =
   ScenarioMemberDecl
 | BehaviorSpecification
 
@@ -380,12 +380,12 @@ ActionInheritsCondition =
   '(' condition:Expression ')'
 
 ActionBody =
-  ':' 'newline' 'indent' ActionMemberItemList 'dedent'
+  ':' 'newline' 'indent' ActionMemberList 'dedent'
 
-ActionMemberItemList =
-  ActionMemberItem*
+ActionMemberList =
+  ActionMember*
 
-ActionMemberItem =
+ActionMember =
   ScenarioMemberDecl
 | BehaviorSpecification
 
@@ -406,12 +406,12 @@ ModifierBodyOrNewline =
   ModifierBody | 'newline'
 
 ModifierBody =
-  ':' 'newline' 'indent' ModifierMemberItemList 'dedent'
+  ':' 'newline' 'indent' ModifierMemberList 'dedent'
 
-ModifierMemberItemList =
-  ModifierMemberItem*
+ModifierMemberList =
+  ModifierMember*
 
-ModifierMemberItem =
+ModifierMember =
   ScenarioMemberDecl
 | OnDirective
 
@@ -427,28 +427,29 @@ ModifierMemberItem =
 // extension-member-decl ::= struct-member-decl | actor-member-decl | scenario-member-decl | behavior-specification
 
 TypeExtension =
-  EnumTypeExtension
-| StructuredTypeExtension
+  'extend' type_name:QualifiedBehaviorName TypeExtensionBody
 
-EnumTypeExtension =
-  'extend' enum_name:QualifiedIdentifier ':' '[' EnumMemberDeclList ']' 'newline'
+TypeExtensionBody =
+  EnumTypeExtensionBody
+| StructuredTypeExtensionBody
 
-StructuredTypeExtension =
-  'extend' extendable_type_name:QualifiedBehaviorName ':' 'newline' 'indent' ExtensionMemberDeclList 'dedent'
+EnumTypeExtensionBody =
+  ':' '[' EnumMemberDeclList ']' 'newline'
 
-ExtensionMemberDeclList =
-  ExtensionMemberDecl*
+StructuredTypeExtensionBody =
+  ':' 'newline' 'indent' ExtensionMemberList 'dedent'
 
-ExtensionMemberDecl =
-  RelaxedExtensionMemberDecl
+ExtensionMemberList =
+  ExtensionMember*
+
+ExtensionMember =
+  ExtensionMemberDecl
 | BehaviorSpecification
 
-RelaxedExtensionMemberDecl =
+ExtensionMemberDecl =
   EventDeclaration
-| ParameterDeclaration
-| VariableDeclaration
-| KeepConstraintDeclaration
-| RemoveDefaultDeclaration
+| FieldDeclaration
+| ConstraintDeclaration
 | MethodDeclaration
 | CoverageDeclaration
 | ModifierApplication
