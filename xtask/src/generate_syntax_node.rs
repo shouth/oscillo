@@ -140,7 +140,7 @@ where
                         let group_idents = group.iter().map(|name| format_ident!("{}", name));
 
                         quote! {
-                            #(#group_idents)|* => #node_name_ident::cast(node.clone()).map(Self::#node_name_ident)
+                            #(#group_idents)|* => Some(Self::#node_name_ident(#node_name_ident::cast(node.clone())?))
                         }
                     });
 
