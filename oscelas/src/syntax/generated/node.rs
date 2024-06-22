@@ -3434,6 +3434,7 @@ pub enum Expression<'a> {
     ElementAccess(ElementAccess<'a>),
     FunctionApplication(FunctionApplication<'a>),
     MemberReference(MemberReference<'a>),
+    QualifiedIdentifier(QualifiedIdentifier<'a>),
     ItToken(ItToken<'a>),
     ParenthesizedExp(ParenthesizedExp<'a>),
     LiteralExp(LiteralExp<'a>),
@@ -3496,6 +3497,12 @@ impl Expression<'_> {
             _ => None,
         }
     }
+    pub fn as_qualified_identifier(&self) -> Option<QualifiedIdentifier> {
+        match self {
+            Self::QualifiedIdentifier(node) => Some(node.clone()),
+            _ => None,
+        }
+    }
     pub fn as_it_token(&self) -> Option<ItToken> {
         match self {
             Self::ItToken(node) => Some(node.clone()),
@@ -3548,6 +3555,8 @@ impl<'a> TypedNode for Expression<'a> {
                 | ELEMENT_ACCESS
                 | FUNCTION_APPLICATION
                 | MEMBER_REFERENCE
+                | IDENTIFIER
+                | PREFIXED_IDENTIFIER
                 | IT_KW
                 | PARENTHESIZED_EXP
                 | INTEGER_LITERAL
@@ -3575,6 +3584,9 @@ impl<'a> TypedNode for Expression<'a> {
                 node.clone(),
             )?)),
             MEMBER_REFERENCE => Some(Self::MemberReference(MemberReference::cast(node.clone())?)),
+            IDENTIFIER | PREFIXED_IDENTIFIER => Some(Self::QualifiedIdentifier(
+                QualifiedIdentifier::cast(node.clone())?,
+            )),
             IT_KW => Some(Self::ItToken(ItToken::cast(node.clone())?)),
             PARENTHESIZED_EXP => Some(Self::ParenthesizedExp(ParenthesizedExp::cast(
                 node.clone(),
@@ -3602,6 +3614,7 @@ impl<'a> TypedNode for Expression<'a> {
             Self::ElementAccess(node) => node.syntax(),
             Self::FunctionApplication(node) => node.syntax(),
             Self::MemberReference(node) => node.syntax(),
+            Self::QualifiedIdentifier(node) => node.syntax(),
             Self::ItToken(node) => node.syntax(),
             Self::ParenthesizedExp(node) => node.syntax(),
             Self::LiteralExp(node) => node.syntax(),
@@ -5766,6 +5779,8 @@ impl<'a> TypedNode for EventSpecification<'a> {
                 | ELEMENT_ACCESS
                 | FUNCTION_APPLICATION
                 | MEMBER_REFERENCE
+                | IDENTIFIER
+                | PREFIXED_IDENTIFIER
                 | IT_KW
                 | PARENTHESIZED_EXP
                 | INTEGER_LITERAL
@@ -5798,6 +5813,8 @@ impl<'a> TypedNode for EventSpecification<'a> {
             | ELEMENT_ACCESS
             | FUNCTION_APPLICATION
             | MEMBER_REFERENCE
+            | IDENTIFIER
+            | PREFIXED_IDENTIFIER
             | IT_KW
             | PARENTHESIZED_EXP
             | INTEGER_LITERAL
@@ -5902,6 +5919,8 @@ impl<'a> TypedNode for EventCondition<'a> {
                 | ELEMENT_ACCESS
                 | FUNCTION_APPLICATION
                 | MEMBER_REFERENCE
+                | IDENTIFIER
+                | PREFIXED_IDENTIFIER
                 | IT_KW
                 | PARENTHESIZED_EXP
                 | INTEGER_LITERAL
@@ -5931,6 +5950,8 @@ impl<'a> TypedNode for EventCondition<'a> {
             | ELEMENT_ACCESS
             | FUNCTION_APPLICATION
             | MEMBER_REFERENCE
+            | IDENTIFIER
+            | PREFIXED_IDENTIFIER
             | IT_KW
             | PARENTHESIZED_EXP
             | INTEGER_LITERAL
@@ -6346,6 +6367,8 @@ impl<'a> TypedNode for VariableDefaultValue<'a> {
                 | ELEMENT_ACCESS
                 | FUNCTION_APPLICATION
                 | MEMBER_REFERENCE
+                | IDENTIFIER
+                | PREFIXED_IDENTIFIER
                 | IT_KW
                 | PARENTHESIZED_EXP
                 | INTEGER_LITERAL
@@ -6372,6 +6395,8 @@ impl<'a> TypedNode for VariableDefaultValue<'a> {
             | ELEMENT_ACCESS
             | FUNCTION_APPLICATION
             | MEMBER_REFERENCE
+            | IDENTIFIER
+            | PREFIXED_IDENTIFIER
             | IT_KW
             | PARENTHESIZED_EXP
             | INTEGER_LITERAL
@@ -6739,7 +6764,7 @@ impl<'a> TypedNode for MethodExternalBody<'a> {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ArgumentList<'a>(OscDslNode<'a>);
 impl<'a> ArgumentList<'a> {
-    pub fn labeled_argument(&self) -> impl Iterator<Item = LabeledArgument<'a>> + 'a {
+    pub fn argument(&self) -> impl Iterator<Item = Argument<'a>> + 'a {
         support::children(&self.0)
     }
 }
@@ -7513,8 +7538,72 @@ impl<'a> TypedNode for ArgumentInitializerClause<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct LabeledArgument<'a>(OscDslNode<'a>);
-impl LabeledArgument<'_> {
+pub enum Argument<'a> {
+    PositionalArgument(PositionalArgument<'a>),
+    NamedArgument(NamedArgument<'a>),
+}
+impl Argument<'_> {
+    pub fn as_positional_argument(&self) -> Option<PositionalArgument> {
+        match self {
+            Self::PositionalArgument(node) => Some(node.clone()),
+            _ => None,
+        }
+    }
+    pub fn as_named_argument(&self) -> Option<NamedArgument> {
+        match self {
+            Self::NamedArgument(node) => Some(node.clone()),
+            _ => None,
+        }
+    }
+}
+impl<'a> TypedNode for Argument<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        matches!(value, POSITIONAL_ARGUMENT | NAMED_ARGUMENT)
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        match *node.value() {
+            POSITIONAL_ARGUMENT => Some(Self::PositionalArgument(PositionalArgument::cast(
+                node.clone(),
+            )?)),
+            NAMED_ARGUMENT => Some(Self::NamedArgument(NamedArgument::cast(node.clone())?)),
+            _ => None,
+        }
+    }
+    fn syntax(&self) -> &Self::Node {
+        match self {
+            Self::PositionalArgument(node) => node.syntax(),
+            Self::NamedArgument(node) => node.syntax(),
+        }
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct PositionalArgument<'a>(OscDslNode<'a>);
+impl PositionalArgument<'_> {
+    pub fn expression(&self) -> Option<Expression> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn comma_token(&self) -> Option<CommaToken> {
+        support::child(&self.0, 0usize)
+    }
+}
+impl<'a> TypedNode for PositionalArgument<'a> {
+    type Value = OscDslSyntaxKind;
+    type Node = OscDslNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == POSITIONAL_ARGUMENT
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct NamedArgument<'a>(OscDslNode<'a>);
+impl NamedArgument<'_> {
     pub fn label(&self) -> Option<QualifiedIdentifier> {
         support::child(&self.0, 0usize)
     }
@@ -7528,11 +7617,11 @@ impl LabeledArgument<'_> {
         support::child(&self.0, 0usize)
     }
 }
-impl<'a> TypedNode for LabeledArgument<'a> {
+impl<'a> TypedNode for NamedArgument<'a> {
     type Value = OscDslSyntaxKind;
     type Node = OscDslNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
-        value == LABELED_ARGUMENT
+        value == NAMED_ARGUMENT
     }
     fn cast(node: Self::Node) -> Option<Self> {
         Self::can_cast(*node.value()).then(|| Self(node))
