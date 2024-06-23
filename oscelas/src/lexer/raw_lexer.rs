@@ -23,14 +23,11 @@ impl RawLexer<'_> {
     }
 
     fn eat_digits(&mut self, radix: u32) -> bool {
-        if self.cursor.first().is_some_and(|c| c.is_digit(radix)) {
-            while self.cursor.first().is_some_and(|c| c.is_digit(radix)) {
-                self.cursor.bump();
-            }
-            true
-        } else {
-            false
+        let offset = self.cursor.token_offset();
+        while self.cursor.first().is_some_and(|c| c.is_digit(radix)) {
+            self.cursor.bump();
         }
+        self.cursor.token_offset() > offset
     }
 
     fn eat_exponent(&mut self) -> bool {
