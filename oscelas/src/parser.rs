@@ -4,7 +4,6 @@ mod expr;
 mod member;
 mod osc_file;
 
-use std::collections::HashSet;
 use std::fmt::Write;
 
 use syntree::pointer::PointerUsize;
@@ -60,45 +59,43 @@ impl<'a> Parser<'a> {
         self.skip_trivia();
     }
 
-    pub fn check(&mut self, kinds: impl Into<OscSyntaxKindSet>) -> bool {
-        let kinds = kinds.into();
-        self.expected |= kinds;
+    fn do_check(&mut self, kinds: OscSyntaxKindSet) -> Option<OscSyntaxKind> {
         let next = self.lexer.nth(0).kind;
-        if next == IDENTIFIER {
-            for kind in kinds {
-                if let Some(token) = kind.static_token() {
-                    let begin = self.lexer.offset();
-                    let length = self.lexer.nth(0).length;
-                    let lexeme = &self.source[begin..][..length];
-                    if lexeme == token {
-                        return true;
-                    }
-                }
+
+        let keyword = match next {
+            IDENTIFIER => {
+                let begin = self.lexer.offset();
+                let length = self.lexer.nth(0).length;
+                let lexeme = &self.source[begin..][..length];
+                kinds.iter().find(|kind| kind.static_token() == Some(lexeme))
             }
+            _ => None,
+        };
+
+        match keyword {
+            Some(_) => keyword,
+            None => kinds.contains(next).then(|| next),
         }
-        kinds.iter().any(|kind| kind == next)
+    }
+
+    pub fn check(&mut self, kinds: impl Into<OscSyntaxKindSet>) -> bool {
+        self.do_check(kinds.into()).is_some()
     }
 
     pub fn eat(&mut self, kinds: impl Into<OscSyntaxKindSet>) -> bool {
-        let kinds = kinds.into();
-        for kind in kinds {
-            if self.check(kind) {
-                self.bump(kind);
-                return true;
-            }
+        let result = self.do_check(kinds.into());
+        if let Some(kind) = result {
+            self.bump(kind);
         }
-        false
+        result.is_some()
     }
 
     pub fn expect(&mut self, kinds: impl Into<OscSyntaxKindSet>) -> bool {
-        let kinds = kinds.into();
-        for kind in kinds {
-            if self.eat(kind) {
-                return true;
-            }
+        let result = self.eat(kinds);
+        if !result {
+            self.unexpected();
         }
-        self.unexpected();
-        false
+        result
     }
 
     fn unexpected(&mut self) {
@@ -141,7 +138,6 @@ impl<'a> Parser<'a> {
         (self.diagnostic, self.builder.build().unwrap())
     }
 }
-
 
 #[cfg(test)]
 mod tests {
