@@ -138,7 +138,6 @@ impl<'a> Parser<'a> {
     }
 
     pub fn close(&mut self, checkpoint: Checkpoint, kind: OscDslSyntaxKind) {
-        println!("close: {:?}", kind);
         self.builder.close_at(&checkpoint.0, kind).unwrap();
     }
 
