@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+codespan-reporting = "0.11.1"
 enumset = "1.1.3"
 syntree = "0.14.5"
 ucd-trie = "0.1.6"
