@@ -3,7 +3,7 @@ use std::fmt::Write;
 
 use codespan_reporting::diagnostic::{Diagnostic, Label};
 
-use crate::syntax::{OscSyntaxKind::{self, *}, OscSyntaxKindSet};
+use crate::syntax::{kind, OscSyntaxKind::{self, *}, OscSyntaxKindSet};
 
 pub enum SyntaxDiagnostic {
     StrayCharacter {
@@ -67,8 +67,12 @@ impl SyntaxDiagnostic {
                             write!(&mut message, " and ").unwrap();
                         }
                     }
+                    write!(&mut message, "{}", display_name(kind)).unwrap();
+                }
+                write!(&mut message, ", found {}", display_name(actual)).unwrap();
 
-                    let display_name = match kind.static_token() {
+                fn display_name(kind: OscSyntaxKind) -> &'static str {
+                    match kind.static_token() {
                         Some(token) => token,
                         None => match kind {
                             EOF => "EOF",
@@ -81,10 +85,8 @@ impl SyntaxDiagnostic {
                             IDENTIFIER => "`identifier`",
                             _ => unreachable!(),
                         }
-                    };
-                    write!(&mut message, "{}", display_name).unwrap();
+                    }
                 }
-                write!(&mut message, ", found {:?}", actual).unwrap();
 
                 Diagnostic::error()
                     .with_message(message)
