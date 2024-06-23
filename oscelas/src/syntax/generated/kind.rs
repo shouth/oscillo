@@ -1,5 +1,7 @@
 #![allow(bad_style, missing_docs, unreachable_pub)]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+use enumset::{EnumSet, EnumSetType};
+use OscSyntaxKind::*;
+#[derive(Debug, EnumSetType, PartialOrd, Ord, Hash)]
 #[repr(u16)]
 pub enum OscSyntaxKind {
     EOF,
@@ -241,10 +243,8 @@ pub enum OscSyntaxKind {
     EXPRESSION_LIST_ELEMENT,
     PARENTHESES_RANGE_CONSTRUCTOR,
     BRACKETS_RANGE_CONSTRUCTOR,
-    #[doc(hidden)]
-    __LAST,
 }
-use OscSyntaxKind::*;
+pub type OscSyntaxKindSet = EnumSet<OscSyntaxKind>;
 impl OscSyntaxKind {
     pub fn static_token(&self) -> Option<&'static str> {
         match self {
