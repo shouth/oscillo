@@ -1,7 +1,7 @@
 #![allow(bad_style, missing_docs, unreachable_pub)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[repr(u16)]
-pub enum OscDslSyntaxKind {
+pub enum OscSyntaxKind {
     EOF,
     DOT,
     DOT_DOT,
@@ -244,8 +244,8 @@ pub enum OscDslSyntaxKind {
     #[doc(hidden)]
     __LAST,
 }
-use OscDslSyntaxKind::*;
-impl OscDslSyntaxKind {
+use OscSyntaxKind::*;
+impl OscSyntaxKind {
     pub fn static_token(&self) -> Option<&'static str> {
         match self {
             DOT => Some("."),

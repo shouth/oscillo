@@ -1,12 +1,12 @@
-use super::OscDslSyntaxKind::{self, *};
+use super::OscSyntaxKind::{self, *};
 use crate::syntax::{support, TypedNode};
 use syntree::Node;
-type OscDslNode<'a> = Node<'a, OscDslSyntaxKind, u32, usize>;
+type OscNode<'a> = Node<'a, OscSyntaxKind, u32, usize>;
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct DotToken<'a>(OscDslNode<'a>);
+pub struct DotToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for DotToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == DOT
     }
@@ -18,10 +18,10 @@ impl<'a> TypedNode for DotToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct DotDotToken<'a>(OscDslNode<'a>);
+pub struct DotDotToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for DotDotToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == DOT_DOT
     }
@@ -33,10 +33,10 @@ impl<'a> TypedNode for DotDotToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct CommaToken<'a>(OscDslNode<'a>);
+pub struct CommaToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for CommaToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == COMMA
     }
@@ -48,10 +48,10 @@ impl<'a> TypedNode for CommaToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ColonToken<'a>(OscDslNode<'a>);
+pub struct ColonToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for ColonToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == COLON
     }
@@ -63,10 +63,10 @@ impl<'a> TypedNode for ColonToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ColonColonToken<'a>(OscDslNode<'a>);
+pub struct ColonColonToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for ColonColonToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == COLON_COLON
     }
@@ -78,10 +78,10 @@ impl<'a> TypedNode for ColonColonToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct AssignToken<'a>(OscDslNode<'a>);
+pub struct AssignToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for AssignToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == ASSIGN
     }
@@ -93,10 +93,10 @@ impl<'a> TypedNode for AssignToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct AtToken<'a>(OscDslNode<'a>);
+pub struct AtToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for AtToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == AT
     }
@@ -108,10 +108,10 @@ impl<'a> TypedNode for AtToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ArrowToken<'a>(OscDslNode<'a>);
+pub struct ArrowToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for ArrowToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == ARROW
     }
@@ -123,10 +123,10 @@ impl<'a> TypedNode for ArrowToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct LeftParenToken<'a>(OscDslNode<'a>);
+pub struct LeftParenToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for LeftParenToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == LEFT_PAREN
     }
@@ -138,10 +138,10 @@ impl<'a> TypedNode for LeftParenToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct RightParenToken<'a>(OscDslNode<'a>);
+pub struct RightParenToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for RightParenToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == RIGHT_PAREN
     }
@@ -153,10 +153,10 @@ impl<'a> TypedNode for RightParenToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct LeftBracketToken<'a>(OscDslNode<'a>);
+pub struct LeftBracketToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for LeftBracketToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == LEFT_BRACKET
     }
@@ -168,10 +168,10 @@ impl<'a> TypedNode for LeftBracketToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct RightBracketToken<'a>(OscDslNode<'a>);
+pub struct RightBracketToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for RightBracketToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == RIGHT_BRACKET
     }
@@ -183,10 +183,10 @@ impl<'a> TypedNode for RightBracketToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct QuestionToken<'a>(OscDslNode<'a>);
+pub struct QuestionToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for QuestionToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == QUESTION
     }
@@ -198,10 +198,10 @@ impl<'a> TypedNode for QuestionToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ExclamationToken<'a>(OscDslNode<'a>);
+pub struct ExclamationToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for ExclamationToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == EXCLAMATION
     }
@@ -213,10 +213,10 @@ impl<'a> TypedNode for ExclamationToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct FatArrowToken<'a>(OscDslNode<'a>);
+pub struct FatArrowToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for FatArrowToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == FAT_ARROW
     }
@@ -228,10 +228,10 @@ impl<'a> TypedNode for FatArrowToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct EqualToken<'a>(OscDslNode<'a>);
+pub struct EqualToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for EqualToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == EQUAL
     }
@@ -243,10 +243,10 @@ impl<'a> TypedNode for EqualToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct NotEqualToken<'a>(OscDslNode<'a>);
+pub struct NotEqualToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for NotEqualToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == NOT_EQUAL
     }
@@ -258,10 +258,10 @@ impl<'a> TypedNode for NotEqualToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct LessToken<'a>(OscDslNode<'a>);
+pub struct LessToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for LessToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == LESS
     }
@@ -273,10 +273,10 @@ impl<'a> TypedNode for LessToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct LessEqualToken<'a>(OscDslNode<'a>);
+pub struct LessEqualToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for LessEqualToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == LESS_EQUAL
     }
@@ -288,10 +288,10 @@ impl<'a> TypedNode for LessEqualToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct GreaterToken<'a>(OscDslNode<'a>);
+pub struct GreaterToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for GreaterToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == GREATER
     }
@@ -303,10 +303,10 @@ impl<'a> TypedNode for GreaterToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct GreaterEqualToken<'a>(OscDslNode<'a>);
+pub struct GreaterEqualToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for GreaterEqualToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == GREATER_EQUAL
     }
@@ -318,10 +318,10 @@ impl<'a> TypedNode for GreaterEqualToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct PlusToken<'a>(OscDslNode<'a>);
+pub struct PlusToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for PlusToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == PLUS
     }
@@ -333,10 +333,10 @@ impl<'a> TypedNode for PlusToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct MinusToken<'a>(OscDslNode<'a>);
+pub struct MinusToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for MinusToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == MINUS
     }
@@ -348,10 +348,10 @@ impl<'a> TypedNode for MinusToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct StarToken<'a>(OscDslNode<'a>);
+pub struct StarToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for StarToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == STAR
     }
@@ -363,10 +363,10 @@ impl<'a> TypedNode for StarToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct SlashToken<'a>(OscDslNode<'a>);
+pub struct SlashToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for SlashToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == SLASH
     }
@@ -378,10 +378,10 @@ impl<'a> TypedNode for SlashToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct PercentToken<'a>(OscDslNode<'a>);
+pub struct PercentToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for PercentToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == PERCENT
     }
@@ -393,10 +393,10 @@ impl<'a> TypedNode for PercentToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct AToken<'a>(OscDslNode<'a>);
+pub struct AToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for AToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == A_KW
     }
@@ -408,10 +408,10 @@ impl<'a> TypedNode for AToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ActionToken<'a>(OscDslNode<'a>);
+pub struct ActionToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for ActionToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == ACTION_KW
     }
@@ -423,10 +423,10 @@ impl<'a> TypedNode for ActionToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ActorToken<'a>(OscDslNode<'a>);
+pub struct ActorToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for ActorToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == ACTOR_KW
     }
@@ -438,10 +438,10 @@ impl<'a> TypedNode for ActorToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct AndToken<'a>(OscDslNode<'a>);
+pub struct AndToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for AndToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == AND_KW
     }
@@ -453,10 +453,10 @@ impl<'a> TypedNode for AndToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct AsToken<'a>(OscDslNode<'a>);
+pub struct AsToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for AsToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == AS_KW
     }
@@ -468,10 +468,10 @@ impl<'a> TypedNode for AsToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct BoolToken<'a>(OscDslNode<'a>);
+pub struct BoolToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for BoolToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == BOOL_KW
     }
@@ -483,10 +483,10 @@ impl<'a> TypedNode for BoolToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct CallToken<'a>(OscDslNode<'a>);
+pub struct CallToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for CallToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == CALL_KW
     }
@@ -498,10 +498,10 @@ impl<'a> TypedNode for CallToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct CdToken<'a>(OscDslNode<'a>);
+pub struct CdToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for CdToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == CD_KW
     }
@@ -513,10 +513,10 @@ impl<'a> TypedNode for CdToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct CoverToken<'a>(OscDslNode<'a>);
+pub struct CoverToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for CoverToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == COVER_KW
     }
@@ -528,10 +528,10 @@ impl<'a> TypedNode for CoverToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct DefToken<'a>(OscDslNode<'a>);
+pub struct DefToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for DefToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == DEF_KW
     }
@@ -543,10 +543,10 @@ impl<'a> TypedNode for DefToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct DefaultToken<'a>(OscDslNode<'a>);
+pub struct DefaultToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for DefaultToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == DEFAULT_KW
     }
@@ -558,10 +558,10 @@ impl<'a> TypedNode for DefaultToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct DoToken<'a>(OscDslNode<'a>);
+pub struct DoToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for DoToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == DO_KW
     }
@@ -573,10 +573,10 @@ impl<'a> TypedNode for DoToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ElapsedToken<'a>(OscDslNode<'a>);
+pub struct ElapsedToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for ElapsedToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == ELAPSED_KW
     }
@@ -588,10 +588,10 @@ impl<'a> TypedNode for ElapsedToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct EmitToken<'a>(OscDslNode<'a>);
+pub struct EmitToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for EmitToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == EMIT_KW
     }
@@ -603,10 +603,10 @@ impl<'a> TypedNode for EmitToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct EnumToken<'a>(OscDslNode<'a>);
+pub struct EnumToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for EnumToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == ENUM_KW
     }
@@ -618,10 +618,10 @@ impl<'a> TypedNode for EnumToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct EventToken<'a>(OscDslNode<'a>);
+pub struct EventToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for EventToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == EVENT_KW
     }
@@ -633,10 +633,10 @@ impl<'a> TypedNode for EventToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct EveryToken<'a>(OscDslNode<'a>);
+pub struct EveryToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for EveryToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == EVERY_KW
     }
@@ -648,10 +648,10 @@ impl<'a> TypedNode for EveryToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ExportToken<'a>(OscDslNode<'a>);
+pub struct ExportToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for ExportToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == EXPORT_KW
     }
@@ -663,10 +663,10 @@ impl<'a> TypedNode for ExportToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ExpressionToken<'a>(OscDslNode<'a>);
+pub struct ExpressionToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for ExpressionToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == EXPRESSION_KW
     }
@@ -678,10 +678,10 @@ impl<'a> TypedNode for ExpressionToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ExtendToken<'a>(OscDslNode<'a>);
+pub struct ExtendToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for ExtendToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == EXTEND_KW
     }
@@ -693,10 +693,10 @@ impl<'a> TypedNode for ExtendToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ExternalToken<'a>(OscDslNode<'a>);
+pub struct ExternalToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for ExternalToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == EXTERNAL_KW
     }
@@ -708,10 +708,10 @@ impl<'a> TypedNode for ExternalToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct FactorToken<'a>(OscDslNode<'a>);
+pub struct FactorToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for FactorToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == FACTOR_KW
     }
@@ -723,10 +723,10 @@ impl<'a> TypedNode for FactorToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct FallToken<'a>(OscDslNode<'a>);
+pub struct FallToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for FallToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == FALL_KW
     }
@@ -738,10 +738,10 @@ impl<'a> TypedNode for FallToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct FalseToken<'a>(OscDslNode<'a>);
+pub struct FalseToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for FalseToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == FALSE_KW
     }
@@ -753,10 +753,10 @@ impl<'a> TypedNode for FalseToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct FloatToken<'a>(OscDslNode<'a>);
+pub struct FloatToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for FloatToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == FLOAT_KW
     }
@@ -768,10 +768,10 @@ impl<'a> TypedNode for FloatToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct GlobalToken<'a>(OscDslNode<'a>);
+pub struct GlobalToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for GlobalToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == GLOBAL_KW
     }
@@ -783,10 +783,10 @@ impl<'a> TypedNode for GlobalToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct HardToken<'a>(OscDslNode<'a>);
+pub struct HardToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for HardToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == HARD_KW
     }
@@ -798,10 +798,10 @@ impl<'a> TypedNode for HardToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct IfToken<'a>(OscDslNode<'a>);
+pub struct IfToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for IfToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == IF_KW
     }
@@ -813,10 +813,10 @@ impl<'a> TypedNode for IfToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ImportToken<'a>(OscDslNode<'a>);
+pub struct ImportToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for ImportToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == IMPORT_KW
     }
@@ -828,10 +828,10 @@ impl<'a> TypedNode for ImportToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct InToken<'a>(OscDslNode<'a>);
+pub struct InToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for InToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == IN_KW
     }
@@ -843,10 +843,10 @@ impl<'a> TypedNode for InToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct InfToken<'a>(OscDslNode<'a>);
+pub struct InfToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for InfToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == INF_KW
     }
@@ -858,10 +858,10 @@ impl<'a> TypedNode for InfToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct InheritsToken<'a>(OscDslNode<'a>);
+pub struct InheritsToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for InheritsToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == INHERITS_KW
     }
@@ -873,10 +873,10 @@ impl<'a> TypedNode for InheritsToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct IntToken<'a>(OscDslNode<'a>);
+pub struct IntToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for IntToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == INT_KW
     }
@@ -888,10 +888,10 @@ impl<'a> TypedNode for IntToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct IsToken<'a>(OscDslNode<'a>);
+pub struct IsToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for IsToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == IS_KW
     }
@@ -903,10 +903,10 @@ impl<'a> TypedNode for IsToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ItToken<'a>(OscDslNode<'a>);
+pub struct ItToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for ItToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == IT_KW
     }
@@ -918,10 +918,10 @@ impl<'a> TypedNode for ItToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct KToken<'a>(OscDslNode<'a>);
+pub struct KToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for KToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == K_KW
     }
@@ -933,10 +933,10 @@ impl<'a> TypedNode for KToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct KeepToken<'a>(OscDslNode<'a>);
+pub struct KeepToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for KeepToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == KEEP_KW
     }
@@ -948,10 +948,10 @@ impl<'a> TypedNode for KeepToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct KgToken<'a>(OscDslNode<'a>);
+pub struct KgToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for KgToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == KG_KW
     }
@@ -963,10 +963,10 @@ impl<'a> TypedNode for KgToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ListToken<'a>(OscDslNode<'a>);
+pub struct ListToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for ListToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == LIST_KW
     }
@@ -978,10 +978,10 @@ impl<'a> TypedNode for ListToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct MToken<'a>(OscDslNode<'a>);
+pub struct MToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for MToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == M_KW
     }
@@ -993,10 +993,10 @@ impl<'a> TypedNode for MToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ModifierToken<'a>(OscDslNode<'a>);
+pub struct ModifierToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for ModifierToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == MODIFIER_KW
     }
@@ -1008,10 +1008,10 @@ impl<'a> TypedNode for ModifierToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct MolToken<'a>(OscDslNode<'a>);
+pub struct MolToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for MolToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == MOL_KW
     }
@@ -1023,10 +1023,10 @@ impl<'a> TypedNode for MolToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct NamespaceToken<'a>(OscDslNode<'a>);
+pub struct NamespaceToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for NamespaceToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == NAMESPACE_KW
     }
@@ -1038,10 +1038,10 @@ impl<'a> TypedNode for NamespaceToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct NanToken<'a>(OscDslNode<'a>);
+pub struct NanToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for NanToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == NAN_KW
     }
@@ -1053,10 +1053,10 @@ impl<'a> TypedNode for NanToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct NotToken<'a>(OscDslNode<'a>);
+pub struct NotToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for NotToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == NOT_KW
     }
@@ -1068,10 +1068,10 @@ impl<'a> TypedNode for NotToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct NullToken<'a>(OscDslNode<'a>);
+pub struct NullToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for NullToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == NULL_KW
     }
@@ -1083,10 +1083,10 @@ impl<'a> TypedNode for NullToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct OfToken<'a>(OscDslNode<'a>);
+pub struct OfToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for OfToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == OF_KW
     }
@@ -1098,10 +1098,10 @@ impl<'a> TypedNode for OfToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct OffsetToken<'a>(OscDslNode<'a>);
+pub struct OffsetToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for OffsetToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == OFFSET_KW
     }
@@ -1113,10 +1113,10 @@ impl<'a> TypedNode for OffsetToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct OnToken<'a>(OscDslNode<'a>);
+pub struct OnToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for OnToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == ON_KW
     }
@@ -1128,10 +1128,10 @@ impl<'a> TypedNode for OnToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct OneOfToken<'a>(OscDslNode<'a>);
+pub struct OneOfToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for OneOfToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == ONE_OF_KW
     }
@@ -1143,10 +1143,10 @@ impl<'a> TypedNode for OneOfToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct OnlyToken<'a>(OscDslNode<'a>);
+pub struct OnlyToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for OnlyToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == ONLY_KW
     }
@@ -1158,10 +1158,10 @@ impl<'a> TypedNode for OnlyToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct OrToken<'a>(OscDslNode<'a>);
+pub struct OrToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for OrToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == OR_KW
     }
@@ -1173,10 +1173,10 @@ impl<'a> TypedNode for OrToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ParallelToken<'a>(OscDslNode<'a>);
+pub struct ParallelToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for ParallelToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == PARALLEL_KW
     }
@@ -1188,10 +1188,10 @@ impl<'a> TypedNode for ParallelToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct RadToken<'a>(OscDslNode<'a>);
+pub struct RadToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for RadToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == RAD_KW
     }
@@ -1203,10 +1203,10 @@ impl<'a> TypedNode for RadToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct RangeToken<'a>(OscDslNode<'a>);
+pub struct RangeToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for RangeToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == RANGE_KW
     }
@@ -1218,10 +1218,10 @@ impl<'a> TypedNode for RangeToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct RecordToken<'a>(OscDslNode<'a>);
+pub struct RecordToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for RecordToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == RECORD_KW
     }
@@ -1233,10 +1233,10 @@ impl<'a> TypedNode for RecordToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct RemoveDefaultToken<'a>(OscDslNode<'a>);
+pub struct RemoveDefaultToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for RemoveDefaultToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == REMOVE_DEFAULT_KW
     }
@@ -1248,10 +1248,10 @@ impl<'a> TypedNode for RemoveDefaultToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct RiseToken<'a>(OscDslNode<'a>);
+pub struct RiseToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for RiseToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == RISE_KW
     }
@@ -1263,10 +1263,10 @@ impl<'a> TypedNode for RiseToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct SToken<'a>(OscDslNode<'a>);
+pub struct SToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for SToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == S_KW
     }
@@ -1278,10 +1278,10 @@ impl<'a> TypedNode for SToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct SampleToken<'a>(OscDslNode<'a>);
+pub struct SampleToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for SampleToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == SAMPLE_KW
     }
@@ -1293,10 +1293,10 @@ impl<'a> TypedNode for SampleToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ScenarioToken<'a>(OscDslNode<'a>);
+pub struct ScenarioToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for ScenarioToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == SCENARIO_KW
     }
@@ -1308,10 +1308,10 @@ impl<'a> TypedNode for ScenarioToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct SerialToken<'a>(OscDslNode<'a>);
+pub struct SerialToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for SerialToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == SERIAL_KW
     }
@@ -1323,10 +1323,10 @@ impl<'a> TypedNode for SerialToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct SiToken<'a>(OscDslNode<'a>);
+pub struct SiToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for SiToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == SI_KW
     }
@@ -1338,10 +1338,10 @@ impl<'a> TypedNode for SiToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct StringToken<'a>(OscDslNode<'a>);
+pub struct StringToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for StringToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == STRING_KW
     }
@@ -1353,10 +1353,10 @@ impl<'a> TypedNode for StringToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct StructToken<'a>(OscDslNode<'a>);
+pub struct StructToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for StructToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == STRUCT_KW
     }
@@ -1368,10 +1368,10 @@ impl<'a> TypedNode for StructToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct TrueToken<'a>(OscDslNode<'a>);
+pub struct TrueToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for TrueToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == TRUE_KW
     }
@@ -1383,10 +1383,10 @@ impl<'a> TypedNode for TrueToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct TypeToken<'a>(OscDslNode<'a>);
+pub struct TypeToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for TypeToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == TYPE_KW
     }
@@ -1398,10 +1398,10 @@ impl<'a> TypedNode for TypeToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct UintToken<'a>(OscDslNode<'a>);
+pub struct UintToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for UintToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == UINT_KW
     }
@@ -1413,10 +1413,10 @@ impl<'a> TypedNode for UintToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct UndefinedToken<'a>(OscDslNode<'a>);
+pub struct UndefinedToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for UndefinedToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == UNDEFINED_KW
     }
@@ -1428,10 +1428,10 @@ impl<'a> TypedNode for UndefinedToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct UnitToken<'a>(OscDslNode<'a>);
+pub struct UnitToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for UnitToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == UNIT_KW
     }
@@ -1443,10 +1443,10 @@ impl<'a> TypedNode for UnitToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct UntilToken<'a>(OscDslNode<'a>);
+pub struct UntilToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for UntilToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == UNTIL_KW
     }
@@ -1458,10 +1458,10 @@ impl<'a> TypedNode for UntilToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct UseToken<'a>(OscDslNode<'a>);
+pub struct UseToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for UseToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == USE_KW
     }
@@ -1473,10 +1473,10 @@ impl<'a> TypedNode for UseToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct VarToken<'a>(OscDslNode<'a>);
+pub struct VarToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for VarToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == VAR_KW
     }
@@ -1488,10 +1488,10 @@ impl<'a> TypedNode for VarToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct WaitToken<'a>(OscDslNode<'a>);
+pub struct WaitToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for WaitToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == WAIT_KW
     }
@@ -1503,10 +1503,10 @@ impl<'a> TypedNode for WaitToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct WithToken<'a>(OscDslNode<'a>);
+pub struct WithToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for WithToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == WITH_KW
     }
@@ -1518,10 +1518,10 @@ impl<'a> TypedNode for WithToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct IntegerLiteralToken<'a>(OscDslNode<'a>);
+pub struct IntegerLiteralToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for IntegerLiteralToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == INTEGER_LITERAL
     }
@@ -1533,10 +1533,10 @@ impl<'a> TypedNode for IntegerLiteralToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct FloatLiteralToken<'a>(OscDslNode<'a>);
+pub struct FloatLiteralToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for FloatLiteralToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == FLOAT_LITERAL
     }
@@ -1548,10 +1548,10 @@ impl<'a> TypedNode for FloatLiteralToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct StringLiteralToken<'a>(OscDslNode<'a>);
+pub struct StringLiteralToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for StringLiteralToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == STRING_LITERAL
     }
@@ -1563,10 +1563,10 @@ impl<'a> TypedNode for StringLiteralToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct NewlineToken<'a>(OscDslNode<'a>);
+pub struct NewlineToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for NewlineToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == NEWLINE
     }
@@ -1578,10 +1578,10 @@ impl<'a> TypedNode for NewlineToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct IndentToken<'a>(OscDslNode<'a>);
+pub struct IndentToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for IndentToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == INDENT
     }
@@ -1593,10 +1593,10 @@ impl<'a> TypedNode for IndentToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct DedentToken<'a>(OscDslNode<'a>);
+pub struct DedentToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for DedentToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == DEDENT
     }
@@ -1608,10 +1608,10 @@ impl<'a> TypedNode for DedentToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct IdentifierToken<'a>(OscDslNode<'a>);
+pub struct IdentifierToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for IdentifierToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == IDENTIFIER
     }
@@ -1623,10 +1623,10 @@ impl<'a> TypedNode for IdentifierToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ErrorToken<'a>(OscDslNode<'a>);
+pub struct ErrorToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for ErrorToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == ERROR
     }
@@ -1638,10 +1638,10 @@ impl<'a> TypedNode for ErrorToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct WhitespaceToken<'a>(OscDslNode<'a>);
+pub struct WhitespaceToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for WhitespaceToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == WHITESPACE
     }
@@ -1653,10 +1653,10 @@ impl<'a> TypedNode for WhitespaceToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct CommentToken<'a>(OscDslNode<'a>);
+pub struct CommentToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for CommentToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == COMMENT
     }
@@ -1668,10 +1668,10 @@ impl<'a> TypedNode for CommentToken<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct TrivialNewlineToken<'a>(OscDslNode<'a>);
+pub struct TrivialNewlineToken<'a>(OscNode<'a>);
 impl<'a> TypedNode for TrivialNewlineToken<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == TRIVIAL_NEWLINE
     }
@@ -1702,8 +1702,8 @@ impl QualifiedIdentifier<'_> {
     }
 }
 impl<'a> TypedNode for QualifiedIdentifier<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         matches!(value, IDENTIFIER | PREFIXED_IDENTIFIER)
     }
@@ -1724,7 +1724,7 @@ impl<'a> TypedNode for QualifiedIdentifier<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct PrefixedIdentifier<'a>(OscDslNode<'a>);
+pub struct PrefixedIdentifier<'a>(OscNode<'a>);
 impl PrefixedIdentifier<'_> {
     pub fn namespace_name(&self) -> Option<NamespaceName> {
         support::child(&self.0, 0usize)
@@ -1737,8 +1737,8 @@ impl PrefixedIdentifier<'_> {
     }
 }
 impl<'a> TypedNode for PrefixedIdentifier<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == PREFIXED_IDENTIFIER
     }
@@ -1769,8 +1769,8 @@ impl NamespaceName<'_> {
     }
 }
 impl<'a> TypedNode for NamespaceName<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         matches!(value, IDENTIFIER | NULL_KW)
     }
@@ -1808,8 +1808,8 @@ impl BoolLiteral<'_> {
     }
 }
 impl<'a> TypedNode for BoolLiteral<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         matches!(value, TRUE_KW | FALSE_KW)
     }
@@ -1828,7 +1828,7 @@ impl<'a> TypedNode for BoolLiteral<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct PhysicalLiteral<'a>(OscDslNode<'a>);
+pub struct PhysicalLiteral<'a>(OscNode<'a>);
 impl PhysicalLiteral<'_> {
     pub fn number_literal(&self) -> Option<NumberLiteral> {
         support::child(&self.0, 0usize)
@@ -1838,8 +1838,8 @@ impl PhysicalLiteral<'_> {
     }
 }
 impl<'a> TypedNode for PhysicalLiteral<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == PHYSICAL_LITERAL
     }
@@ -1870,8 +1870,8 @@ impl NumberLiteral<'_> {
     }
 }
 impl<'a> TypedNode for NumberLiteral<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         matches!(value, FLOAT_LITERAL | INTEGER_LITERAL)
     }
@@ -1894,7 +1894,7 @@ impl<'a> TypedNode for NumberLiteral<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct OscFile<'a>(OscDslNode<'a>);
+pub struct OscFile<'a>(OscNode<'a>);
 impl OscFile<'_> {
     pub fn prelude_statement_list(&self) -> Option<PreludeStatementList> {
         support::child(&self.0, 0usize)
@@ -1904,8 +1904,8 @@ impl OscFile<'_> {
     }
 }
 impl<'a> TypedNode for OscFile<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == OSC_FILE
     }
@@ -1917,15 +1917,15 @@ impl<'a> TypedNode for OscFile<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct PreludeStatementList<'a>(OscDslNode<'a>);
+pub struct PreludeStatementList<'a>(OscNode<'a>);
 impl<'a> PreludeStatementList<'a> {
     pub fn prelude_statement(&self) -> impl Iterator<Item = PreludeStatement<'a>> + 'a {
         support::children(&self.0)
     }
 }
 impl<'a> TypedNode for PreludeStatementList<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == PRELUDE_STATEMENT_LIST
     }
@@ -1937,15 +1937,15 @@ impl<'a> TypedNode for PreludeStatementList<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct MainStatementList<'a>(OscDslNode<'a>);
+pub struct MainStatementList<'a>(OscNode<'a>);
 impl<'a> MainStatementList<'a> {
     pub fn main_statement(&self) -> impl Iterator<Item = MainStatement<'a>> + 'a {
         support::children(&self.0)
     }
 }
 impl<'a> TypedNode for MainStatementList<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == MAIN_STATEMENT_LIST
     }
@@ -1969,8 +1969,8 @@ impl PreludeStatement<'_> {
     }
 }
 impl<'a> TypedNode for PreludeStatement<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         matches!(value, IMPORT_STATEMENT)
     }
@@ -2013,8 +2013,8 @@ impl MainStatement<'_> {
     }
 }
 impl<'a> TypedNode for MainStatement<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         matches!(
             value,
@@ -2062,7 +2062,7 @@ impl<'a> TypedNode for MainStatement<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ImportStatement<'a>(OscDslNode<'a>);
+pub struct ImportStatement<'a>(OscNode<'a>);
 impl ImportStatement<'_> {
     pub fn import_token(&self) -> Option<ImportToken> {
         support::child(&self.0, 0usize)
@@ -2075,8 +2075,8 @@ impl ImportStatement<'_> {
     }
 }
 impl<'a> TypedNode for ImportStatement<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == IMPORT_STATEMENT
     }
@@ -2107,8 +2107,8 @@ impl ImportReference<'_> {
     }
 }
 impl<'a> TypedNode for ImportReference<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         matches!(value, STRING_LITERAL | STRUCTURED_IDENTIFIER)
     }
@@ -2131,7 +2131,7 @@ impl<'a> TypedNode for ImportReference<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct StructuredIdentifier<'a>(OscDslNode<'a>);
+pub struct StructuredIdentifier<'a>(OscNode<'a>);
 impl<'a> StructuredIdentifier<'a> {
     pub fn structured_identifier_element(
         &self,
@@ -2140,8 +2140,8 @@ impl<'a> StructuredIdentifier<'a> {
     }
 }
 impl<'a> TypedNode for StructuredIdentifier<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == STRUCTURED_IDENTIFIER
     }
@@ -2153,7 +2153,7 @@ impl<'a> TypedNode for StructuredIdentifier<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct StructuredIdentifierElement<'a>(OscDslNode<'a>);
+pub struct StructuredIdentifierElement<'a>(OscNode<'a>);
 impl StructuredIdentifierElement<'_> {
     pub fn identifier_token(&self) -> Option<IdentifierToken> {
         support::child(&self.0, 0usize)
@@ -2163,8 +2163,8 @@ impl StructuredIdentifierElement<'_> {
     }
 }
 impl<'a> TypedNode for StructuredIdentifierElement<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == STRUCTURED_IDENTIFIER_ELEMENT
     }
@@ -2176,7 +2176,7 @@ impl<'a> TypedNode for StructuredIdentifierElement<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct NamespaceStatement<'a>(OscDslNode<'a>);
+pub struct NamespaceStatement<'a>(OscNode<'a>);
 impl NamespaceStatement<'_> {
     pub fn namespace_token(&self) -> Option<NamespaceToken> {
         support::child(&self.0, 0usize)
@@ -2192,8 +2192,8 @@ impl NamespaceStatement<'_> {
     }
 }
 impl<'a> TypedNode for NamespaceStatement<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == NAMESPACE_STATEMENT
     }
@@ -2205,7 +2205,7 @@ impl<'a> TypedNode for NamespaceStatement<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ExportStatement<'a>(OscDslNode<'a>);
+pub struct ExportStatement<'a>(OscNode<'a>);
 impl ExportStatement<'_> {
     pub fn export_token(&self) -> Option<ExportToken> {
         support::child(&self.0, 0usize)
@@ -2218,8 +2218,8 @@ impl ExportStatement<'_> {
     }
 }
 impl<'a> TypedNode for ExportStatement<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == EXPORT_STATEMENT
     }
@@ -2306,8 +2306,8 @@ impl OscDeclaration<'_> {
     }
 }
 impl<'a> TypedNode for OscDeclaration<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         matches!(
             value,
@@ -2368,7 +2368,7 @@ impl<'a> TypedNode for OscDeclaration<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct NamespaceUseClause<'a>(OscDslNode<'a>);
+pub struct NamespaceUseClause<'a>(OscNode<'a>);
 impl NamespaceUseClause<'_> {
     pub fn use_token(&self) -> Option<UseToken> {
         support::child(&self.0, 0usize)
@@ -2378,8 +2378,8 @@ impl NamespaceUseClause<'_> {
     }
 }
 impl<'a> TypedNode for NamespaceUseClause<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == NAMESPACE_USE_CLAUSE
     }
@@ -2391,15 +2391,15 @@ impl<'a> TypedNode for NamespaceUseClause<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct NamespaceList<'a>(OscDslNode<'a>);
+pub struct NamespaceList<'a>(OscNode<'a>);
 impl<'a> NamespaceList<'a> {
     pub fn namespace_list_element(&self) -> impl Iterator<Item = NamespaceListElement<'a>> + 'a {
         support::children(&self.0)
     }
 }
 impl<'a> TypedNode for NamespaceList<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == NAMESPACE_LIST
     }
@@ -2411,7 +2411,7 @@ impl<'a> TypedNode for NamespaceList<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct NamespaceListElement<'a>(OscDslNode<'a>);
+pub struct NamespaceListElement<'a>(OscNode<'a>);
 impl NamespaceListElement<'_> {
     pub fn namespace_name(&self) -> Option<NamespaceName> {
         support::child(&self.0, 0usize)
@@ -2421,8 +2421,8 @@ impl NamespaceListElement<'_> {
     }
 }
 impl<'a> TypedNode for NamespaceListElement<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == NAMESPACE_LIST_ELEMENT
     }
@@ -2434,7 +2434,7 @@ impl<'a> TypedNode for NamespaceListElement<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ExportSpecificationList<'a>(OscDslNode<'a>);
+pub struct ExportSpecificationList<'a>(OscNode<'a>);
 impl<'a> ExportSpecificationList<'a> {
     pub fn export_specification_list_element(
         &self,
@@ -2443,8 +2443,8 @@ impl<'a> ExportSpecificationList<'a> {
     }
 }
 impl<'a> TypedNode for ExportSpecificationList<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == EXPORT_SPECIFICATION_LIST
     }
@@ -2456,7 +2456,7 @@ impl<'a> TypedNode for ExportSpecificationList<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ExportSpecificationListElement<'a>(OscDslNode<'a>);
+pub struct ExportSpecificationListElement<'a>(OscNode<'a>);
 impl ExportSpecificationListElement<'_> {
     pub fn export_specification(&self) -> Option<ExportSpecification> {
         support::child(&self.0, 0usize)
@@ -2466,8 +2466,8 @@ impl ExportSpecificationListElement<'_> {
     }
 }
 impl<'a> TypedNode for ExportSpecificationListElement<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == EXPORT_SPECIFICATION_LIST_ELEMENT
     }
@@ -2498,8 +2498,8 @@ impl ExportSpecification<'_> {
     }
 }
 impl<'a> TypedNode for ExportSpecification<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         matches!(
             value,
@@ -2525,7 +2525,7 @@ impl<'a> TypedNode for ExportSpecification<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ExportWildcardSpecification<'a>(OscDslNode<'a>);
+pub struct ExportWildcardSpecification<'a>(OscNode<'a>);
 impl ExportWildcardSpecification<'_> {
     pub fn namespace_name(&self) -> Option<NamespaceName> {
         support::child(&self.0, 0usize)
@@ -2538,8 +2538,8 @@ impl ExportWildcardSpecification<'_> {
     }
 }
 impl<'a> TypedNode for ExportWildcardSpecification<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == EXPORT_WILDCARD_SPECIFICATION
     }
@@ -2551,7 +2551,7 @@ impl<'a> TypedNode for ExportWildcardSpecification<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct PhysicalTypeDeclaration<'a>(OscDslNode<'a>);
+pub struct PhysicalTypeDeclaration<'a>(OscNode<'a>);
 impl PhysicalTypeDeclaration<'_> {
     pub fn type_token(&self) -> Option<TypeToken> {
         support::child(&self.0, 0usize)
@@ -2570,8 +2570,8 @@ impl PhysicalTypeDeclaration<'_> {
     }
 }
 impl<'a> TypedNode for PhysicalTypeDeclaration<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == PHYSICAL_TYPE_DECLARATION
     }
@@ -2583,7 +2583,7 @@ impl<'a> TypedNode for PhysicalTypeDeclaration<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct UnitDeclaration<'a>(OscDslNode<'a>);
+pub struct UnitDeclaration<'a>(OscNode<'a>);
 impl UnitDeclaration<'_> {
     pub fn unit_token(&self) -> Option<UnitToken> {
         support::child(&self.0, 0usize)
@@ -2608,8 +2608,8 @@ impl UnitDeclaration<'_> {
     }
 }
 impl<'a> TypedNode for UnitDeclaration<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == UNIT_DECLARATION
     }
@@ -2621,7 +2621,7 @@ impl<'a> TypedNode for UnitDeclaration<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct EnumDeclaration<'a>(OscDslNode<'a>);
+pub struct EnumDeclaration<'a>(OscNode<'a>);
 impl EnumDeclaration<'_> {
     pub fn enum_token(&self) -> Option<EnumToken> {
         support::child(&self.0, 0usize)
@@ -2646,8 +2646,8 @@ impl EnumDeclaration<'_> {
     }
 }
 impl<'a> TypedNode for EnumDeclaration<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == ENUM_DECLARATION
     }
@@ -2659,7 +2659,7 @@ impl<'a> TypedNode for EnumDeclaration<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct StructDeclaration<'a>(OscDslNode<'a>);
+pub struct StructDeclaration<'a>(OscNode<'a>);
 impl StructDeclaration<'_> {
     pub fn struct_token(&self) -> Option<StructToken> {
         support::child(&self.0, 0usize)
@@ -2675,8 +2675,8 @@ impl StructDeclaration<'_> {
     }
 }
 impl<'a> TypedNode for StructDeclaration<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == STRUCT_DECLARATION
     }
@@ -2688,7 +2688,7 @@ impl<'a> TypedNode for StructDeclaration<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ActorDeclaration<'a>(OscDslNode<'a>);
+pub struct ActorDeclaration<'a>(OscNode<'a>);
 impl ActorDeclaration<'_> {
     pub fn actor_token(&self) -> Option<ActorToken> {
         support::child(&self.0, 0usize)
@@ -2704,8 +2704,8 @@ impl ActorDeclaration<'_> {
     }
 }
 impl<'a> TypedNode for ActorDeclaration<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == ACTOR_DECLARATION
     }
@@ -2717,7 +2717,7 @@ impl<'a> TypedNode for ActorDeclaration<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ActionDeclaration<'a>(OscDslNode<'a>);
+pub struct ActionDeclaration<'a>(OscNode<'a>);
 impl ActionDeclaration<'_> {
     pub fn action_token(&self) -> Option<ActionToken> {
         support::child(&self.0, 0usize)
@@ -2733,8 +2733,8 @@ impl ActionDeclaration<'_> {
     }
 }
 impl<'a> TypedNode for ActionDeclaration<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == ACTION_DECLARATION
     }
@@ -2746,7 +2746,7 @@ impl<'a> TypedNode for ActionDeclaration<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ScenarioDeclaration<'a>(OscDslNode<'a>);
+pub struct ScenarioDeclaration<'a>(OscNode<'a>);
 impl ScenarioDeclaration<'_> {
     pub fn scenario_token(&self) -> Option<ScenarioToken> {
         support::child(&self.0, 0usize)
@@ -2762,8 +2762,8 @@ impl ScenarioDeclaration<'_> {
     }
 }
 impl<'a> TypedNode for ScenarioDeclaration<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == SCENARIO_DECLARATION
     }
@@ -2775,7 +2775,7 @@ impl<'a> TypedNode for ScenarioDeclaration<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ModifierDeclaration<'a>(OscDslNode<'a>);
+pub struct ModifierDeclaration<'a>(OscNode<'a>);
 impl ModifierDeclaration<'_> {
     pub fn modifier_token(&self) -> Option<ModifierToken> {
         support::child(&self.0, 0usize)
@@ -2791,8 +2791,8 @@ impl ModifierDeclaration<'_> {
     }
 }
 impl<'a> TypedNode for ModifierDeclaration<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == MODIFIER_DECLARATION
     }
@@ -2804,7 +2804,7 @@ impl<'a> TypedNode for ModifierDeclaration<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct TypeExtension<'a>(OscDslNode<'a>);
+pub struct TypeExtension<'a>(OscNode<'a>);
 impl TypeExtension<'_> {
     pub fn extend_token(&self) -> Option<ExtendToken> {
         support::child(&self.0, 0usize)
@@ -2817,8 +2817,8 @@ impl TypeExtension<'_> {
     }
 }
 impl<'a> TypedNode for TypeExtension<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == TYPE_EXTENSION
     }
@@ -2830,7 +2830,7 @@ impl<'a> TypedNode for TypeExtension<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct GlobalParameterDeclaration<'a>(OscDslNode<'a>);
+pub struct GlobalParameterDeclaration<'a>(OscNode<'a>);
 impl GlobalParameterDeclaration<'_> {
     pub fn global_token(&self) -> Option<GlobalToken> {
         support::child(&self.0, 0usize)
@@ -2840,8 +2840,8 @@ impl GlobalParameterDeclaration<'_> {
     }
 }
 impl<'a> TypedNode for GlobalParameterDeclaration<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == GLOBAL_PARAMETER_DECLARATION
     }
@@ -2872,8 +2872,8 @@ impl TypeDeclarator<'_> {
     }
 }
 impl<'a> TypedNode for TypeDeclarator<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         matches!(
             value,
@@ -2933,8 +2933,8 @@ impl NonAggregateTypeDeclarator<'_> {
     }
 }
 impl<'a> TypedNode for NonAggregateTypeDeclarator<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         matches!(
             value,
@@ -2979,8 +2979,8 @@ impl AggregateTypeDeclarator<'_> {
     }
 }
 impl<'a> TypedNode for AggregateTypeDeclarator<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         matches!(value, LIST_TYPE_DECLARATOR)
     }
@@ -3039,8 +3039,8 @@ impl PrimitiveType<'_> {
     }
 }
 impl<'a> TypedNode for PrimitiveType<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         matches!(value, INT_KW | UINT_KW | FLOAT_KW | BOOL_KW | STRING_KW)
     }
@@ -3084,8 +3084,8 @@ impl QualifiedBehaviorName<'_> {
     }
 }
 impl<'a> TypedNode for QualifiedBehaviorName<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         matches!(
             value,
@@ -3111,7 +3111,7 @@ impl<'a> TypedNode for QualifiedBehaviorName<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ListTypeDeclarator<'a>(OscDslNode<'a>);
+pub struct ListTypeDeclarator<'a>(OscNode<'a>);
 impl ListTypeDeclarator<'_> {
     pub fn list_token(&self) -> Option<ListToken> {
         support::child(&self.0, 0usize)
@@ -3124,8 +3124,8 @@ impl ListTypeDeclarator<'_> {
     }
 }
 impl<'a> TypedNode for ListTypeDeclarator<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == LIST_TYPE_DECLARATOR
     }
@@ -3149,8 +3149,8 @@ impl BaseUnitSpecifier<'_> {
     }
 }
 impl<'a> TypedNode for BaseUnitSpecifier<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         matches!(value, SI_BASE_UNIT_SPECIFIER)
     }
@@ -3181,8 +3181,8 @@ impl UnitSpecifier<'_> {
     }
 }
 impl<'a> TypedNode for UnitSpecifier<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         matches!(value, SI_UNIT_SPECIFIER)
     }
@@ -3199,7 +3199,7 @@ impl<'a> TypedNode for UnitSpecifier<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct SiBaseUnitSpecifier<'a>(OscDslNode<'a>);
+pub struct SiBaseUnitSpecifier<'a>(OscNode<'a>);
 impl SiBaseUnitSpecifier<'_> {
     pub fn si_token(&self) -> Option<SiToken> {
         support::child(&self.0, 0usize)
@@ -3215,8 +3215,8 @@ impl SiBaseUnitSpecifier<'_> {
     }
 }
 impl<'a> TypedNode for SiBaseUnitSpecifier<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == SI_BASE_UNIT_SPECIFIER
     }
@@ -3228,7 +3228,7 @@ impl<'a> TypedNode for SiBaseUnitSpecifier<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct SiUnitSpecifier<'a>(OscDslNode<'a>);
+pub struct SiUnitSpecifier<'a>(OscNode<'a>);
 impl SiUnitSpecifier<'_> {
     pub fn si_token(&self) -> Option<SiToken> {
         support::child(&self.0, 0usize)
@@ -3244,8 +3244,8 @@ impl SiUnitSpecifier<'_> {
     }
 }
 impl<'a> TypedNode for SiUnitSpecifier<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == SI_UNIT_SPECIFIER
     }
@@ -3257,15 +3257,15 @@ impl<'a> TypedNode for SiUnitSpecifier<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct SiBaseExponentList<'a>(OscDslNode<'a>);
+pub struct SiBaseExponentList<'a>(OscNode<'a>);
 impl<'a> SiBaseExponentList<'a> {
     pub fn si_base_exponent(&self) -> impl Iterator<Item = SiBaseExponent<'a>> + 'a {
         support::children(&self.0)
     }
 }
 impl<'a> TypedNode for SiBaseExponentList<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == SI_BASE_EXPONENT_LIST
     }
@@ -3277,7 +3277,7 @@ impl<'a> TypedNode for SiBaseExponentList<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct SiBaseExponent<'a>(OscDslNode<'a>);
+pub struct SiBaseExponent<'a>(OscNode<'a>);
 impl SiBaseExponent<'_> {
     pub fn si_base_unit_name(&self) -> Option<SiBaseUnitName> {
         support::child(&self.0, 0usize)
@@ -3293,8 +3293,8 @@ impl SiBaseExponent<'_> {
     }
 }
 impl<'a> TypedNode for SiBaseExponent<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == SI_BASE_EXPONENT
     }
@@ -3367,8 +3367,8 @@ impl SiBaseUnitName<'_> {
     }
 }
 impl<'a> TypedNode for SiBaseUnitName<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         matches!(
             value,
@@ -3519,8 +3519,8 @@ impl Expression<'_> {
     }
 }
 impl<'a> TypedNode for Expression<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         matches!(
             value,
@@ -3603,15 +3603,15 @@ impl<'a> TypedNode for Expression<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct SiUnitArgumentList<'a>(OscDslNode<'a>);
+pub struct SiUnitArgumentList<'a>(OscNode<'a>);
 impl<'a> SiUnitArgumentList<'a> {
     pub fn si_unit_argument(&self) -> impl Iterator<Item = SiUnitArgument<'a>> + 'a {
         support::children(&self.0)
     }
 }
 impl<'a> TypedNode for SiUnitArgumentList<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == SI_UNIT_ARGUMENT_LIST
     }
@@ -3623,7 +3623,7 @@ impl<'a> TypedNode for SiUnitArgumentList<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct SiUnitArgument<'a>(OscDslNode<'a>);
+pub struct SiUnitArgument<'a>(OscNode<'a>);
 impl SiUnitArgument<'_> {
     pub fn si_unit_argument_name(&self) -> Option<SiUnitArgumentName> {
         support::child(&self.0, 0usize)
@@ -3639,8 +3639,8 @@ impl SiUnitArgument<'_> {
     }
 }
 impl<'a> TypedNode for SiUnitArgument<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == SI_UNIT_ARGUMENT
     }
@@ -3678,8 +3678,8 @@ impl SiUnitArgumentName<'_> {
     }
 }
 impl<'a> TypedNode for SiUnitArgumentName<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         matches!(
             value,
@@ -3705,15 +3705,15 @@ impl<'a> TypedNode for SiUnitArgumentName<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct EnumMemberDeclList<'a>(OscDslNode<'a>);
+pub struct EnumMemberDeclList<'a>(OscNode<'a>);
 impl<'a> EnumMemberDeclList<'a> {
     pub fn enum_member_decl(&self) -> impl Iterator<Item = EnumMemberDecl<'a>> + 'a {
         support::children(&self.0)
     }
 }
 impl<'a> TypedNode for EnumMemberDeclList<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == ENUM_MEMBER_DECL_LIST
     }
@@ -3725,7 +3725,7 @@ impl<'a> TypedNode for EnumMemberDeclList<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct EnumMemberDecl<'a>(OscDslNode<'a>);
+pub struct EnumMemberDecl<'a>(OscNode<'a>);
 impl EnumMemberDecl<'_> {
     pub fn enum_member_name(&self) -> Option<QualifiedIdentifier> {
         support::child(&self.0, 0usize)
@@ -3738,8 +3738,8 @@ impl EnumMemberDecl<'_> {
     }
 }
 impl<'a> TypedNode for EnumMemberDecl<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == ENUM_MEMBER_DECL
     }
@@ -3751,7 +3751,7 @@ impl<'a> TypedNode for EnumMemberDecl<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct EnumInitializerClause<'a>(OscDslNode<'a>);
+pub struct EnumInitializerClause<'a>(OscNode<'a>);
 impl EnumInitializerClause<'_> {
     pub fn assign_token(&self) -> Option<AssignToken> {
         support::child(&self.0, 0usize)
@@ -3761,8 +3761,8 @@ impl EnumInitializerClause<'_> {
     }
 }
 impl<'a> TypedNode for EnumInitializerClause<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == ENUM_INITIALIZER_CLAUSE
     }
@@ -3774,7 +3774,7 @@ impl<'a> TypedNode for EnumInitializerClause<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct StructInheritsClause<'a>(OscDslNode<'a>);
+pub struct StructInheritsClause<'a>(OscNode<'a>);
 impl StructInheritsClause<'_> {
     pub fn inherits_token(&self) -> Option<InheritsToken> {
         support::child(&self.0, 0usize)
@@ -3787,8 +3787,8 @@ impl StructInheritsClause<'_> {
     }
 }
 impl<'a> TypedNode for StructInheritsClause<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == STRUCT_INHERITS_CLAUSE
     }
@@ -3819,8 +3819,8 @@ impl StructBodyOrNewline<'_> {
     }
 }
 impl<'a> TypedNode for StructBodyOrNewline<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         matches!(value, STRUCT_BODY | NEWLINE)
     }
@@ -3839,7 +3839,7 @@ impl<'a> TypedNode for StructBodyOrNewline<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct StructInheritsCondition<'a>(OscDslNode<'a>);
+pub struct StructInheritsCondition<'a>(OscNode<'a>);
 impl StructInheritsCondition<'_> {
     pub fn left_paren_token(&self) -> Option<LeftParenToken> {
         support::child(&self.0, 0usize)
@@ -3852,8 +3852,8 @@ impl StructInheritsCondition<'_> {
     }
 }
 impl<'a> TypedNode for StructInheritsCondition<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == STRUCT_INHERITS_CONDITION
     }
@@ -3865,7 +3865,7 @@ impl<'a> TypedNode for StructInheritsCondition<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct StructBody<'a>(OscDslNode<'a>);
+pub struct StructBody<'a>(OscNode<'a>);
 impl StructBody<'_> {
     pub fn colon_token(&self) -> Option<ColonToken> {
         support::child(&self.0, 0usize)
@@ -3884,8 +3884,8 @@ impl StructBody<'_> {
     }
 }
 impl<'a> TypedNode for StructBody<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == STRUCT_BODY
     }
@@ -3897,15 +3897,15 @@ impl<'a> TypedNode for StructBody<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct StructMemberList<'a>(OscDslNode<'a>);
+pub struct StructMemberList<'a>(OscNode<'a>);
 impl<'a> StructMemberList<'a> {
     pub fn struct_member(&self) -> impl Iterator<Item = StructMember<'a>> + 'a {
         support::children(&self.0)
     }
 }
 impl<'a> TypedNode for StructMemberList<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == STRUCT_MEMBER_LIST
     }
@@ -3957,8 +3957,8 @@ impl StructMember<'_> {
     }
 }
 impl<'a> TypedNode for StructMember<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         matches!(
             value,
@@ -4002,7 +4002,7 @@ impl<'a> TypedNode for StructMember<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct EventDeclaration<'a>(OscDslNode<'a>);
+pub struct EventDeclaration<'a>(OscNode<'a>);
 impl EventDeclaration<'_> {
     pub fn event_token(&self) -> Option<EventToken> {
         support::child(&self.0, 0usize)
@@ -4021,8 +4021,8 @@ impl EventDeclaration<'_> {
     }
 }
 impl<'a> TypedNode for EventDeclaration<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == EVENT_DECLARATION
     }
@@ -4053,8 +4053,8 @@ impl FieldDeclaration<'_> {
     }
 }
 impl<'a> TypedNode for FieldDeclaration<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         matches!(value, PARAMETER_DECLARATION | VARIABLE_DECLARATION)
     }
@@ -4096,8 +4096,8 @@ impl ConstraintDeclaration<'_> {
     }
 }
 impl<'a> TypedNode for ConstraintDeclaration<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         matches!(
             value,
@@ -4123,7 +4123,7 @@ impl<'a> TypedNode for ConstraintDeclaration<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct MethodDeclaration<'a>(OscDslNode<'a>);
+pub struct MethodDeclaration<'a>(OscNode<'a>);
 impl MethodDeclaration<'_> {
     pub fn def_token(&self) -> Option<DefToken> {
         support::child(&self.0, 0usize)
@@ -4151,8 +4151,8 @@ impl MethodDeclaration<'_> {
     }
 }
 impl<'a> TypedNode for MethodDeclaration<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == METHOD_DECLARATION
     }
@@ -4164,7 +4164,7 @@ impl<'a> TypedNode for MethodDeclaration<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct CoverageDeclaration<'a>(OscDslNode<'a>);
+pub struct CoverageDeclaration<'a>(OscNode<'a>);
 impl CoverageDeclaration<'_> {
     pub fn coverage_operator(&self) -> Option<CoverageOperator> {
         support::child(&self.0, 0usize)
@@ -4183,8 +4183,8 @@ impl CoverageDeclaration<'_> {
     }
 }
 impl<'a> TypedNode for CoverageDeclaration<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == COVERAGE_DECLARATION
     }
@@ -4196,7 +4196,7 @@ impl<'a> TypedNode for CoverageDeclaration<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ActorInheritsClause<'a>(OscDslNode<'a>);
+pub struct ActorInheritsClause<'a>(OscNode<'a>);
 impl ActorInheritsClause<'_> {
     pub fn inherits_token(&self) -> Option<InheritsToken> {
         support::child(&self.0, 0usize)
@@ -4209,8 +4209,8 @@ impl ActorInheritsClause<'_> {
     }
 }
 impl<'a> TypedNode for ActorInheritsClause<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == ACTOR_INHERITS_CLAUSE
     }
@@ -4241,8 +4241,8 @@ impl ActorBodyOrNewline<'_> {
     }
 }
 impl<'a> TypedNode for ActorBodyOrNewline<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         matches!(value, ACTOR_BODY | NEWLINE)
     }
@@ -4261,7 +4261,7 @@ impl<'a> TypedNode for ActorBodyOrNewline<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ActorInheritsCondition<'a>(OscDslNode<'a>);
+pub struct ActorInheritsCondition<'a>(OscNode<'a>);
 impl ActorInheritsCondition<'_> {
     pub fn left_paren_token(&self) -> Option<LeftParenToken> {
         support::child(&self.0, 0usize)
@@ -4274,8 +4274,8 @@ impl ActorInheritsCondition<'_> {
     }
 }
 impl<'a> TypedNode for ActorInheritsCondition<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == ACTOR_INHERITS_CONDITION
     }
@@ -4287,7 +4287,7 @@ impl<'a> TypedNode for ActorInheritsCondition<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ActorBody<'a>(OscDslNode<'a>);
+pub struct ActorBody<'a>(OscNode<'a>);
 impl ActorBody<'_> {
     pub fn colon_token(&self) -> Option<ColonToken> {
         support::child(&self.0, 0usize)
@@ -4306,8 +4306,8 @@ impl ActorBody<'_> {
     }
 }
 impl<'a> TypedNode for ActorBody<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == ACTOR_BODY
     }
@@ -4319,15 +4319,15 @@ impl<'a> TypedNode for ActorBody<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ActorMemberList<'a>(OscDslNode<'a>);
+pub struct ActorMemberList<'a>(OscNode<'a>);
 impl<'a> ActorMemberList<'a> {
     pub fn actor_member_decl(&self) -> impl Iterator<Item = ActorMemberDecl<'a>> + 'a {
         support::children(&self.0)
     }
 }
 impl<'a> TypedNode for ActorMemberList<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == ACTOR_MEMBER_LIST
     }
@@ -4379,8 +4379,8 @@ impl ActorMemberDecl<'_> {
     }
 }
 impl<'a> TypedNode for ActorMemberDecl<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         matches!(
             value,
@@ -4424,7 +4424,7 @@ impl<'a> TypedNode for ActorMemberDecl<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ScenarioInheritsClause<'a>(OscDslNode<'a>);
+pub struct ScenarioInheritsClause<'a>(OscNode<'a>);
 impl ScenarioInheritsClause<'_> {
     pub fn inherits_token(&self) -> Option<InheritsToken> {
         support::child(&self.0, 0usize)
@@ -4437,8 +4437,8 @@ impl ScenarioInheritsClause<'_> {
     }
 }
 impl<'a> TypedNode for ScenarioInheritsClause<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == SCENARIO_INHERITS_CLAUSE
     }
@@ -4469,8 +4469,8 @@ impl ScenarioBodyOrNewline<'_> {
     }
 }
 impl<'a> TypedNode for ScenarioBodyOrNewline<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         matches!(value, SCENARIO_BODY | NEWLINE)
     }
@@ -4489,7 +4489,7 @@ impl<'a> TypedNode for ScenarioBodyOrNewline<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ScenarioInheritsCondition<'a>(OscDslNode<'a>);
+pub struct ScenarioInheritsCondition<'a>(OscNode<'a>);
 impl ScenarioInheritsCondition<'_> {
     pub fn left_paren_token(&self) -> Option<LeftParenToken> {
         support::child(&self.0, 0usize)
@@ -4502,8 +4502,8 @@ impl ScenarioInheritsCondition<'_> {
     }
 }
 impl<'a> TypedNode for ScenarioInheritsCondition<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == SCENARIO_INHERITS_CONDITION
     }
@@ -4515,7 +4515,7 @@ impl<'a> TypedNode for ScenarioInheritsCondition<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ScenarioBody<'a>(OscDslNode<'a>);
+pub struct ScenarioBody<'a>(OscNode<'a>);
 impl ScenarioBody<'_> {
     pub fn colon_token(&self) -> Option<ColonToken> {
         support::child(&self.0, 0usize)
@@ -4534,8 +4534,8 @@ impl ScenarioBody<'_> {
     }
 }
 impl<'a> TypedNode for ScenarioBody<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == SCENARIO_BODY
     }
@@ -4547,15 +4547,15 @@ impl<'a> TypedNode for ScenarioBody<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ScenarioMemberList<'a>(OscDslNode<'a>);
+pub struct ScenarioMemberList<'a>(OscNode<'a>);
 impl<'a> ScenarioMemberList<'a> {
     pub fn scenario_member(&self) -> impl Iterator<Item = ScenarioMember<'a>> + 'a {
         support::children(&self.0)
     }
 }
 impl<'a> TypedNode for ScenarioMemberList<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == SCENARIO_MEMBER_LIST
     }
@@ -4586,8 +4586,8 @@ impl ScenarioMember<'_> {
     }
 }
 impl<'a> TypedNode for ScenarioMember<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         matches!(
             value,
@@ -4676,8 +4676,8 @@ impl ScenarioMemberDecl<'_> {
     }
 }
 impl<'a> TypedNode for ScenarioMemberDecl<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         matches!(
             value,
@@ -4745,8 +4745,8 @@ impl BehaviorSpecification<'_> {
     }
 }
 impl<'a> TypedNode for BehaviorSpecification<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         matches!(value, ON_DIRECTIVE | DO_DIRECTIVE)
     }
@@ -4765,7 +4765,7 @@ impl<'a> TypedNode for BehaviorSpecification<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ModifierApplication<'a>(OscDslNode<'a>);
+pub struct ModifierApplication<'a>(OscNode<'a>);
 impl ModifierApplication<'_> {
     pub fn expression(&self) -> Option<Expression> {
         support::child(&self.0, 0usize)
@@ -4775,8 +4775,8 @@ impl ModifierApplication<'_> {
     }
 }
 impl<'a> TypedNode for ModifierApplication<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == MODIFIER_APPLICATION
     }
@@ -4788,7 +4788,7 @@ impl<'a> TypedNode for ModifierApplication<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct PrefixedBehaviorName<'a>(OscDslNode<'a>);
+pub struct PrefixedBehaviorName<'a>(OscNode<'a>);
 impl PrefixedBehaviorName<'_> {
     pub fn actor_name(&self) -> Option<QualifiedIdentifier> {
         support::child(&self.0, 0usize)
@@ -4801,8 +4801,8 @@ impl PrefixedBehaviorName<'_> {
     }
 }
 impl<'a> TypedNode for PrefixedBehaviorName<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == PREFIXED_BEHAVIOR_NAME
     }
@@ -4814,7 +4814,7 @@ impl<'a> TypedNode for PrefixedBehaviorName<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ActionInheritsClause<'a>(OscDslNode<'a>);
+pub struct ActionInheritsClause<'a>(OscNode<'a>);
 impl ActionInheritsClause<'_> {
     pub fn inherits_token(&self) -> Option<InheritsToken> {
         support::child(&self.0, 0usize)
@@ -4827,8 +4827,8 @@ impl ActionInheritsClause<'_> {
     }
 }
 impl<'a> TypedNode for ActionInheritsClause<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == ACTION_INHERITS_CLAUSE
     }
@@ -4859,8 +4859,8 @@ impl ActionBodyOrNewline<'_> {
     }
 }
 impl<'a> TypedNode for ActionBodyOrNewline<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         matches!(value, ACTION_BODY | NEWLINE)
     }
@@ -4879,7 +4879,7 @@ impl<'a> TypedNode for ActionBodyOrNewline<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ActionBody<'a>(OscDslNode<'a>);
+pub struct ActionBody<'a>(OscNode<'a>);
 impl ActionBody<'_> {
     pub fn colon_token(&self) -> Option<ColonToken> {
         support::child(&self.0, 0usize)
@@ -4898,8 +4898,8 @@ impl ActionBody<'_> {
     }
 }
 impl<'a> TypedNode for ActionBody<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == ACTION_BODY
     }
@@ -4911,7 +4911,7 @@ impl<'a> TypedNode for ActionBody<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ActionInheritsCondition<'a>(OscDslNode<'a>);
+pub struct ActionInheritsCondition<'a>(OscNode<'a>);
 impl ActionInheritsCondition<'_> {
     pub fn left_paren_token(&self) -> Option<LeftParenToken> {
         support::child(&self.0, 0usize)
@@ -4924,8 +4924,8 @@ impl ActionInheritsCondition<'_> {
     }
 }
 impl<'a> TypedNode for ActionInheritsCondition<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == ACTION_INHERITS_CONDITION
     }
@@ -4937,15 +4937,15 @@ impl<'a> TypedNode for ActionInheritsCondition<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ActionMemberList<'a>(OscDslNode<'a>);
+pub struct ActionMemberList<'a>(OscNode<'a>);
 impl<'a> ActionMemberList<'a> {
     pub fn action_member(&self) -> impl Iterator<Item = ActionMember<'a>> + 'a {
         support::children(&self.0)
     }
 }
 impl<'a> TypedNode for ActionMemberList<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == ACTION_MEMBER_LIST
     }
@@ -4976,8 +4976,8 @@ impl ActionMember<'_> {
     }
 }
 impl<'a> TypedNode for ActionMember<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         matches!(
             value,
@@ -5019,7 +5019,7 @@ impl<'a> TypedNode for ActionMember<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ModifierOfClause<'a>(OscDslNode<'a>);
+pub struct ModifierOfClause<'a>(OscNode<'a>);
 impl ModifierOfClause<'_> {
     pub fn of_token(&self) -> Option<OfToken> {
         support::child(&self.0, 0usize)
@@ -5029,8 +5029,8 @@ impl ModifierOfClause<'_> {
     }
 }
 impl<'a> TypedNode for ModifierOfClause<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == MODIFIER_OF_CLAUSE
     }
@@ -5061,8 +5061,8 @@ impl ModifierBodyOrNewline<'_> {
     }
 }
 impl<'a> TypedNode for ModifierBodyOrNewline<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         matches!(value, MODIFIER_BODY | NEWLINE)
     }
@@ -5081,7 +5081,7 @@ impl<'a> TypedNode for ModifierBodyOrNewline<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ModifierBody<'a>(OscDslNode<'a>);
+pub struct ModifierBody<'a>(OscNode<'a>);
 impl ModifierBody<'_> {
     pub fn colon_token(&self) -> Option<ColonToken> {
         support::child(&self.0, 0usize)
@@ -5100,8 +5100,8 @@ impl ModifierBody<'_> {
     }
 }
 impl<'a> TypedNode for ModifierBody<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == MODIFIER_BODY
     }
@@ -5113,15 +5113,15 @@ impl<'a> TypedNode for ModifierBody<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ModifierMemberList<'a>(OscDslNode<'a>);
+pub struct ModifierMemberList<'a>(OscNode<'a>);
 impl<'a> ModifierMemberList<'a> {
     pub fn modifier_member(&self) -> impl Iterator<Item = ModifierMember<'a>> + 'a {
         support::children(&self.0)
     }
 }
 impl<'a> TypedNode for ModifierMemberList<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == MODIFIER_MEMBER_LIST
     }
@@ -5152,8 +5152,8 @@ impl ModifierMember<'_> {
     }
 }
 impl<'a> TypedNode for ModifierMember<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         matches!(
             value,
@@ -5192,7 +5192,7 @@ impl<'a> TypedNode for ModifierMember<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct OnDirective<'a>(OscDslNode<'a>);
+pub struct OnDirective<'a>(OscNode<'a>);
 impl OnDirective<'_> {
     pub fn on_token(&self) -> Option<OnToken> {
         support::child(&self.0, 0usize)
@@ -5217,8 +5217,8 @@ impl OnDirective<'_> {
     }
 }
 impl<'a> TypedNode for OnDirective<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == ON_DIRECTIVE
     }
@@ -5249,8 +5249,8 @@ impl TypeExtensionBody<'_> {
     }
 }
 impl<'a> TypedNode for TypeExtensionBody<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         matches!(
             value,
@@ -5276,7 +5276,7 @@ impl<'a> TypedNode for TypeExtensionBody<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct EnumTypeExtensionBody<'a>(OscDslNode<'a>);
+pub struct EnumTypeExtensionBody<'a>(OscNode<'a>);
 impl EnumTypeExtensionBody<'_> {
     pub fn colon_token(&self) -> Option<ColonToken> {
         support::child(&self.0, 0usize)
@@ -5295,8 +5295,8 @@ impl EnumTypeExtensionBody<'_> {
     }
 }
 impl<'a> TypedNode for EnumTypeExtensionBody<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == ENUM_TYPE_EXTENSION_BODY
     }
@@ -5308,7 +5308,7 @@ impl<'a> TypedNode for EnumTypeExtensionBody<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct StructuredTypeExtensionBody<'a>(OscDslNode<'a>);
+pub struct StructuredTypeExtensionBody<'a>(OscNode<'a>);
 impl StructuredTypeExtensionBody<'_> {
     pub fn colon_token(&self) -> Option<ColonToken> {
         support::child(&self.0, 0usize)
@@ -5327,8 +5327,8 @@ impl StructuredTypeExtensionBody<'_> {
     }
 }
 impl<'a> TypedNode for StructuredTypeExtensionBody<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == STRUCTURED_TYPE_EXTENSION_BODY
     }
@@ -5340,15 +5340,15 @@ impl<'a> TypedNode for StructuredTypeExtensionBody<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ExtensionMemberList<'a>(OscDslNode<'a>);
+pub struct ExtensionMemberList<'a>(OscNode<'a>);
 impl<'a> ExtensionMemberList<'a> {
     pub fn extension_member(&self) -> impl Iterator<Item = ExtensionMember<'a>> + 'a {
         support::children(&self.0)
     }
 }
 impl<'a> TypedNode for ExtensionMemberList<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == EXTENSION_MEMBER_LIST
     }
@@ -5379,8 +5379,8 @@ impl ExtensionMember<'_> {
     }
 }
 impl<'a> TypedNode for ExtensionMember<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         matches!(
             value,
@@ -5469,8 +5469,8 @@ impl ExtensionMemberDecl<'_> {
     }
 }
 impl<'a> TypedNode for ExtensionMemberDecl<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         matches!(
             value,
@@ -5519,7 +5519,7 @@ impl<'a> TypedNode for ExtensionMemberDecl<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ParameterDeclaration<'a>(OscDslNode<'a>);
+pub struct ParameterDeclaration<'a>(OscNode<'a>);
 impl ParameterDeclaration<'_> {
     pub fn field_name_list(&self) -> Option<FieldNameList> {
         support::child(&self.0, 0usize)
@@ -5540,8 +5540,8 @@ impl ParameterDeclaration<'_> {
     }
 }
 impl<'a> TypedNode for ParameterDeclaration<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == PARAMETER_DECLARATION
     }
@@ -5553,7 +5553,7 @@ impl<'a> TypedNode for ParameterDeclaration<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct EventArgumentListSpecification<'a>(OscDslNode<'a>);
+pub struct EventArgumentListSpecification<'a>(OscNode<'a>);
 impl EventArgumentListSpecification<'_> {
     pub fn left_paren_token(&self) -> Option<LeftParenToken> {
         support::child(&self.0, 0usize)
@@ -5566,8 +5566,8 @@ impl EventArgumentListSpecification<'_> {
     }
 }
 impl<'a> TypedNode for EventArgumentListSpecification<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == EVENT_ARGUMENT_LIST_SPECIFICATION
     }
@@ -5579,7 +5579,7 @@ impl<'a> TypedNode for EventArgumentListSpecification<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct EventIsClause<'a>(OscDslNode<'a>);
+pub struct EventIsClause<'a>(OscNode<'a>);
 impl EventIsClause<'_> {
     pub fn is_token(&self) -> Option<IsToken> {
         support::child(&self.0, 0usize)
@@ -5589,8 +5589,8 @@ impl EventIsClause<'_> {
     }
 }
 impl<'a> TypedNode for EventIsClause<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == EVENT_IS_CLAUSE
     }
@@ -5602,15 +5602,15 @@ impl<'a> TypedNode for EventIsClause<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ArgumentListSpecification<'a>(OscDslNode<'a>);
+pub struct ArgumentListSpecification<'a>(OscNode<'a>);
 impl<'a> ArgumentListSpecification<'a> {
     pub fn argument_specification(&self) -> impl Iterator<Item = ArgumentSpecification<'a>> + 'a {
         support::children(&self.0)
     }
 }
 impl<'a> TypedNode for ArgumentListSpecification<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == ARGUMENT_LIST_SPECIFICATION
     }
@@ -5641,8 +5641,8 @@ impl EventSpecification<'_> {
     }
 }
 impl<'a> TypedNode for EventSpecification<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         matches!(
             value,
@@ -5719,7 +5719,7 @@ impl<'a> TypedNode for EventSpecification<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct EventReferenceSpecification<'a>(OscDslNode<'a>);
+pub struct EventReferenceSpecification<'a>(OscNode<'a>);
 impl EventReferenceSpecification<'_> {
     pub fn event_reference(&self) -> Option<EventReference> {
         support::child(&self.0, 0usize)
@@ -5729,8 +5729,8 @@ impl EventReferenceSpecification<'_> {
     }
 }
 impl<'a> TypedNode for EventReferenceSpecification<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == EVENT_REFERENCE_SPECIFICATION
     }
@@ -5782,8 +5782,8 @@ impl EventCondition<'_> {
     }
 }
 impl<'a> TypedNode for EventCondition<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         matches!(
             value,
@@ -5861,7 +5861,7 @@ impl<'a> TypedNode for EventCondition<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct EventReference<'a>(OscDslNode<'a>);
+pub struct EventReference<'a>(OscNode<'a>);
 impl EventReference<'_> {
     pub fn at_token(&self) -> Option<AtToken> {
         support::child(&self.0, 0usize)
@@ -5871,8 +5871,8 @@ impl EventReference<'_> {
     }
 }
 impl<'a> TypedNode for EventReference<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == EVENT_REFERENCE
     }
@@ -5884,7 +5884,7 @@ impl<'a> TypedNode for EventReference<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct EventReferenceCondition<'a>(OscDslNode<'a>);
+pub struct EventReferenceCondition<'a>(OscNode<'a>);
 impl EventReferenceCondition<'_> {
     pub fn event_field_decl(&self) -> Option<EventFieldDecl> {
         support::child(&self.0, 0usize)
@@ -5897,8 +5897,8 @@ impl EventReferenceCondition<'_> {
     }
 }
 impl<'a> TypedNode for EventReferenceCondition<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == EVENT_REFERENCE_CONDITION
     }
@@ -5910,7 +5910,7 @@ impl<'a> TypedNode for EventReferenceCondition<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct EventFieldDecl<'a>(OscDslNode<'a>);
+pub struct EventFieldDecl<'a>(OscNode<'a>);
 impl EventFieldDecl<'_> {
     pub fn as_token(&self) -> Option<AsToken> {
         support::child(&self.0, 0usize)
@@ -5920,8 +5920,8 @@ impl EventFieldDecl<'_> {
     }
 }
 impl<'a> TypedNode for EventFieldDecl<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == EVENT_FIELD_DECL
     }
@@ -5933,7 +5933,7 @@ impl<'a> TypedNode for EventFieldDecl<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct RiseExpression<'a>(OscDslNode<'a>);
+pub struct RiseExpression<'a>(OscNode<'a>);
 impl RiseExpression<'_> {
     pub fn rise_token(&self) -> Option<RiseToken> {
         support::child(&self.0, 0usize)
@@ -5949,8 +5949,8 @@ impl RiseExpression<'_> {
     }
 }
 impl<'a> TypedNode for RiseExpression<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == RISE_EXPRESSION
     }
@@ -5962,7 +5962,7 @@ impl<'a> TypedNode for RiseExpression<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct FallExpression<'a>(OscDslNode<'a>);
+pub struct FallExpression<'a>(OscNode<'a>);
 impl FallExpression<'_> {
     pub fn fall_token(&self) -> Option<FallToken> {
         support::child(&self.0, 0usize)
@@ -5978,8 +5978,8 @@ impl FallExpression<'_> {
     }
 }
 impl<'a> TypedNode for FallExpression<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == FALL_EXPRESSION
     }
@@ -5991,7 +5991,7 @@ impl<'a> TypedNode for FallExpression<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ElapsedExpression<'a>(OscDslNode<'a>);
+pub struct ElapsedExpression<'a>(OscNode<'a>);
 impl ElapsedExpression<'_> {
     pub fn elapsed_token(&self) -> Option<ElapsedToken> {
         support::child(&self.0, 0usize)
@@ -6007,8 +6007,8 @@ impl ElapsedExpression<'_> {
     }
 }
 impl<'a> TypedNode for ElapsedExpression<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == ELAPSED_EXPRESSION
     }
@@ -6020,7 +6020,7 @@ impl<'a> TypedNode for ElapsedExpression<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct EveryExpression<'a>(OscDslNode<'a>);
+pub struct EveryExpression<'a>(OscNode<'a>);
 impl EveryExpression<'_> {
     pub fn every_token(&self) -> Option<EveryToken> {
         support::child(&self.0, 0usize)
@@ -6042,8 +6042,8 @@ impl EveryExpression<'_> {
     }
 }
 impl<'a> TypedNode for EveryExpression<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == EVERY_EXPRESSION
     }
@@ -6055,7 +6055,7 @@ impl<'a> TypedNode for EveryExpression<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct EveryExpOffset<'a>(OscDslNode<'a>);
+pub struct EveryExpOffset<'a>(OscNode<'a>);
 impl EveryExpOffset<'_> {
     pub fn offset_token(&self) -> Option<OffsetToken> {
         support::child(&self.0, 0usize)
@@ -6068,8 +6068,8 @@ impl EveryExpOffset<'_> {
     }
 }
 impl<'a> TypedNode for EveryExpOffset<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == EVERY_EXP_OFFSET
     }
@@ -6081,7 +6081,7 @@ impl<'a> TypedNode for EveryExpOffset<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct VariableDeclaration<'a>(OscDslNode<'a>);
+pub struct VariableDeclaration<'a>(OscNode<'a>);
 impl VariableDeclaration<'_> {
     pub fn var_token(&self) -> Option<VarToken> {
         support::child(&self.0, 0usize)
@@ -6103,8 +6103,8 @@ impl VariableDeclaration<'_> {
     }
 }
 impl<'a> TypedNode for VariableDeclaration<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == VARIABLE_DECLARATION
     }
@@ -6116,15 +6116,15 @@ impl<'a> TypedNode for VariableDeclaration<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct FieldNameList<'a>(OscDslNode<'a>);
+pub struct FieldNameList<'a>(OscNode<'a>);
 impl<'a> FieldNameList<'a> {
     pub fn field_name_list_element(&self) -> impl Iterator<Item = FieldNameListElement<'a>> + 'a {
         support::children(&self.0)
     }
 }
 impl<'a> TypedNode for FieldNameList<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == FIELD_NAME_LIST
     }
@@ -6136,7 +6136,7 @@ impl<'a> TypedNode for FieldNameList<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ParameterInitializerClause<'a>(OscDslNode<'a>);
+pub struct ParameterInitializerClause<'a>(OscNode<'a>);
 impl ParameterInitializerClause<'_> {
     pub fn assign_token(&self) -> Option<AssignToken> {
         support::child(&self.0, 0usize)
@@ -6146,8 +6146,8 @@ impl ParameterInitializerClause<'_> {
     }
 }
 impl<'a> TypedNode for ParameterInitializerClause<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == PARAMETER_INITIALIZER_CLAUSE
     }
@@ -6178,8 +6178,8 @@ impl ParameterWithDeclarationOrNewline<'_> {
     }
 }
 impl<'a> TypedNode for ParameterWithDeclarationOrNewline<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         matches!(value, PARAMETER_WITH_DECLARATION | NEWLINE)
     }
@@ -6200,7 +6200,7 @@ impl<'a> TypedNode for ParameterWithDeclarationOrNewline<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct FieldNameListElement<'a>(OscDslNode<'a>);
+pub struct FieldNameListElement<'a>(OscNode<'a>);
 impl FieldNameListElement<'_> {
     pub fn field_name(&self) -> Option<QualifiedIdentifier> {
         support::child(&self.0, 0usize)
@@ -6210,8 +6210,8 @@ impl FieldNameListElement<'_> {
     }
 }
 impl<'a> TypedNode for FieldNameListElement<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == FIELD_NAME_LIST_ELEMENT
     }
@@ -6223,7 +6223,7 @@ impl<'a> TypedNode for FieldNameListElement<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct VariableInitializerClause<'a>(OscDslNode<'a>);
+pub struct VariableInitializerClause<'a>(OscNode<'a>);
 impl VariableInitializerClause<'_> {
     pub fn assign_token(&self) -> Option<AssignToken> {
         support::child(&self.0, 0usize)
@@ -6233,8 +6233,8 @@ impl VariableInitializerClause<'_> {
     }
 }
 impl<'a> TypedNode for VariableInitializerClause<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == VARIABLE_INITIALIZER_CLAUSE
     }
@@ -6265,8 +6265,8 @@ impl VariableDefaultValue<'_> {
     }
 }
 impl<'a> TypedNode for VariableDefaultValue<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         matches!(
             value,
@@ -6335,7 +6335,7 @@ impl<'a> TypedNode for VariableDefaultValue<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct SampleExpression<'a>(OscDslNode<'a>);
+pub struct SampleExpression<'a>(OscNode<'a>);
 impl SampleExpression<'_> {
     pub fn sample_token(&self) -> Option<SampleToken> {
         support::child(&self.0, 0usize)
@@ -6363,8 +6363,8 @@ impl SampleExpression<'_> {
     }
 }
 impl<'a> TypedNode for SampleExpression<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == SAMPLE_EXPRESSION
     }
@@ -6376,7 +6376,7 @@ impl<'a> TypedNode for SampleExpression<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ParameterWithDeclaration<'a>(OscDslNode<'a>);
+pub struct ParameterWithDeclaration<'a>(OscNode<'a>);
 impl ParameterWithDeclaration<'_> {
     pub fn with_token(&self) -> Option<WithToken> {
         support::child(&self.0, 0usize)
@@ -6398,8 +6398,8 @@ impl ParameterWithDeclaration<'_> {
     }
 }
 impl<'a> TypedNode for ParameterWithDeclaration<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == PARAMETER_WITH_DECLARATION
     }
@@ -6411,15 +6411,15 @@ impl<'a> TypedNode for ParameterWithDeclaration<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ParameterWithMemberList<'a>(OscDslNode<'a>);
+pub struct ParameterWithMemberList<'a>(OscNode<'a>);
 impl<'a> ParameterWithMemberList<'a> {
     pub fn parameter_with_member(&self) -> impl Iterator<Item = ParameterWithMember<'a>> + 'a {
         support::children(&self.0)
     }
 }
 impl<'a> TypedNode for ParameterWithMemberList<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == PARAMETER_WITH_MEMBER_LIST
     }
@@ -6443,8 +6443,8 @@ impl ParameterWithMember<'_> {
     }
 }
 impl<'a> TypedNode for ParameterWithMember<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         matches!(
             value,
@@ -6466,7 +6466,7 @@ impl<'a> TypedNode for ParameterWithMember<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct KeepConstraintDeclaration<'a>(OscDslNode<'a>);
+pub struct KeepConstraintDeclaration<'a>(OscNode<'a>);
 impl KeepConstraintDeclaration<'_> {
     pub fn keep_token(&self) -> Option<KeepToken> {
         support::child(&self.0, 0usize)
@@ -6488,8 +6488,8 @@ impl KeepConstraintDeclaration<'_> {
     }
 }
 impl<'a> TypedNode for KeepConstraintDeclaration<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == KEEP_CONSTRAINT_DECLARATION
     }
@@ -6501,7 +6501,7 @@ impl<'a> TypedNode for KeepConstraintDeclaration<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct RemoveDefaultDeclaration<'a>(OscDslNode<'a>);
+pub struct RemoveDefaultDeclaration<'a>(OscNode<'a>);
 impl RemoveDefaultDeclaration<'_> {
     pub fn remove_default_token(&self) -> Option<RemoveDefaultToken> {
         support::child(&self.0, 0usize)
@@ -6520,8 +6520,8 @@ impl RemoveDefaultDeclaration<'_> {
     }
 }
 impl<'a> TypedNode for RemoveDefaultDeclaration<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == REMOVE_DEFAULT_DECLARATION
     }
@@ -6552,8 +6552,8 @@ impl ConstraintQualifier<'_> {
     }
 }
 impl<'a> TypedNode for ConstraintQualifier<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         matches!(value, DEFAULT_KW | HARD_KW)
     }
@@ -6572,7 +6572,7 @@ impl<'a> TypedNode for ConstraintQualifier<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct MethodReturnType<'a>(OscDslNode<'a>);
+pub struct MethodReturnType<'a>(OscNode<'a>);
 impl MethodReturnType<'_> {
     pub fn arrow_token(&self) -> Option<ArrowToken> {
         support::child(&self.0, 0usize)
@@ -6582,8 +6582,8 @@ impl MethodReturnType<'_> {
     }
 }
 impl<'a> TypedNode for MethodReturnType<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == METHOD_RETURN_TYPE
     }
@@ -6595,7 +6595,7 @@ impl<'a> TypedNode for MethodReturnType<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct MethodImplementation<'a>(OscDslNode<'a>);
+pub struct MethodImplementation<'a>(OscNode<'a>);
 impl MethodImplementation<'_> {
     pub fn is_token(&self) -> Option<IsToken> {
         support::child(&self.0, 0usize)
@@ -6608,8 +6608,8 @@ impl MethodImplementation<'_> {
     }
 }
 impl<'a> TypedNode for MethodImplementation<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == METHOD_IMPLEMENTATION
     }
@@ -6633,8 +6633,8 @@ impl MethodQualifier<'_> {
     }
 }
 impl<'a> TypedNode for MethodQualifier<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         matches!(value, ONLY_KW)
     }
@@ -6677,8 +6677,8 @@ impl MethodBody<'_> {
     }
 }
 impl<'a> TypedNode for MethodBody<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         matches!(
             value,
@@ -6706,7 +6706,7 @@ impl<'a> TypedNode for MethodBody<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct MethodExpressionBody<'a>(OscDslNode<'a>);
+pub struct MethodExpressionBody<'a>(OscNode<'a>);
 impl MethodExpressionBody<'_> {
     pub fn expression_token(&self) -> Option<ExpressionToken> {
         support::child(&self.0, 0usize)
@@ -6716,8 +6716,8 @@ impl MethodExpressionBody<'_> {
     }
 }
 impl<'a> TypedNode for MethodExpressionBody<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == METHOD_EXPRESSION_BODY
     }
@@ -6729,7 +6729,7 @@ impl<'a> TypedNode for MethodExpressionBody<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct MethodExternalBody<'a>(OscDslNode<'a>);
+pub struct MethodExternalBody<'a>(OscNode<'a>);
 impl MethodExternalBody<'_> {
     pub fn external_token(&self) -> Option<ExternalToken> {
         support::child(&self.0, 0usize)
@@ -6748,8 +6748,8 @@ impl MethodExternalBody<'_> {
     }
 }
 impl<'a> TypedNode for MethodExternalBody<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == METHOD_EXTERNAL_BODY
     }
@@ -6761,15 +6761,15 @@ impl<'a> TypedNode for MethodExternalBody<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ArgumentList<'a>(OscDslNode<'a>);
+pub struct ArgumentList<'a>(OscNode<'a>);
 impl<'a> ArgumentList<'a> {
     pub fn argument(&self) -> impl Iterator<Item = Argument<'a>> + 'a {
         support::children(&self.0)
     }
 }
 impl<'a> TypedNode for ArgumentList<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == ARGUMENT_LIST
     }
@@ -6800,8 +6800,8 @@ impl CoverageOperator<'_> {
     }
 }
 impl<'a> TypedNode for CoverageOperator<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         matches!(value, COVER_KW | RECORD_KW)
     }
@@ -6820,7 +6820,7 @@ impl<'a> TypedNode for CoverageOperator<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct DoDirective<'a>(OscDslNode<'a>);
+pub struct DoDirective<'a>(OscNode<'a>);
 impl DoDirective<'_> {
     pub fn do_token(&self) -> Option<DoToken> {
         support::child(&self.0, 0usize)
@@ -6830,8 +6830,8 @@ impl DoDirective<'_> {
     }
 }
 impl<'a> TypedNode for DoDirective<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == DO_DIRECTIVE
     }
@@ -6843,15 +6843,15 @@ impl<'a> TypedNode for DoDirective<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct OnMemberList<'a>(OscDslNode<'a>);
+pub struct OnMemberList<'a>(OscNode<'a>);
 impl<'a> OnMemberList<'a> {
     pub fn on_member(&self) -> impl Iterator<Item = OnMember<'a>> + 'a {
         support::children(&self.0)
     }
 }
 impl<'a> TypedNode for OnMemberList<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == ON_MEMBER_LIST
     }
@@ -6882,8 +6882,8 @@ impl OnMember<'_> {
     }
 }
 impl<'a> TypedNode for OnMember<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         matches!(value, CALL_DIRECTIVE | EMIT_DIRECTIVE)
     }
@@ -6902,7 +6902,7 @@ impl<'a> TypedNode for OnMember<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct CallDirective<'a>(OscDslNode<'a>);
+pub struct CallDirective<'a>(OscNode<'a>);
 impl CallDirective<'_> {
     pub fn call_token(&self) -> Option<CallToken> {
         support::child(&self.0, 0usize)
@@ -6915,8 +6915,8 @@ impl CallDirective<'_> {
     }
 }
 impl<'a> TypedNode for CallDirective<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == CALL_DIRECTIVE
     }
@@ -6928,7 +6928,7 @@ impl<'a> TypedNode for CallDirective<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct EmitDirective<'a>(OscDslNode<'a>);
+pub struct EmitDirective<'a>(OscNode<'a>);
 impl EmitDirective<'_> {
     pub fn emit_token(&self) -> Option<EmitToken> {
         support::child(&self.0, 0usize)
@@ -6944,8 +6944,8 @@ impl EmitDirective<'_> {
     }
 }
 impl<'a> TypedNode for EmitDirective<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == EMIT_DIRECTIVE
     }
@@ -6957,7 +6957,7 @@ impl<'a> TypedNode for EmitDirective<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct DoMember<'a>(OscDslNode<'a>);
+pub struct DoMember<'a>(OscNode<'a>);
 impl DoMember<'_> {
     pub fn label_name(&self) -> Option<QualifiedIdentifier> {
         support::child(&self.0, 0usize)
@@ -6970,8 +6970,8 @@ impl DoMember<'_> {
     }
 }
 impl<'a> TypedNode for DoMember<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == DO_MEMBER
     }
@@ -7023,8 +7023,8 @@ impl DoMemberBody<'_> {
     }
 }
 impl<'a> TypedNode for DoMemberBody<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         matches!(
             value,
@@ -7054,7 +7054,7 @@ impl<'a> TypedNode for DoMemberBody<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Composition<'a>(OscDslNode<'a>);
+pub struct Composition<'a>(OscNode<'a>);
 impl Composition<'_> {
     pub fn composition_operator(&self) -> Option<CompositionOperator> {
         support::child(&self.0, 0usize)
@@ -7082,8 +7082,8 @@ impl Composition<'_> {
     }
 }
 impl<'a> TypedNode for Composition<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == COMPOSITION
     }
@@ -7095,7 +7095,7 @@ impl<'a> TypedNode for Composition<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct BehaviorInvocation<'a>(OscDslNode<'a>);
+pub struct BehaviorInvocation<'a>(OscNode<'a>);
 impl BehaviorInvocation<'_> {
     pub fn expression(&self) -> Option<Expression> {
         support::child(&self.0, 0usize)
@@ -7105,8 +7105,8 @@ impl BehaviorInvocation<'_> {
     }
 }
 impl<'a> TypedNode for BehaviorInvocation<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == BEHAVIOR_INVOCATION
     }
@@ -7118,7 +7118,7 @@ impl<'a> TypedNode for BehaviorInvocation<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct WaitDirective<'a>(OscDslNode<'a>);
+pub struct WaitDirective<'a>(OscNode<'a>);
 impl WaitDirective<'_> {
     pub fn wait_token(&self) -> Option<WaitToken> {
         support::child(&self.0, 0usize)
@@ -7131,8 +7131,8 @@ impl WaitDirective<'_> {
     }
 }
 impl<'a> TypedNode for WaitDirective<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == WAIT_DIRECTIVE
     }
@@ -7170,8 +7170,8 @@ impl CompositionOperator<'_> {
     }
 }
 impl<'a> TypedNode for CompositionOperator<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         matches!(value, SERIAL_KW | ONE_OF_KW | PARALLEL_KW)
     }
@@ -7192,7 +7192,7 @@ impl<'a> TypedNode for CompositionOperator<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct CompositionArguments<'a>(OscDslNode<'a>);
+pub struct CompositionArguments<'a>(OscNode<'a>);
 impl CompositionArguments<'_> {
     pub fn left_paren_token(&self) -> Option<LeftParenToken> {
         support::child(&self.0, 0usize)
@@ -7205,8 +7205,8 @@ impl CompositionArguments<'_> {
     }
 }
 impl<'a> TypedNode for CompositionArguments<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == COMPOSITION_ARGUMENTS
     }
@@ -7218,15 +7218,15 @@ impl<'a> TypedNode for CompositionArguments<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct DoMemberList<'a>(OscDslNode<'a>);
+pub struct DoMemberList<'a>(OscNode<'a>);
 impl<'a> DoMemberList<'a> {
     pub fn do_member(&self) -> impl Iterator<Item = DoMember<'a>> + 'a {
         support::children(&self.0)
     }
 }
 impl<'a> TypedNode for DoMemberList<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == DO_MEMBER_LIST
     }
@@ -7238,7 +7238,7 @@ impl<'a> TypedNode for DoMemberList<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct BehaviorWithDeclaration<'a>(OscDslNode<'a>);
+pub struct BehaviorWithDeclaration<'a>(OscNode<'a>);
 impl BehaviorWithDeclaration<'_> {
     pub fn with_token(&self) -> Option<WithToken> {
         support::child(&self.0, 0usize)
@@ -7260,8 +7260,8 @@ impl BehaviorWithDeclaration<'_> {
     }
 }
 impl<'a> TypedNode for BehaviorWithDeclaration<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == BEHAVIOR_WITH_DECLARATION
     }
@@ -7292,8 +7292,8 @@ impl BehaviorWithDeclarationOrNewline<'_> {
     }
 }
 impl<'a> TypedNode for BehaviorWithDeclarationOrNewline<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         matches!(value, BEHAVIOR_WITH_DECLARATION | NEWLINE)
     }
@@ -7314,15 +7314,15 @@ impl<'a> TypedNode for BehaviorWithDeclarationOrNewline<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct BehaviorWithMemberList<'a>(OscDslNode<'a>);
+pub struct BehaviorWithMemberList<'a>(OscNode<'a>);
 impl<'a> BehaviorWithMemberList<'a> {
     pub fn behavior_with_member(&self) -> impl Iterator<Item = BehaviorWithMember<'a>> + 'a {
         support::children(&self.0)
     }
 }
 impl<'a> TypedNode for BehaviorWithMemberList<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == BEHAVIOR_WITH_MEMBER_LIST
     }
@@ -7360,8 +7360,8 @@ impl BehaviorWithMember<'_> {
     }
 }
 impl<'a> TypedNode for BehaviorWithMember<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         matches!(
             value,
@@ -7392,7 +7392,7 @@ impl<'a> TypedNode for BehaviorWithMember<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct UntilDirective<'a>(OscDslNode<'a>);
+pub struct UntilDirective<'a>(OscNode<'a>);
 impl UntilDirective<'_> {
     pub fn until_token(&self) -> Option<UntilToken> {
         support::child(&self.0, 0usize)
@@ -7405,8 +7405,8 @@ impl UntilDirective<'_> {
     }
 }
 impl<'a> TypedNode for UntilDirective<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == UNTIL_DIRECTIVE
     }
@@ -7418,7 +7418,7 @@ impl<'a> TypedNode for UntilDirective<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct EmitArguments<'a>(OscDslNode<'a>);
+pub struct EmitArguments<'a>(OscNode<'a>);
 impl EmitArguments<'_> {
     pub fn left_paren_token(&self) -> Option<LeftParenToken> {
         support::child(&self.0, 0usize)
@@ -7431,8 +7431,8 @@ impl EmitArguments<'_> {
     }
 }
 impl<'a> TypedNode for EmitArguments<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == EMIT_ARGUMENTS
     }
@@ -7444,7 +7444,7 @@ impl<'a> TypedNode for EmitArguments<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ArgumentSpecification<'a>(OscDslNode<'a>);
+pub struct ArgumentSpecification<'a>(OscNode<'a>);
 impl ArgumentSpecification<'_> {
     pub fn argument_name(&self) -> Option<QualifiedIdentifier> {
         support::child(&self.0, 0usize)
@@ -7463,8 +7463,8 @@ impl ArgumentSpecification<'_> {
     }
 }
 impl<'a> TypedNode for ArgumentSpecification<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == ARGUMENT_SPECIFICATION
     }
@@ -7476,7 +7476,7 @@ impl<'a> TypedNode for ArgumentSpecification<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ArgumentInitializerClause<'a>(OscDslNode<'a>);
+pub struct ArgumentInitializerClause<'a>(OscNode<'a>);
 impl ArgumentInitializerClause<'_> {
     pub fn assign_token(&self) -> Option<AssignToken> {
         support::child(&self.0, 0usize)
@@ -7486,8 +7486,8 @@ impl ArgumentInitializerClause<'_> {
     }
 }
 impl<'a> TypedNode for ArgumentInitializerClause<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == ARGUMENT_INITIALIZER_CLAUSE
     }
@@ -7518,8 +7518,8 @@ impl Argument<'_> {
     }
 }
 impl<'a> TypedNode for Argument<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         matches!(value, POSITIONAL_ARGUMENT | NAMED_ARGUMENT)
     }
@@ -7540,7 +7540,7 @@ impl<'a> TypedNode for Argument<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct PositionalArgument<'a>(OscDslNode<'a>);
+pub struct PositionalArgument<'a>(OscNode<'a>);
 impl PositionalArgument<'_> {
     pub fn expression(&self) -> Option<Expression> {
         support::child(&self.0, 0usize)
@@ -7550,8 +7550,8 @@ impl PositionalArgument<'_> {
     }
 }
 impl<'a> TypedNode for PositionalArgument<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == POSITIONAL_ARGUMENT
     }
@@ -7563,7 +7563,7 @@ impl<'a> TypedNode for PositionalArgument<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct NamedArgument<'a>(OscDslNode<'a>);
+pub struct NamedArgument<'a>(OscNode<'a>);
 impl NamedArgument<'_> {
     pub fn label(&self) -> Option<QualifiedIdentifier> {
         support::child(&self.0, 0usize)
@@ -7579,8 +7579,8 @@ impl NamedArgument<'_> {
     }
 }
 impl<'a> TypedNode for NamedArgument<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == NAMED_ARGUMENT
     }
@@ -7592,7 +7592,7 @@ impl<'a> TypedNode for NamedArgument<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct TernaryExp<'a>(OscDslNode<'a>);
+pub struct TernaryExp<'a>(OscNode<'a>);
 impl TernaryExp<'_> {
     pub fn condition(&self) -> Option<Expression> {
         support::child(&self.0, 0usize)
@@ -7611,8 +7611,8 @@ impl TernaryExp<'_> {
     }
 }
 impl<'a> TypedNode for TernaryExp<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == TERNARY_EXP
     }
@@ -7624,7 +7624,7 @@ impl<'a> TypedNode for TernaryExp<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct LogicalExp<'a>(OscDslNode<'a>);
+pub struct LogicalExp<'a>(OscNode<'a>);
 impl LogicalExp<'_> {
     pub fn lhs_expr(&self) -> Option<Expression> {
         support::child(&self.0, 0usize)
@@ -7637,8 +7637,8 @@ impl LogicalExp<'_> {
     }
 }
 impl<'a> TypedNode for LogicalExp<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == LOGICAL_EXP
     }
@@ -7650,7 +7650,7 @@ impl<'a> TypedNode for LogicalExp<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct BinaryExp<'a>(OscDslNode<'a>);
+pub struct BinaryExp<'a>(OscNode<'a>);
 impl BinaryExp<'_> {
     pub fn lhs_expr(&self) -> Option<Expression> {
         support::child(&self.0, 0usize)
@@ -7663,8 +7663,8 @@ impl BinaryExp<'_> {
     }
 }
 impl<'a> TypedNode for BinaryExp<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == BINARY_EXP
     }
@@ -7676,7 +7676,7 @@ impl<'a> TypedNode for BinaryExp<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct UnaryExp<'a>(OscDslNode<'a>);
+pub struct UnaryExp<'a>(OscNode<'a>);
 impl UnaryExp<'_> {
     pub fn unary_op(&self) -> Option<UnaryOp> {
         support::child(&self.0, 0usize)
@@ -7686,8 +7686,8 @@ impl UnaryExp<'_> {
     }
 }
 impl<'a> TypedNode for UnaryExp<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == UNARY_EXP
     }
@@ -7699,7 +7699,7 @@ impl<'a> TypedNode for UnaryExp<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct CastExp<'a>(OscDslNode<'a>);
+pub struct CastExp<'a>(OscNode<'a>);
 impl CastExp<'_> {
     pub fn expression(&self) -> Option<Expression> {
         support::child(&self.0, 0usize)
@@ -7721,8 +7721,8 @@ impl CastExp<'_> {
     }
 }
 impl<'a> TypedNode for CastExp<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == CAST_EXP
     }
@@ -7734,7 +7734,7 @@ impl<'a> TypedNode for CastExp<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct TypeTestExp<'a>(OscDslNode<'a>);
+pub struct TypeTestExp<'a>(OscNode<'a>);
 impl TypeTestExp<'_> {
     pub fn expression(&self) -> Option<Expression> {
         support::child(&self.0, 0usize)
@@ -7756,8 +7756,8 @@ impl TypeTestExp<'_> {
     }
 }
 impl<'a> TypedNode for TypeTestExp<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == TYPE_TEST_EXP
     }
@@ -7769,7 +7769,7 @@ impl<'a> TypedNode for TypeTestExp<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ElementAccess<'a>(OscDslNode<'a>);
+pub struct ElementAccess<'a>(OscNode<'a>);
 impl ElementAccess<'_> {
     pub fn list_expr(&self) -> Option<Expression> {
         support::child(&self.0, 0usize)
@@ -7785,8 +7785,8 @@ impl ElementAccess<'_> {
     }
 }
 impl<'a> TypedNode for ElementAccess<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == ELEMENT_ACCESS
     }
@@ -7798,7 +7798,7 @@ impl<'a> TypedNode for ElementAccess<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct FunctionApplication<'a>(OscDslNode<'a>);
+pub struct FunctionApplication<'a>(OscNode<'a>);
 impl FunctionApplication<'_> {
     pub fn function_expr(&self) -> Option<Expression> {
         support::child(&self.0, 0usize)
@@ -7814,8 +7814,8 @@ impl FunctionApplication<'_> {
     }
 }
 impl<'a> TypedNode for FunctionApplication<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == FUNCTION_APPLICATION
     }
@@ -7827,7 +7827,7 @@ impl<'a> TypedNode for FunctionApplication<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct MemberReference<'a>(OscDslNode<'a>);
+pub struct MemberReference<'a>(OscNode<'a>);
 impl MemberReference<'_> {
     pub fn object_expr(&self) -> Option<Expression> {
         support::child(&self.0, 0usize)
@@ -7840,8 +7840,8 @@ impl MemberReference<'_> {
     }
 }
 impl<'a> TypedNode for MemberReference<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == MEMBER_REFERENCE
     }
@@ -7853,7 +7853,7 @@ impl<'a> TypedNode for MemberReference<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ParenthesizedExp<'a>(OscDslNode<'a>);
+pub struct ParenthesizedExp<'a>(OscNode<'a>);
 impl ParenthesizedExp<'_> {
     pub fn left_paren_token(&self) -> Option<LeftParenToken> {
         support::child(&self.0, 0usize)
@@ -7866,8 +7866,8 @@ impl ParenthesizedExp<'_> {
     }
 }
 impl<'a> TypedNode for ParenthesizedExp<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == PARENTHESIZED_EXP
     }
@@ -7919,8 +7919,8 @@ impl LiteralExp<'_> {
     }
 }
 impl<'a> TypedNode for LiteralExp<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         matches!(
             value,
@@ -7959,7 +7959,7 @@ impl<'a> TypedNode for LiteralExp<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct EnumValueReference<'a>(OscDslNode<'a>);
+pub struct EnumValueReference<'a>(OscNode<'a>);
 impl EnumValueReference<'_> {
     pub fn enum_name(&self) -> Option<QualifiedIdentifier> {
         support::child(&self.0, 0usize)
@@ -7972,8 +7972,8 @@ impl EnumValueReference<'_> {
     }
 }
 impl<'a> TypedNode for EnumValueReference<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == ENUM_VALUE_REFERENCE
     }
@@ -7985,7 +7985,7 @@ impl<'a> TypedNode for EnumValueReference<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ListConstructor<'a>(OscDslNode<'a>);
+pub struct ListConstructor<'a>(OscNode<'a>);
 impl ListConstructor<'_> {
     pub fn left_bracket_token(&self) -> Option<LeftBracketToken> {
         support::child(&self.0, 0usize)
@@ -7998,8 +7998,8 @@ impl ListConstructor<'_> {
     }
 }
 impl<'a> TypedNode for ListConstructor<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == LIST_CONSTRUCTOR
     }
@@ -8030,8 +8030,8 @@ impl RangeConstructor<'_> {
     }
 }
 impl<'a> TypedNode for RangeConstructor<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         matches!(
             value,
@@ -8083,8 +8083,8 @@ impl LogicalOp<'_> {
     }
 }
 impl<'a> TypedNode for LogicalOp<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         matches!(value, FAT_ARROW | OR_KW | AND_KW)
     }
@@ -8194,8 +8194,8 @@ impl BinaryOp<'_> {
     }
 }
 impl<'a> TypedNode for BinaryOp<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         matches!(
             value,
@@ -8269,8 +8269,8 @@ impl UnaryOp<'_> {
     }
 }
 impl<'a> TypedNode for UnaryOp<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         matches!(value, NOT_KW | MINUS)
     }
@@ -8289,15 +8289,15 @@ impl<'a> TypedNode for UnaryOp<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ExpressionList<'a>(OscDslNode<'a>);
+pub struct ExpressionList<'a>(OscNode<'a>);
 impl<'a> ExpressionList<'a> {
     pub fn expression_list_element(&self) -> impl Iterator<Item = ExpressionListElement<'a>> + 'a {
         support::children(&self.0)
     }
 }
 impl<'a> TypedNode for ExpressionList<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == EXPRESSION_LIST
     }
@@ -8309,7 +8309,7 @@ impl<'a> TypedNode for ExpressionList<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ExpressionListElement<'a>(OscDslNode<'a>);
+pub struct ExpressionListElement<'a>(OscNode<'a>);
 impl ExpressionListElement<'_> {
     pub fn expression(&self) -> Option<Expression> {
         support::child(&self.0, 0usize)
@@ -8319,8 +8319,8 @@ impl ExpressionListElement<'_> {
     }
 }
 impl<'a> TypedNode for ExpressionListElement<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == EXPRESSION_LIST_ELEMENT
     }
@@ -8332,7 +8332,7 @@ impl<'a> TypedNode for ExpressionListElement<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ParenthesesRangeConstructor<'a>(OscDslNode<'a>);
+pub struct ParenthesesRangeConstructor<'a>(OscNode<'a>);
 impl ParenthesesRangeConstructor<'_> {
     pub fn range_token(&self) -> Option<RangeToken> {
         support::child(&self.0, 0usize)
@@ -8354,8 +8354,8 @@ impl ParenthesesRangeConstructor<'_> {
     }
 }
 impl<'a> TypedNode for ParenthesesRangeConstructor<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == PARENTHESES_RANGE_CONSTRUCTOR
     }
@@ -8367,7 +8367,7 @@ impl<'a> TypedNode for ParenthesesRangeConstructor<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct BracketsRangeConstructor<'a>(OscDslNode<'a>);
+pub struct BracketsRangeConstructor<'a>(OscNode<'a>);
 impl BracketsRangeConstructor<'_> {
     pub fn left_bracket_token(&self) -> Option<LeftBracketToken> {
         support::child(&self.0, 0usize)
@@ -8386,8 +8386,8 @@ impl BracketsRangeConstructor<'_> {
     }
 }
 impl<'a> TypedNode for BracketsRangeConstructor<'a> {
-    type Value = OscDslSyntaxKind;
-    type Node = OscDslNode<'a>;
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == BRACKETS_RANGE_CONSTRUCTOR
     }

@@ -16,7 +16,7 @@ pub use scenario_decl::*;
 pub use struct_decl::*;
 pub use type_extension::*;
 
-use crate::syntax::OscDslSyntaxKind::*;
+use crate::syntax::OscSyntaxKind::*;
 
 use crate::parser::Parser;
 use crate::parser::common::parse_qualified_identifier;

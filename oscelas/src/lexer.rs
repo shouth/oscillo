@@ -7,11 +7,11 @@ mod raw_lexer;
 pub use lexical_analyzer::LexicalAnalyzer;
 pub use lookahead::Lookahead;
 
-use crate::syntax::OscDslSyntaxKind;
+use crate::syntax::OscSyntaxKind;
 
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Debug, Hash)]
 pub struct LexedToken {
-    pub kind: OscDslSyntaxKind,
+    pub kind: OscSyntaxKind,
     pub length: usize,
 }
 
@@ -21,7 +21,7 @@ mod tests {
     use lexer::Lexer;
     use lexical_analyzer::LexicalAnalyzer;
 
-    use crate::syntax::OscDslSyntaxKind::*;
+    use crate::syntax::OscSyntaxKind::*;
 
     use super::*;
 

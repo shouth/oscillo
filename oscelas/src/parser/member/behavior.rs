@@ -1,4 +1,4 @@
-use crate::syntax::OscDslSyntaxKind::*;
+use crate::syntax::OscSyntaxKind::*;
 
 use crate::parser::Parser;
 use crate::parser::common::{parse_argument_list, parse_qualified_identifier};

@@ -1,4 +1,4 @@
-use crate::syntax::OscDslSyntaxKind::*;
+use crate::syntax::OscSyntaxKind::*;
 
 use crate::parser::decl::{
     parse_enum_member_decl_list, parse_modifier_declaration, parse_qualified_behavior_name,

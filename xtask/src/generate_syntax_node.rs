@@ -15,11 +15,11 @@ where
         let node_kind_ident = format_ident!("{}", token.syntax_kind_name());
         quote! {
             #[derive(Debug, Clone, PartialEq, Eq)]
-            pub struct #node_name_ident<'a>(OscDslNode<'a>);
+            pub struct #node_name_ident<'a>(OscNode<'a>);
 
             impl<'a> TypedNode for #node_name_ident<'a> {
-                type Value = OscDslSyntaxKind;
-                type Node = OscDslNode<'a>;
+                type Value = OscSyntaxKind;
+                type Node = OscNode<'a>;
 
                 fn can_cast(value: Self::Value) -> bool {
                     value == #node_kind_ident
@@ -55,15 +55,15 @@ where
 
                     quote! {
                         #[derive(Debug, Clone, PartialEq, Eq)]
-                        pub struct #node_name_ident<'a>(OscDslNode<'a>);
+                        pub struct #node_name_ident<'a>(OscNode<'a>);
 
                         impl #node_name_ident<'_> {
                             #(#members)*
                         }
 
                         impl<'a> TypedNode for #node_name_ident<'a> {
-                            type Value = OscDslSyntaxKind;
-                            type Node = OscDslNode<'a>;
+                            type Value = OscSyntaxKind;
+                            type Node = OscNode<'a>;
 
                             fn can_cast(value: Self::Value) -> bool {
                                 value == #node_kind_ident
@@ -163,8 +163,8 @@ where
                         }
 
                         impl<'a> TypedNode for #node_name_ident<'a> {
-                            type Value = OscDslSyntaxKind;
-                            type Node = OscDslNode<'a>;
+                            type Value = OscSyntaxKind;
+                            type Node = OscNode<'a>;
 
                             fn can_cast(value: Self::Value) -> bool {
                                 matches!(value, #(#can_cast_idents)|*)
@@ -203,7 +203,7 @@ where
 
                     quote! {
                         #[derive(Debug, Clone, PartialEq, Eq)]
-                        pub struct #node_name_ident<'a>(OscDslNode<'a>);
+                        pub struct #node_name_ident<'a>(OscNode<'a>);
 
                         impl<'a> #node_name_ident<'a> {
                             #delimiter_member
@@ -214,8 +214,8 @@ where
                         }
 
                         impl<'a> TypedNode for #node_name_ident<'a> {
-                            type Value = OscDslSyntaxKind;
-                            type Node = OscDslNode<'a>;
+                            type Value = OscSyntaxKind;
+                            type Node = OscNode<'a>;
 
                             fn can_cast(value: Self::Value) -> bool {
                                 value == #node_kind_ident
@@ -235,9 +235,9 @@ where
     let code = quote! {
         use syntree::Node;
         use crate::syntax::{support, TypedNode};
-        use super::OscDslSyntaxKind::{self, *};
+        use super::OscSyntaxKind::{self, *};
 
-        type OscDslNode<'a> = Node<'a, OscDslSyntaxKind, u32, usize>;
+        type OscNode<'a> = Node<'a, OscSyntaxKind, u32, usize>;
 
         #(#token_nodes)*
         #(#rule_nodes)*

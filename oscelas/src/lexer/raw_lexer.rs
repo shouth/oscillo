@@ -3,7 +3,7 @@ use super::{cursor::Cursor, LexedToken};
 
 use crate::chars::{is_id_char, is_id_start_char};
 use crate::diagnostic::Diagnostic;
-use crate::syntax::OscDslSyntaxKind::*;
+use crate::syntax::OscSyntaxKind::*;
 
 pub struct RawLexer<'a> {
     cursor: Cursor<'a>,

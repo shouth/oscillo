@@ -1,5 +1,5 @@
 
-use crate::syntax::OscDslSyntaxKind::*;
+use crate::syntax::OscSyntaxKind::*;
 
 use crate::parser::Parser;
 use crate::parser::decl::parse_type_declarator;

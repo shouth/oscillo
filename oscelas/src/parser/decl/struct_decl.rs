@@ -1,5 +1,5 @@
 use crate::parser::member::{parse_constraint_declaration, parse_coverage_declaration, parse_event_declaration, parse_field_declaration, parse_method_declaration};
-use crate::syntax::OscDslSyntaxKind::*;
+use crate::syntax::OscSyntaxKind::*;
 
 use crate::parser::Parser;
 use crate::parser::decl::parse_qualified_behavior_name;

@@ -1,5 +1,5 @@
 use crate::diagnostic::Diagnostic;
-use crate::syntax::OscDslSyntaxKind::{self, *};
+use crate::syntax::OscSyntaxKind::{self, *};
 
 use super::lookahead::{Lookahead, LookaheadSource};
 use super::LexedToken;
@@ -9,7 +9,7 @@ pub struct LexicalAnalyzer<'a> {
     source: &'a str,
     inner: Lookahead<Lexer<'a>>,
     indents: Vec<(&'a str, usize)>,
-    enclosures: Vec<OscDslSyntaxKind>,
+    enclosures: Vec<OscSyntaxKind>,
     is_new_line: bool,
     is_empty_line: bool,
     has_indetation_error: bool,
@@ -34,12 +34,12 @@ impl<'a> LexicalAnalyzer<'a> {
         self.inner.offset()
     }
 
-    fn alter(&mut self, kind: OscDslSyntaxKind) -> LexedToken {
+    fn alter(&mut self, kind: OscSyntaxKind) -> LexedToken {
         let token = self.inner.bump();
         LexedToken { kind, ..token }
     }
 
-    fn spawn(&self, kind: OscDslSyntaxKind) -> LexedToken {
+    fn spawn(&self, kind: OscSyntaxKind) -> LexedToken {
         LexedToken { kind, length: 0 }
     }
 

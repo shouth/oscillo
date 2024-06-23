@@ -1,4 +1,4 @@
-use crate::syntax::OscDslSyntaxKind::*;
+use crate::syntax::OscSyntaxKind::*;
 
 use crate::parser::Parser;
 
@@ -32,7 +32,7 @@ pub fn parse_import_statement(p: &mut Parser) {
 }
 
 pub fn parse_import_reference(p: &mut Parser) {
-    if p.check(STRING_LITERAL) {
+    if p.eat(STRING_LITERAL) {
         // string literal
     } else {
         parse_structured_identifier(p);

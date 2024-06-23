@@ -1,6 +1,6 @@
 use std::str::Chars;
 
-use crate::syntax::OscDslSyntaxKind;
+use crate::syntax::OscSyntaxKind;
 
 use super::LexedToken;
 
@@ -54,7 +54,7 @@ impl<'a> Cursor<'_> {
         }
     }
 
-    pub fn token(&mut self, kind: OscDslSyntaxKind) -> LexedToken {
+    pub fn token(&mut self, kind: OscSyntaxKind) -> LexedToken {
         let length = self.token_offset;
         self.token_offset = 0;
         self.source_offset += length;

@@ -2,7 +2,7 @@ mod generate_char_set;
 mod generate_syntax_kind;
 mod generate_syntax_node;
 mod grammar;
-mod oscdsl;
+mod osc;
 mod syntax_name;
 
 use clap::{Parser, Subcommand};
@@ -124,7 +124,7 @@ fn main() {
             }
             GenerateCommand::SyntaxKind => {
                 let sh = Shell::new().expect("Failed to create a shell");
-                let grammar = oscdsl::grammar();
+                let grammar = osc::grammar();
                 let syntax_kind_src = generate_syntax_kind(&grammar);
                 let syntax_kind_src = format_src(&syntax_kind_src);
 
@@ -134,7 +134,7 @@ fn main() {
             }
             GenerateCommand::SyntaxNode => {
                 let sh = Shell::new().expect("Failed to create a shell");
-                let grammar = oscdsl::grammar();
+                let grammar = osc::grammar();
                 let syntax_node_src = generate_syntax_node(&grammar);
                 let syntax_node_src = format_src(&syntax_node_src);
 

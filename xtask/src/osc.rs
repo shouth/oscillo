@@ -167,7 +167,7 @@ pub enum TokenKind {
 }
 
 pub fn grammar() -> Grammar<Token> {
-    let ungrammar = include_str!("oscdsl.ungram");
+    let ungrammar = include_str!("osc.ungram");
     let ungrammar = ungrammar.parse::<Ungrammar>().unwrap();
     let tokens = std::iter::empty()
         .chain(PUNCTS.iter().map(|x| (x.1, x.0, TokenKind::Punctuation)))

@@ -1,5 +1,5 @@
 use crate::diagnostic::Diagnostic;
-use crate::syntax::OscDslSyntaxKind::{self, *};
+use crate::syntax::OscSyntaxKind::{self, *};
 
 use super::lookahead::{LookaheadSource, Lookahead};
 use super::raw_lexer::RawLexer;
@@ -20,7 +20,7 @@ impl Lexer<'_> {
         self.inner.offset()
     }
 
-    fn glue(&mut self, kind: OscDslSyntaxKind, prev: LexedToken) -> LexedToken {
+    fn glue(&mut self, kind: OscSyntaxKind, prev: LexedToken) -> LexedToken {
         let next = self.inner.bump();
         LexedToken {
             kind,

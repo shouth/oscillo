@@ -1,5 +1,5 @@
 use crate::parser::common::parse_argument_list_specification;
-use crate::syntax::OscDslSyntaxKind::*;
+use crate::syntax::OscSyntaxKind::*;
 
 use crate::parser::Parser;
 use crate::parser::common::parse_qualified_identifier;
