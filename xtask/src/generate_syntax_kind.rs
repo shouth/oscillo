@@ -33,18 +33,20 @@ where
 
     let code = quote! {
         #![allow(bad_style, missing_docs, unreachable_pub)]
-        #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+
+        use enumset::{EnumSet, EnumSetType};
+        use OscSyntaxKind::*;
+
+        #[derive(Debug, EnumSetType, PartialOrd, Ord, Hash)]
         #[repr(u16)]
         pub enum OscSyntaxKind {
             EOF,
             #(#token_kind_idents,)*
             #(#rule_kind_idents,)*
-
-            #[doc(hidden)]
-            __LAST,
         }
 
-        use OscSyntaxKind::*;
+        pub type OscSyntaxKindSet = EnumSet<OscSyntaxKind>;
+
         impl OscSyntaxKind {
             pub fn static_token(&self) -> Option<&'static str> {
                 match self {
