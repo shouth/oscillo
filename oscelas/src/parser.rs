@@ -55,6 +55,7 @@ impl<'a> Parser<'a> {
         let token = self.lexer.bump();
         self.builder.token(kind, token.length).unwrap();
         self.expected.clear();
+        self.leading_trivia = false;
         self.skip_trivia();
     }
 
@@ -137,6 +138,7 @@ impl<'a> Parser<'a> {
     }
 
     pub fn close(&mut self, checkpoint: Checkpoint, kind: OscDslSyntaxKind) {
+        println!("close: {:?}", kind);
         self.builder.close_at(&checkpoint.0, kind).unwrap();
     }
 
@@ -158,6 +160,7 @@ impl<'a> Parser<'a> {
 #[cfg(test)]
 mod tests {
     use expr::parse_expr;
+    use osc_file::parse_osc_file;
 
     use super::*;
 
@@ -283,6 +286,33 @@ mod tests {
         assert!(diagnostics.is_empty());
         assert_eq!(tree, expected);
 
+        Ok(())
+    }
+
+    #[test]
+    fn test_parse_osc_file() -> Result<(), Box<dyn std::error::Error>> {
+        println!("test_parse_osc_file");
+        let source = r#"
+scenario sut.my__scenario:
+    car1: vehicle
+    car2: vehicle
+
+    do serial:
+        phase1: car1.drive(duration: 24s) with:
+            speed([40kph..80kph], at: end)
+            lane([2..4])
+        phase2: car1.drive(duration: 24s) with:
+            speed([70kph..60kph], at: end)
+"#;
+
+        let mut p = Parser::new(source);
+        parse_osc_file(&mut p);
+        let (diagnostics, tree) = p.finish();
+
+        let mut pretty = Vec::new();
+        syntree::print::print_with_source(&mut pretty, &tree, &source)?;
+        let pretty = String::from_utf8(pretty)?;
+        println!("{}", pretty);
         Ok(())
     }
 }

@@ -7,6 +7,8 @@ use super::decl::{parse_action_declaration, parse_actor_declaration, parse_enum_
 pub fn parse_osc_file(p: &mut Parser) {
     let checkpoint = p.open();
     parse_prelude_statement_list(p);
+    parse_main_statement_list(p);
+    p.close(checkpoint, OSC_FILE);
 }
 
 pub fn parse_prelude_statement_list(p: &mut Parser) {
