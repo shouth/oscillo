@@ -1,4 +1,4 @@
-use crate::diagnostic::Diagnostic;
+use crate::diagnostic::SyntaxDiagnostic;
 use crate::syntax::OscSyntaxKind::{self, *};
 
 use super::lookahead::{Lookahead, LookaheadSource};
@@ -13,7 +13,7 @@ pub struct LexicalAnalyzer<'a> {
     is_new_line: bool,
     is_empty_line: bool,
     has_indetation_error: bool,
-    diagnostics: Vec<Diagnostic>,
+    diagnostics: Vec<SyntaxDiagnostic>,
 }
 
 impl<'a> LexicalAnalyzer<'a> {
@@ -98,10 +98,11 @@ impl<'a> LexicalAnalyzer<'a> {
                 } else {
                     let start = self.offset();
                     let end = start + self.inner.nth(0).length;
-                    self.diagnostics.push(Diagnostic::new(
-                        start..end,
-                        format!("indentation is not aligned with the previous line"),
-                    ));
+                    self.diagnostics.push(SyntaxDiagnostic::IrregularIndentationSize {
+                        range: start..end,
+                        expected: last_indent_width,
+                        actual: indent_width,
+                    });
                     self.has_indetation_error = true;
                     self.spawn(ERROR)
                 }
@@ -110,10 +111,11 @@ impl<'a> LexicalAnalyzer<'a> {
             } else {
                 let start = self.offset();
                 let end = start + self.inner.nth(0).length;
-                self.diagnostics.push(Diagnostic::new(
-                    start..end,
-                    format!("indentation characters is different from the previous line"),
-                ));
+                self.diagnostics.push(SyntaxDiagnostic::IrregularIndentationSequence {
+                    range: start..end,
+                    expected: last_indent.to_string(),
+                    actual: indent.to_string(),
+                });
                 self.spawn(ERROR)
             }
         } else {
@@ -150,7 +152,7 @@ impl<'a> LexicalAnalyzer<'a> {
         }
     }
 
-    pub fn finish(self) -> Vec<Diagnostic> {
+    pub fn finish(self) -> Vec<SyntaxDiagnostic> {
         let mut diagnostics = self.diagnostics;
         diagnostics.extend(self.inner.finish().finish());
         diagnostics

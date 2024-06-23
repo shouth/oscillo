@@ -4,12 +4,10 @@ mod expr;
 mod member;
 mod osc_file;
 
-use std::fmt::Write;
-
 use syntree::pointer::PointerUsize;
 use syntree::{Builder as TreeBuilder, Checkpoint as TreeCheckpoint, Tree};
 
-use crate::diagnostic::Diagnostic;
+use crate::diagnostic::SyntaxDiagnostic;
 use crate::lexer::{LexicalAnalyzer, Lookahead};
 use crate::syntax::OscSyntaxKind::{self, *};
 use crate::syntax::OscSyntaxKindSet;
@@ -21,7 +19,7 @@ pub struct Parser<'a> {
     source: &'a str,
     lexer: Lookahead<LexicalAnalyzer<'a>>,
     builder: TreeBuilder<OscSyntaxKind, u32, usize>,
-    diagnostic: Vec<Diagnostic>,
+    diagnostic: Vec<SyntaxDiagnostic>,
     expected: OscSyntaxKindSet,
     leading_trivia: bool,
 }
@@ -47,8 +45,12 @@ impl<'a> Parser<'a> {
         }
     }
 
-    fn has_leading_trivia(&self) -> bool {
+    pub fn has_leading_trivia(&self) -> bool {
         self.leading_trivia
+    }
+
+    pub fn diagnostic(&mut self, diagnostic: SyntaxDiagnostic) {
+        self.diagnostic.push(diagnostic);
     }
 
     pub fn bump(&mut self, kind: OscSyntaxKind) {
@@ -98,23 +100,24 @@ impl<'a> Parser<'a> {
         result
     }
 
-    fn unexpected(&mut self) {
-        let mut message = String::new();
-        write!(&mut message, "expected ").unwrap();
-        if self.expected.len() > 1 {
-            write!(&mut message, "one of ").unwrap();
-        }
-        for (i, kind) in self.expected.iter().enumerate() {
-            if i > 0 {
-                write!(&mut message, ", ").unwrap();
-            }
-            write!(&mut message, "{:?},", kind).unwrap();
-        }
-        write!(&mut message, ", found {:?},", self.lexer.nth(0).kind).unwrap();
-
+    pub fn unexpected(&mut self) {
         let start = self.lexer.offset();
         let end = start + self.lexer.nth(0).length;
-        self.diagnostic.push(Diagnostic::new(start..end, message));
+        let expected = self.expected;
+        let actual = self.lexer.nth(0).kind;
+
+        self.diagnostic(SyntaxDiagnostic::UnexpectedToken {
+            range: start..end,
+            expected,
+            actual,
+        });
+    }
+
+    pub fn recover(&mut self, kinds: impl Into<OscSyntaxKindSet>) {
+        let kinds = kinds.into();
+        while !self.check(kinds) {
+            self.lexer.bump();
+        }
     }
 
     pub fn open(&mut self) -> Checkpoint {
@@ -125,7 +128,7 @@ impl<'a> Parser<'a> {
         self.builder.close_at(&checkpoint.0, kind).unwrap();
     }
 
-    pub fn finish(mut self) -> (Vec<Diagnostic>, Tree<OscSyntaxKind, u32, usize>) {
+    pub fn finish(mut self) -> (Vec<SyntaxDiagnostic>, Tree<OscSyntaxKind, u32, usize>) {
         loop {
             self.skip_trivia();
             let token = self.lexer.bump();
@@ -135,7 +138,12 @@ impl<'a> Parser<'a> {
             }
             self.builder.token(ERROR, token.length).unwrap();
         }
-        (self.diagnostic, self.builder.build().unwrap())
+
+        let mut diagnostics = Vec::new();
+        diagnostics.extend(self.lexer.finish().finish());
+        diagnostics.extend(self.diagnostic);
+
+        (diagnostics, self.builder.build().unwrap())
     }
 }
 

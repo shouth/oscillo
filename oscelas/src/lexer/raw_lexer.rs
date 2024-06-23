@@ -1,13 +1,14 @@
 use super::lookahead::LookaheadSource;
-use super::{cursor::Cursor, LexedToken};
+use super::cursor::Cursor;
+use super::LexedToken;
 
 use crate::chars::{is_id_char, is_id_start_char};
-use crate::diagnostic::Diagnostic;
+use crate::diagnostic::SyntaxDiagnostic;
 use crate::syntax::OscSyntaxKind::*;
 
 pub struct RawLexer<'a> {
     cursor: Cursor<'a>,
-    diagnostics: Vec<Diagnostic>,
+    diagnostics: Vec<SyntaxDiagnostic>,
 }
 
 impl RawLexer<'_> {
@@ -64,8 +65,10 @@ impl RawLexer<'_> {
                         } else {
                             let start = self.cursor.source_offset();
                             let end = start + self.cursor.token_offset();
-                            self.diagnostics
-                                .push(Diagnostic::new(start..end, "stray `\\` in program"));
+                            self.diagnostics.push(SyntaxDiagnostic::StrayCharacter {
+                                range: start..end,
+                                character: '\\',
+                            });
                             return self.cursor.token(ERROR);
                         }
                     }
@@ -260,10 +263,10 @@ impl RawLexer<'_> {
                 _ => {
                     let start = self.cursor.source_offset();
                     let end = start + self.cursor.token_offset();
-                    self.diagnostics.push(Diagnostic::new(
-                        start..end,
-                        format!("unexpected character `{}`", c),
-                    ));
+                    self.diagnostics.push(SyntaxDiagnostic::StrayCharacter {
+                        range: start..end,
+                        character: c,
+                    });
                     self.cursor.token(ERROR)
                 }
             }
@@ -272,7 +275,7 @@ impl RawLexer<'_> {
         }
     }
 
-    pub fn finish(self) -> Vec<Diagnostic> {
+    pub fn finish(self) -> Vec<SyntaxDiagnostic> {
         self.diagnostics
     }
 }

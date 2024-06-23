@@ -1,4 +1,4 @@
-use crate::diagnostic::Diagnostic;
+use crate::diagnostic::SyntaxDiagnostic;
 use crate::syntax::OscSyntaxKind::{self, *};
 
 use super::lookahead::{LookaheadSource, Lookahead};
@@ -45,7 +45,7 @@ impl Lexer<'_> {
         }
     }
 
-    pub fn finish(self) -> Vec<Diagnostic> {
+    pub fn finish(self) -> Vec<SyntaxDiagnostic> {
         self.inner.finish().finish()
     }
 }
