@@ -45,7 +45,7 @@ pub fn parse_argument_list(p: &mut Parser) {
     let mut flag = true;
     while flag {
         let argument_checkpoint = p.open();
-        if p.check_any(&[IDENTIFIER, NULL_KW, COLON_COLON]) {
+        if p.check(IDENTIFIER | NULL_KW | COLON_COLON) {
             let expr_checkpoint = p.open();
             parse_qualified_identifier(p);
 

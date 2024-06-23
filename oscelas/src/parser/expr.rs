@@ -15,7 +15,7 @@ pub fn parse_trailing_expr(p: &mut Parser, checkpoint: Checkpoint) {
 fn parse_expr_with_power(p: &mut Parser, power: u8) {
     let checkpoint = p.open();
 
-    if p.eat_any(&[NOT_KW, MINUS]) {
+    if p.eat(NOT_KW | MINUS) {
         parse_expr_with_power(p, 100);
         p.close(checkpoint.clone(), UNARY_EXP);
     } else if p.eat(LEFT_PAREN) {
@@ -52,7 +52,7 @@ fn parse_expr_with_power(p: &mut Parser, power: u8) {
         parse_expr(p);
         p.expect(RIGHT_PAREN);
         p.close(checkpoint.clone(), PARENTHESES_RANGE_CONSTRUCTOR);
-    } else if p.check_any(&[IDENTIFIER, NULL_KW, COLON_COLON]){
+    } else if p.check(IDENTIFIER | NULL_KW | COLON_COLON){
         parse_qualified_identifier(p);
         if p.eat(EXCLAMATION) {
             parse_qualified_identifier(p);
@@ -62,14 +62,14 @@ fn parse_expr_with_power(p: &mut Parser, power: u8) {
         }
     } else if p.eat(IT_KW) {
         // `it` expression
-    } else if p.eat_any(&[INTEGER_LITERAL, FLOAT_LITERAL]) {
-        if !p.has_leading_trivia() && p.check_any(&[IDENTIFIER, NULL_KW, COLON_COLON]) {
+    } else if p.eat(INTEGER_LITERAL | FLOAT_LITERAL) {
+        if !p.has_leading_trivia() && p.check(IDENTIFIER | NULL_KW | COLON_COLON) {
             parse_qualified_identifier(p);
             p.close(checkpoint.clone(), PHYSICAL_LITERAL);
         } else {
             // number literals
         }
-    } else if p.eat_any(&[TRUE_KW, FALSE_KW]){
+    } else if p.eat(TRUE_KW | FALSE_KW){
         // boolean literals
     } else if p.eat(STRING_LITERAL) {
         // string literals
@@ -92,7 +92,7 @@ fn parse_trailing_expr_with_power(p: &mut Parser, checkpoint: Checkpoint, power:
                 parse_type_declarator(p);
                 p.expect(RIGHT_PAREN);
                 p.close(checkpoint.clone(), TYPE_TEST_EXP);
-            } else if p.check_any(&[IDENTIFIER, NULL_KW, COLON_COLON]) {
+            } else if p.check(IDENTIFIER | NULL_KW | COLON_COLON) {
                 parse_qualified_identifier(p);
                 p.close(checkpoint.clone(), MEMBER_REFERENCE);
             } else {
@@ -120,13 +120,13 @@ fn parse_trailing_expr_with_power(p: &mut Parser, checkpoint: Checkpoint, power:
         } else if power < 40 && p.eat(AND_KW) {
             parse_expr_with_power(p, 41);
             p.close(checkpoint.clone(), LOGICAL_EXP);
-        } else if power < 50 && p.eat_any(&[EQUAL, NOT_EQUAL, LESS, LESS_EQUAL, GREATER, GREATER_EQUAL, IN_KW]) {
+        } else if power < 50 && p.eat(EQUAL | NOT_EQUAL | LESS | LESS_EQUAL | GREATER | GREATER_EQUAL | IN_KW) {
             parse_expr_with_power(p, 51);
             p.close(checkpoint.clone(), BINARY_EXP);
-        } else if power < 60 && p.eat_any(&[PLUS, MINUS]) {
+        } else if power < 60 && p.eat(PLUS | MINUS) {
             parse_expr_with_power(p, 61);
             p.close(checkpoint.clone(), BINARY_EXP);
-        } else if power < 70 && p.eat_any(&[STAR, SLASH, PERCENT]) {
+        } else if power < 70 && p.eat(STAR | SLASH | PERCENT) {
             parse_expr_with_power(p, 71);
             p.close(checkpoint.clone(), BINARY_EXP);
         } else {

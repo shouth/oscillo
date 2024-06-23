@@ -61,11 +61,11 @@ pub fn parse_action_member_list(p: &mut Parser) {
             parse_on_directive(p);
         } else if p.check(EVENT_KW) {
             parse_event_declaration(p);
-        } else if p.check_any(&[KEEP_KW, REMOVE_DEFAULT_KW]) {
+        } else if p.check(KEEP_KW | REMOVE_DEFAULT_KW) {
             parse_constraint_declaration(p);
         } else if p.check(DEF_KW) {
             parse_method_declaration(p);
-        } else if p.check_any(&[COVER_KW, RECORD_KW]) {
+        } else if p.check(COVER_KW | RECORD_KW) {
             parse_coverage_declaration(p);
         } else if p.check(MODIFIER_KW) {
             parse_modifier_declaration(p);

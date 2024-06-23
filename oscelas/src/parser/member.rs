@@ -40,7 +40,7 @@ pub fn parse_keep_constraint_declaration(p: &mut Parser) {
     let checkpoint = p.open();
     p.expect(KEEP_KW);
     p.expect(LEFT_PAREN);
-    p.eat_any(&[DEFAULT_KW, HARD_KW]); // constant qualifier (optional)
+    p.eat(DEFAULT_KW | HARD_KW); // constant qualifier (optional)
     parse_expr(p);
     p.expect(RIGHT_PAREN);
     p.expect(NEWLINE);
@@ -59,7 +59,7 @@ pub fn parse_remove_default_declaration(p: &mut Parser) {
 
 pub fn parse_coverage_declaration(p: &mut Parser) {
     let checkpoint = p.open();
-    p.expect_any(&[COVER_KW, RECORD_KW]);
+    p.expect(COVER_KW | RECORD_KW);
     p.expect(LEFT_PAREN);
     parse_argument_list(p);
     p.expect(RIGHT_PAREN);

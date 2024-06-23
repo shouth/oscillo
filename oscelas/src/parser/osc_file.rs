@@ -58,7 +58,7 @@ pub fn parse_main_statement_list(p: &mut Parser) {
             parse_namespace_statement(p);
         } else if p.check(EXPORT_KW) {
             parse_export_statement(p);
-        } else if p.check_any(&[TYPE_KW, UNIT_KW, ENUM_KW, STRUCT_KW, ACTOR_KW, ACTION_KW, SCENARIO_KW, MODIFIER_KW, EXTEND_KW, GLOBAL_KW]) {
+        } else if p.check(TYPE_KW | UNIT_KW | ENUM_KW | STRUCT_KW | ACTOR_KW | ACTION_KW | SCENARIO_KW | MODIFIER_KW | EXTEND_KW | GLOBAL_KW) {
             parse_osc_declaration(p);
         } else {
             break;
@@ -70,7 +70,7 @@ pub fn parse_main_statement_list(p: &mut Parser) {
 pub fn parse_namespace_statement(p: &mut Parser) {
     let checkpoint = p.open();
     p.expect(NAMESPACE_KW);
-    p.expect_any(&[IDENTIFIER, NULL_KW]); // namespace name
+    p.expect(IDENTIFIER | NULL_KW); // namespace name
 
     if p.check(USE_KW) {
         parse_namespace_use_clause(p);
@@ -92,7 +92,7 @@ pub fn parse_namespace_list(p: &mut Parser) {
     let mut flag = true;
     while flag {
         let element_checkpoint = p.open();
-        p.expect_any(&[IDENTIFIER, NULL_KW]);
+        p.expect(IDENTIFIER | NULL_KW);
         flag = p.eat(COMMA);
         p.close(element_checkpoint, NAMESPACE_LIST_ELEMENT);
     }

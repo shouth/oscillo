@@ -81,7 +81,7 @@ pub fn parse_si_unit_argument_list(p: &mut Parser) {
 }
 
 pub fn parse_si_unit_argument_name(p: &mut Parser) {
-    if p.eat_any(&[FACTOR_KW, OFFSET_KW]) {
+    if p.eat(FACTOR_KW | OFFSET_KW) {
         // factor or offset
     } else {
         p.unexpected();
@@ -89,5 +89,5 @@ pub fn parse_si_unit_argument_name(p: &mut Parser) {
 }
 
 pub fn parse_si_base_unit_name(p: &mut Parser) {
-    p.expect_any(&[KG_KW, M_KW, S_KW, A_KW, K_KW, MOL_KW, CD_KW, RAD_KW]);
+    p.expect(KG_KW | M_KW | S_KW | A_KW | K_KW | MOL_KW | CD_KW | RAD_KW);
 }

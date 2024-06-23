@@ -24,7 +24,7 @@ pub fn parse_on_directive(p: &mut Parser) {
     p.expect(INDENT);
 
     let list_checkpoint = p.open();
-    while p.check_any(&[CALL_KW, EMIT_KW]) {
+    while p.check(CALL_KW | EMIT_KW) {
         parse_on_member(p);
     }
     p.close(list_checkpoint, ON_MEMBER_LIST);
@@ -52,7 +52,7 @@ pub fn parse_do_directive(p: &mut Parser) {
 
 pub fn parse_do_member(p: &mut Parser) {
     let checkpoint = p.open();
-    if p.check_any(&[SERIAL_KW, ONE_OF_KW, PARALLEL_KW, WAIT_KW, EMIT_KW, CALL_KW]) {
+    if p.check(SERIAL_KW | ONE_OF_KW | PARALLEL_KW | WAIT_KW | EMIT_KW | CALL_KW) {
         parse_do_member_body(p);
     } else {
         parse_qualified_identifier(p);
@@ -68,7 +68,7 @@ pub fn parse_do_member(p: &mut Parser) {
 }
 
 pub fn parse_do_member_body(p: &mut Parser) {
-    if p.check_any(&[SERIAL_KW, ONE_OF_KW, PARALLEL_KW]) {
+    if p.check(SERIAL_KW | ONE_OF_KW | PARALLEL_KW) {
         parse_composition(p);
     } else if p.check(WITH_KW) {
         parse_wait_directive(p);
@@ -83,7 +83,7 @@ pub fn parse_do_member_body(p: &mut Parser) {
 
 pub fn parse_composition(p: &mut Parser) {
     let checkpoint = p.open();
-    p.expect_any(&[SERIAL_KW, ONE_OF_KW, PARALLEL_KW]);
+    p.expect(SERIAL_KW | ONE_OF_KW | PARALLEL_KW);
 
     let arguments_checkpoint = p.open();
     if p.eat(LEFT_PAREN) {
@@ -143,7 +143,7 @@ pub fn parse_behavior_with_declaration(p: &mut Parser) {
 }
 
 pub fn parse_behavior_with_member(p: &mut Parser) {
-    if p.check_any(&[KEEP_KW, REMOVE_DEFAULT_KW]) {
+    if p.check(KEEP_KW | REMOVE_DEFAULT_KW) {
         parse_constraint_declaration(p);
     } else if p.check(UNTIL_KW) {
         parse_until_directive(p);

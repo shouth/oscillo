@@ -34,7 +34,7 @@ pub fn parse_method_return_type(p: &mut Parser) {
 pub fn parse_method_implementation(p: &mut Parser) {
     let checkpoint = p.open();
     p.expect(IS_KW);
-    p.eat_any(&[ONLY_KW]); // method qualifier (optional)
+    p.eat(ONLY_KW); // method qualifier (optional)
 
     let body_checkpoint = p.open();
     if p.eat(EXPRESSION_KW) {

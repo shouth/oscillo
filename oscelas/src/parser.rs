@@ -13,6 +13,7 @@ use syntree::{Builder as TreeBuilder, Checkpoint as TreeCheckpoint, Tree};
 use crate::diagnostic::Diagnostic;
 use crate::lexer::{LexicalAnalyzer, Lookahead};
 use crate::syntax::OscSyntaxKind::{self, *};
+use crate::syntax::OscSyntaxKindSet;
 
 #[derive(Debug, Clone)]
 pub struct Checkpoint(TreeCheckpoint<PointerUsize>);
@@ -22,7 +23,7 @@ pub struct Parser<'a> {
     lexer: Lookahead<LexicalAnalyzer<'a>>,
     builder: TreeBuilder<OscSyntaxKind, u32, usize>,
     diagnostic: Vec<Diagnostic>,
-    expected: HashSet<OscSyntaxKind>,
+    expected: OscSyntaxKindSet,
     leading_trivia: bool,
 }
 
@@ -33,7 +34,7 @@ impl<'a> Parser<'a> {
             lexer: Lookahead::new(LexicalAnalyzer::new(source)),
             builder: TreeBuilder::new(),
             diagnostic: Vec::new(),
-            expected: HashSet::new(),
+            expected: OscSyntaxKindSet::new(),
             leading_trivia: false,
         };
         parser.skip_trivia();
@@ -59,11 +60,10 @@ impl<'a> Parser<'a> {
         self.skip_trivia();
     }
 
-    pub fn check_any(&mut self, kinds: &[OscSyntaxKind]) -> bool {
-        self.expected.extend(kinds.iter());
-
+    pub fn check(&mut self, kinds: impl Into<OscSyntaxKindSet>) -> bool {
+        let kinds = kinds.into();
+        self.expected |= kinds;
         let next = self.lexer.nth(0).kind;
-
         if next == IDENTIFIER {
             for kind in kinds {
                 if let Some(token) = kind.static_token() {
@@ -76,31 +76,24 @@ impl<'a> Parser<'a> {
                 }
             }
         }
-
-        kinds.iter().any(|&kind| kind == next)
+        kinds.iter().any(|kind| kind == next)
     }
 
-    pub fn check(&mut self, kind: OscSyntaxKind) -> bool {
-        self.check_any(&[kind])
-    }
-
-    pub fn eat_any(&mut self, kinds: &[OscSyntaxKind]) -> bool {
+    pub fn eat(&mut self, kinds: impl Into<OscSyntaxKindSet>) -> bool {
+        let kinds = kinds.into();
         for kind in kinds {
-            if self.check(*kind) {
-                self.bump(*kind);
+            if self.check(kind) {
+                self.bump(kind);
                 return true;
             }
         }
         false
     }
 
-    pub fn eat(&mut self, kind: OscSyntaxKind) -> bool {
-        self.eat_any(&[kind])
-    }
-
-    pub fn expect_any(&mut self, kinds: &[OscSyntaxKind]) -> bool {
+    pub fn expect(&mut self, kinds: impl Into<OscSyntaxKindSet>) -> bool {
+        let kinds = kinds.into();
         for kind in kinds {
-            if self.eat(*kind) {
+            if self.eat(kind) {
                 return true;
             }
         }
@@ -108,19 +101,13 @@ impl<'a> Parser<'a> {
         false
     }
 
-    pub fn expect(&mut self, kind: OscSyntaxKind) -> bool {
-        self.expect_any(&[kind])
-    }
-
     fn unexpected(&mut self) {
-        let mut expected = Vec::from_iter(&self.expected);
-        expected.sort();
         let mut message = String::new();
         write!(&mut message, "expected ").unwrap();
-        if expected.len() > 1 {
+        if self.expected.len() > 1 {
             write!(&mut message, "one of ").unwrap();
         }
-        for (i, kind) in expected.iter().enumerate() {
+        for (i, kind) in self.expected.iter().enumerate() {
             if i > 0 {
                 write!(&mut message, ", ").unwrap();
             }

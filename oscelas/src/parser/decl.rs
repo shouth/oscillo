@@ -32,7 +32,7 @@ pub fn parse_qualified_behavior_name(p: &mut Parser) {
 }
 
 pub fn parse_type_declarator(p: &mut Parser) {
-    if p.check_any(&[LIST_KW]) {
+    if p.check(LIST_KW) {
         parse_aggregate_type_declarator(p);
     } else {
         parse_non_aggregate_type_declarator(p);
@@ -40,9 +40,9 @@ pub fn parse_type_declarator(p: &mut Parser) {
 }
 
 pub fn parse_non_aggregate_type_declarator(p: &mut Parser) {
-    if p.eat_any(&[INT_KW, UINT_KW, FLOAT_KW, BOOL_KW, STRING_KW]) {
+    if p.eat(INT_KW | UINT_KW | FLOAT_KW | BOOL_KW | STRING_KW) {
         // primitive type
-    } else if p.check_any(&[IDENTIFIER, NULL_KW, COLON_COLON]) {
+    } else if p.check(IDENTIFIER | NULL_KW | COLON_COLON) {
         parse_qualified_behavior_name(p);
     } else {
         p.unexpected();

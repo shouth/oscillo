@@ -48,7 +48,7 @@ pub fn parse_event_specification(p: &mut Parser) {
 pub fn parse_event_reference_specification(p: &mut Parser) {
     let checkpoint = p.open();
     parse_event_reference(p);
-    if p.check_any(&[IF_KW, AS_KW]) {
+    if p.check(IF_KW | AS_KW) {
         parse_event_reference_condition(p);
     }
     p.close(checkpoint, EVENT_REFERENCE_SPECIFICATION);
