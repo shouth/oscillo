@@ -1,8 +1,8 @@
 use crate::syntax::OscSyntaxKind::*;
 
 use crate::parser::Parser;
-use crate::parser::common::{parse_argument_list, parse_qualified_identifier};
-use crate::parser::expr::{parse_expr, parse_trailing_expr};
+use crate::parser::common::{parse_arguments, parse_qualified_identifier};
+use crate::parser::expr::{parse_expr, parse_remaining_expr};
 use crate::parser::member::{parse_constraint_declaration, parse_event_specification, parse_modifier_application};
 
 pub fn parse_behavior_specification(p: &mut Parser) {
@@ -59,7 +59,7 @@ pub fn parse_do_member(p: &mut Parser) {
         if p.eat(COLON) {
             parse_do_member_body(p);
         } else {
-            parse_trailing_expr(p, checkpoint.clone());
+            parse_remaining_expr(p, checkpoint.clone());
             parse_behavior_with_declaration_or_newline(p);
             p.close(checkpoint.clone(), BEHAVIOR_INVOCATION);
         }
@@ -159,14 +159,9 @@ pub fn parse_emit_directive(p: &mut Parser) {
     let checkpoint = p.open();
     p.expect(EMIT_KW);
     parse_qualified_identifier(p);
-
-    let arguments_checkpoint = p.open();
-    if p.eat(LEFT_PAREN) {
-        parse_argument_list(p);
-        p.expect(RIGHT_PAREN);
-        p.close(arguments_checkpoint, EMIT_ARGUMENTS);
+    if p.check(LEFT_PAREN) {
+        parse_arguments(p);
     }
-
     p.expect(NEWLINE);
     p.close(checkpoint, EMIT_DIRECTIVE);
 }

@@ -1,22 +1,22 @@
 use crate::syntax::OscSyntaxKind::*;
 
 use crate::parser::{Checkpoint, Parser};
-use crate::parser::common::{parse_argument_list, parse_qualified_identifier};
+use crate::parser::common::{parse_arguments, parse_qualified_identifier};
 use crate::parser::decl::parse_type_declarator;
 
 pub fn parse_expr(p: &mut Parser) {
-    parse_expr_with_power(p, 0);
+    parse_leading_expr(p, 0);
 }
 
-pub fn parse_trailing_expr(p: &mut Parser, checkpoint: Checkpoint) {
-    parse_trailing_expr_with_power(p, checkpoint, 0);
+pub fn parse_remaining_expr(p: &mut Parser, checkpoint: Checkpoint) {
+    parse_trailing_expr(p, checkpoint, 0);
 }
 
-fn parse_expr_with_power(p: &mut Parser, power: u8) {
+fn parse_leading_expr(p: &mut Parser, power: u8) {
     let checkpoint = p.open();
 
     if p.eat(NOT_KW | MINUS) {
-        parse_expr_with_power(p, 100);
+        parse_leading_expr(p, 100);
         p.close(checkpoint.clone(), UNARY_EXP);
     } else if p.eat(LEFT_PAREN) {
         parse_expr(p);
@@ -24,26 +24,27 @@ fn parse_expr_with_power(p: &mut Parser, power: u8) {
         p.close(checkpoint.clone(), PARENTHESIZED_EXP);
     } else if p.eat(LEFT_BRACKET) {
         let list_checkpoint = p.open();
-        let element_checkpoint = p.open();
-        parse_expr(p);
-        if p.eat(COMMA) {
-            p.close(element_checkpoint, EXPRESSION_LIST_ELEMENT);
-            let mut flag = true;
-            while flag {
-                let element_checkpoint = p.open();
-                parse_expr(p);
-                flag = p.eat(COMMA);
-                p.close(element_checkpoint, EXPRESSION_LIST_ELEMENT);
-            }
+        if p.eat(RIGHT_BRACKET) {
+            // allow empty list when parsing
             p.close(list_checkpoint, EXPRESSION_LIST);
-            p.expect(RIGHT_BRACKET);
-            p.close(checkpoint.clone(), LIST_CONSTRUCTOR);
-        } else if p.eat(DOT_DOT) {
-            parse_expr(p);
-            p.expect(RIGHT_BRACKET);
-            p.close(checkpoint.clone(), BRACKETS_RANGE_CONSTRUCTOR);
         } else {
-            p.unexpected();
+            let mut element_checkpoint = p.open();
+            parse_expr(p);
+            if p.eat(DOT_DOT) {
+                parse_expr(p);
+                p.expect(RIGHT_BRACKET);
+                p.close(checkpoint.clone(), BRACKETS_RANGE_CONSTRUCTOR);
+            } else {
+                while !p.check(RIGHT_BRACKET | EOF) {
+                    p.expect(COMMA);
+                    p.close(element_checkpoint, EXPRESSION_LIST_ELEMENT);
+                    element_checkpoint = p.open();
+                    parse_expr(p);
+                }
+                p.close(element_checkpoint, EXPRESSION_LIST_ELEMENT);
+                p.expect(RIGHT_BRACKET);
+                p.close(list_checkpoint, EXPRESSION_LIST);
+            }
         }
     } else if p.eat(RANGE_KW) {
         p.expect(LEFT_PAREN);
@@ -73,12 +74,14 @@ fn parse_expr_with_power(p: &mut Parser, power: u8) {
         // boolean literals
     } else if p.eat(STRING_LITERAL) {
         // string literals
+    } else {
+        p.unexpected();
     }
 
-    parse_trailing_expr_with_power(p, checkpoint, power);
+    parse_trailing_expr(p, checkpoint, power);
 }
 
-fn parse_trailing_expr_with_power(p: &mut Parser, checkpoint: Checkpoint, power: u8) {
+fn parse_trailing_expr(p: &mut Parser, checkpoint: Checkpoint, power: u8) {
     loop {
         // As of version 2.1.0, postfix operators have higher precedence than any other operators.
         if p.eat(DOT) {
@@ -102,32 +105,31 @@ fn parse_trailing_expr_with_power(p: &mut Parser, checkpoint: Checkpoint, power:
             parse_expr(p);
             p.expect(RIGHT_BRACKET);
             p.close(checkpoint.clone(), ELEMENT_ACCESS);
-        } else if p.eat(LEFT_PAREN) {
-            parse_argument_list(p);
-            p.expect(RIGHT_PAREN);
+        } else if p.check(LEFT_PAREN) {
+            parse_arguments(p);
             p.close(checkpoint.clone(), FUNCTION_APPLICATION);
         } else if power < 11 && p.eat(QUESTION) {
             parse_expr(p);
             p.expect(COLON);
-            parse_expr_with_power(p, 10);
+            parse_leading_expr(p, 10);
             p.close(checkpoint.clone(), TERNARY_EXP);
         } else if power < 20 && p.eat(FAT_ARROW) {
-            parse_expr_with_power(p, 21);
+            parse_leading_expr(p, 21);
             p.close(checkpoint.clone(), LOGICAL_EXP);
         } else if power < 30 && p.eat(OR_KW) {
-            parse_expr_with_power(p, 31);
+            parse_leading_expr(p, 31);
             p.close(checkpoint.clone(), LOGICAL_EXP);
         } else if power < 40 && p.eat(AND_KW) {
-            parse_expr_with_power(p, 41);
+            parse_leading_expr(p, 41);
             p.close(checkpoint.clone(), LOGICAL_EXP);
         } else if power < 50 && p.eat(EQUAL | NOT_EQUAL | LESS | LESS_EQUAL | GREATER | GREATER_EQUAL | IN_KW) {
-            parse_expr_with_power(p, 51);
+            parse_leading_expr(p, 51);
             p.close(checkpoint.clone(), BINARY_EXP);
         } else if power < 60 && p.eat(PLUS | MINUS) {
-            parse_expr_with_power(p, 61);
+            parse_leading_expr(p, 61);
             p.close(checkpoint.clone(), BINARY_EXP);
         } else if power < 70 && p.eat(STAR | SLASH | PERCENT) {
-            parse_expr_with_power(p, 71);
+            parse_leading_expr(p, 71);
             p.close(checkpoint.clone(), BINARY_EXP);
         } else {
             return;
