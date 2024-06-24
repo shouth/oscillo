@@ -4010,7 +4010,7 @@ impl EventDeclaration<'_> {
     pub fn event_name(&self) -> Option<QualifiedIdentifier> {
         support::child(&self.0, 0usize)
     }
-    pub fn event_argument_list_specification(&self) -> Option<EventArgumentListSpecification> {
+    pub fn argument_specifications(&self) -> Option<ArgumentSpecifications> {
         support::child(&self.0, 0usize)
     }
     pub fn event_is_clause(&self) -> Option<EventIsClause> {
@@ -4131,13 +4131,7 @@ impl MethodDeclaration<'_> {
     pub fn method_name(&self) -> Option<QualifiedIdentifier> {
         support::child(&self.0, 0usize)
     }
-    pub fn left_paren_token(&self) -> Option<LeftParenToken> {
-        support::child(&self.0, 0usize)
-    }
-    pub fn argument_list_specification(&self) -> Option<ArgumentListSpecification> {
-        support::child(&self.0, 0usize)
-    }
-    pub fn right_paren_token(&self) -> Option<RightParenToken> {
+    pub fn argument_specifications(&self) -> Option<ArgumentSpecifications> {
         support::child(&self.0, 0usize)
     }
     pub fn method_return_type(&self) -> Option<MethodReturnType> {
@@ -4169,13 +4163,7 @@ impl CoverageDeclaration<'_> {
     pub fn coverage_operator(&self) -> Option<CoverageOperator> {
         support::child(&self.0, 0usize)
     }
-    pub fn left_paren_token(&self) -> Option<LeftParenToken> {
-        support::child(&self.0, 0usize)
-    }
-    pub fn argument_list(&self) -> Option<ArgumentList> {
-        support::child(&self.0, 0usize)
-    }
-    pub fn right_paren_token(&self) -> Option<RightParenToken> {
+    pub fn arguments(&self) -> Option<Arguments> {
         support::child(&self.0, 0usize)
     }
     pub fn newline_token(&self) -> Option<NewlineToken> {
@@ -5553,23 +5541,23 @@ impl<'a> TypedNode for ParameterDeclaration<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct EventArgumentListSpecification<'a>(OscNode<'a>);
-impl EventArgumentListSpecification<'_> {
+pub struct ArgumentSpecifications<'a>(OscNode<'a>);
+impl ArgumentSpecifications<'_> {
     pub fn left_paren_token(&self) -> Option<LeftParenToken> {
         support::child(&self.0, 0usize)
     }
-    pub fn argument_list_specification(&self) -> Option<ArgumentListSpecification> {
+    pub fn argument_specification_list(&self) -> Option<ArgumentSpecificationList> {
         support::child(&self.0, 0usize)
     }
     pub fn right_paren_token(&self) -> Option<RightParenToken> {
         support::child(&self.0, 0usize)
     }
 }
-impl<'a> TypedNode for EventArgumentListSpecification<'a> {
+impl<'a> TypedNode for ArgumentSpecifications<'a> {
     type Value = OscSyntaxKind;
     type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
-        value == EVENT_ARGUMENT_LIST_SPECIFICATION
+        value == ARGUMENT_SPECIFICATIONS
     }
     fn cast(node: Self::Node) -> Option<Self> {
         Self::can_cast(*node.value()).then(|| Self(node))
@@ -5593,26 +5581,6 @@ impl<'a> TypedNode for EventIsClause<'a> {
     type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == EVENT_IS_CLAUSE
-    }
-    fn cast(node: Self::Node) -> Option<Self> {
-        Self::can_cast(*node.value()).then(|| Self(node))
-    }
-    fn syntax(&self) -> &Self::Node {
-        &self.0
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ArgumentListSpecification<'a>(OscNode<'a>);
-impl<'a> ArgumentListSpecification<'a> {
-    pub fn argument_specification(&self) -> impl Iterator<Item = ArgumentSpecification<'a>> + 'a {
-        support::children(&self.0)
-    }
-}
-impl<'a> TypedNode for ArgumentListSpecification<'a> {
-    type Value = OscSyntaxKind;
-    type Node = OscNode<'a>;
-    fn can_cast(value: Self::Value) -> bool {
-        value == ARGUMENT_LIST_SPECIFICATION
     }
     fn cast(node: Self::Node) -> Option<Self> {
         Self::can_cast(*node.value()).then(|| Self(node))
@@ -6737,13 +6705,7 @@ impl MethodExternalBody<'_> {
     pub fn structured_identifier(&self) -> Option<StructuredIdentifier> {
         support::child(&self.0, 0usize)
     }
-    pub fn left_paren_token(&self) -> Option<LeftParenToken> {
-        support::child(&self.0, 0usize)
-    }
-    pub fn argument_list(&self) -> Option<ArgumentList> {
-        support::child(&self.0, 0usize)
-    }
-    pub fn right_paren_token(&self) -> Option<RightParenToken> {
+    pub fn arguments(&self) -> Option<Arguments> {
         support::child(&self.0, 0usize)
     }
 }
@@ -6761,17 +6723,23 @@ impl<'a> TypedNode for MethodExternalBody<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ArgumentList<'a>(OscNode<'a>);
-impl<'a> ArgumentList<'a> {
-    pub fn argument(&self) -> impl Iterator<Item = Argument<'a>> + 'a {
-        support::children(&self.0)
+pub struct Arguments<'a>(OscNode<'a>);
+impl Arguments<'_> {
+    pub fn left_paren_token(&self) -> Option<LeftParenToken> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn argument_list(&self) -> Option<ArgumentList> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn right_paren_token(&self) -> Option<RightParenToken> {
+        support::child(&self.0, 0usize)
     }
 }
-impl<'a> TypedNode for ArgumentList<'a> {
+impl<'a> TypedNode for Arguments<'a> {
     type Value = OscSyntaxKind;
     type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
-        value == ARGUMENT_LIST
+        value == ARGUMENTS
     }
     fn cast(node: Self::Node) -> Option<Self> {
         Self::can_cast(*node.value()).then(|| Self(node))
@@ -6936,7 +6904,7 @@ impl EmitDirective<'_> {
     pub fn event_name(&self) -> Option<QualifiedIdentifier> {
         support::child(&self.0, 0usize)
     }
-    pub fn emit_arguments(&self) -> Option<EmitArguments> {
+    pub fn arguments(&self) -> Option<Arguments> {
         support::child(&self.0, 0usize)
     }
     pub fn newline_token(&self) -> Option<NewlineToken> {
@@ -7059,7 +7027,7 @@ impl Composition<'_> {
     pub fn composition_operator(&self) -> Option<CompositionOperator> {
         support::child(&self.0, 0usize)
     }
-    pub fn composition_arguments(&self) -> Option<CompositionArguments> {
+    pub fn arguments(&self) -> Option<Arguments> {
         support::child(&self.0, 0usize)
     }
     pub fn colon_token(&self) -> Option<ColonToken> {
@@ -7189,32 +7157,6 @@ impl<'a> TypedNode for CompositionOperator<'a> {
             Self::OneOfToken(node) => node.syntax(),
             Self::ParallelToken(node) => node.syntax(),
         }
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct CompositionArguments<'a>(OscNode<'a>);
-impl CompositionArguments<'_> {
-    pub fn left_paren_token(&self) -> Option<LeftParenToken> {
-        support::child(&self.0, 0usize)
-    }
-    pub fn argument_list(&self) -> Option<ArgumentList> {
-        support::child(&self.0, 0usize)
-    }
-    pub fn right_paren_token(&self) -> Option<RightParenToken> {
-        support::child(&self.0, 0usize)
-    }
-}
-impl<'a> TypedNode for CompositionArguments<'a> {
-    type Value = OscSyntaxKind;
-    type Node = OscNode<'a>;
-    fn can_cast(value: Self::Value) -> bool {
-        value == COMPOSITION_ARGUMENTS
-    }
-    fn cast(node: Self::Node) -> Option<Self> {
-        Self::can_cast(*node.value()).then(|| Self(node))
-    }
-    fn syntax(&self) -> &Self::Node {
-        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -7418,23 +7360,17 @@ impl<'a> TypedNode for UntilDirective<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct EmitArguments<'a>(OscNode<'a>);
-impl EmitArguments<'_> {
-    pub fn left_paren_token(&self) -> Option<LeftParenToken> {
-        support::child(&self.0, 0usize)
-    }
-    pub fn argument_list(&self) -> Option<ArgumentList> {
-        support::child(&self.0, 0usize)
-    }
-    pub fn right_paren_token(&self) -> Option<RightParenToken> {
-        support::child(&self.0, 0usize)
+pub struct ArgumentSpecificationList<'a>(OscNode<'a>);
+impl<'a> ArgumentSpecificationList<'a> {
+    pub fn argument_specification(&self) -> impl Iterator<Item = ArgumentSpecification<'a>> + 'a {
+        support::children(&self.0)
     }
 }
-impl<'a> TypedNode for EmitArguments<'a> {
+impl<'a> TypedNode for ArgumentSpecificationList<'a> {
     type Value = OscSyntaxKind;
     type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
-        value == EMIT_ARGUMENTS
+        value == ARGUMENT_SPECIFICATION_LIST
     }
     fn cast(node: Self::Node) -> Option<Self> {
         Self::can_cast(*node.value()).then(|| Self(node))
@@ -7490,6 +7426,26 @@ impl<'a> TypedNode for ArgumentInitializerClause<'a> {
     type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
         value == ARGUMENT_INITIALIZER_CLAUSE
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ArgumentList<'a>(OscNode<'a>);
+impl<'a> ArgumentList<'a> {
+    pub fn argument(&self) -> impl Iterator<Item = Argument<'a>> + 'a {
+        support::children(&self.0)
+    }
+}
+impl<'a> TypedNode for ArgumentList<'a> {
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == ARGUMENT_LIST
     }
     fn cast(node: Self::Node) -> Option<Self> {
         Self::can_cast(*node.value()).then(|| Self(node))
@@ -7803,13 +7759,7 @@ impl FunctionApplication<'_> {
     pub fn function_expr(&self) -> Option<Expression> {
         support::child(&self.0, 0usize)
     }
-    pub fn left_paren_token(&self) -> Option<LeftParenToken> {
-        support::child(&self.0, 0usize)
-    }
-    pub fn argument_list(&self) -> Option<ArgumentList> {
-        support::child(&self.0, 0usize)
-    }
-    pub fn right_paren_token(&self) -> Option<RightParenToken> {
+    pub fn arguments(&self) -> Option<Arguments> {
         support::child(&self.0, 0usize)
     }
 }
