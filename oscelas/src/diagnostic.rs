@@ -1,9 +1,44 @@
-use std::ops::Range;
+use std::{fmt::Display, ops::Range};
 use std::fmt::Write;
 
 use codespan_reporting::diagnostic::{Diagnostic, Label};
 
-use crate::syntax::{kind, OscSyntaxKind::{self, *}, OscSyntaxKindSet};
+use crate::syntax::{OscSyntaxKind::{self, *}, OscSyntaxKindSet};
+
+trait DiagnosticDisplay: Sized {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result;
+
+    fn display(&self) -> DiagnosticDisplayRef<Self> {
+        DiagnosticDisplayRef(self)
+    }
+}
+
+struct DiagnosticDisplayRef<'a, T>(&'a T);
+
+impl<'a, T> Display for DiagnosticDisplayRef<'a, T>
+where
+    T: DiagnosticDisplay,
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        DiagnosticDisplay::fmt(self.0, f)
+    }
+}
+
+impl DiagnosticDisplay for OscSyntaxKind {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self.static_token() {
+            Some(token) => write!(f, "`{token}`")?,
+            None => match self {
+                IDENTIFIER => write!(f, "identifier")?,
+                INTEGER_LITERAL => write!(f, "integer literal")?,
+                FLOAT_LITERAL => write!(f, "float literal")?,
+                STRING_LITERAL => write!(f, "string literal")?,
+                _ => write!(f, "{:?}", self)?,
+            }
+        }
+        Ok(())
+    }
+}
 
 pub enum SyntaxDiagnostic {
     StrayCharacter {
@@ -22,7 +57,11 @@ pub enum SyntaxDiagnostic {
     UnexpectedToken {
         range: Range<usize>,
         expected: OscSyntaxKindSet,
-        actual: OscSyntaxKind,
+        found: OscSyntaxKind,
+    },
+    ExpectedExpression {
+        range: Range<usize>,
+        found: OscSyntaxKind,
     },
 }
 
@@ -53,7 +92,7 @@ impl SyntaxDiagnostic {
                             .with_message("previous indentation"),
                     ])
             }
-            SyntaxDiagnostic::UnexpectedToken { range, expected, actual } => {
+            SyntaxDiagnostic::UnexpectedToken { range, expected, found } => {
                 let mut message = String::new();
                 write!(&mut message, "expected ").unwrap();
                 if expected.len() > 1 {
@@ -67,29 +106,19 @@ impl SyntaxDiagnostic {
                             write!(&mut message, " and ").unwrap();
                         }
                     }
-                    write!(&mut message, "{}", display_name(kind)).unwrap();
+                    write!(&mut message, "{}", kind.display()).unwrap();
                 }
-                write!(&mut message, ", found {}", display_name(actual)).unwrap();
-
-                fn display_name(kind: OscSyntaxKind) -> &'static str {
-                    match kind.static_token() {
-                        Some(token) => token,
-                        None => match kind {
-                            EOF => "EOF",
-                            INTEGER_LITERAL => "`integer literal`",
-                            FLOAT_LITERAL => "`float literal`",
-                            STRING_LITERAL => "`string literal`",
-                            NEWLINE => "NEWLINE",
-                            INDENT => "INDENT",
-                            DEDENT => "DEDENT",
-                            IDENTIFIER => "`identifier`",
-                            _ => unreachable!(),
-                        }
-                    }
-                }
+                write!(&mut message, ", found {}", found.display()).unwrap();
 
                 Diagnostic::error()
                     .with_message(message)
+                    .with_labels(vec![
+                        Label::primary(file_id.clone(), range)
+                    ])
+            }
+            SyntaxDiagnostic::ExpectedExpression { range, found } => {
+                Diagnostic::error()
+                    .with_message(format!("expected expression, found {}", found.display()))
                     .with_labels(vec![
                         Label::primary(file_id.clone(), range)
                     ])

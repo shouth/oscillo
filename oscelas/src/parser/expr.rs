@@ -1,3 +1,4 @@
+use crate::diagnostic::SyntaxDiagnostic;
 use crate::syntax::OscSyntaxKind::*;
 
 use crate::parser::{Checkpoint, Parser};
@@ -75,7 +76,9 @@ fn parse_leading_expr(p: &mut Parser, power: u8) {
     } else if p.eat(STRING_LITERAL) {
         // string literals
     } else {
-        p.unexpected();
+        let range = p.current_token_range();
+        let found = p.current_token_kind();
+        p.diagnostic(SyntaxDiagnostic::ExpectedExpression { range, found });
     }
 
     parse_trailing_expr(p, checkpoint, power);

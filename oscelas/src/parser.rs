@@ -4,6 +4,8 @@ mod expr;
 mod member;
 mod osc_file;
 
+use std::ops::Range;
+
 use syntree::pointer::PointerUsize;
 use syntree::{Builder as TreeBuilder, Checkpoint as TreeCheckpoint, Tree};
 
@@ -43,6 +45,16 @@ impl<'a> Parser<'a> {
             self.bump(kind);
             self.leading_trivia = true;
         }
+    }
+
+    pub fn current_token_range(&mut self) -> Range<usize> {
+        let start = self.lexer.offset();
+        let end = start + self.lexer.nth(0).length;
+        start..end
+    }
+
+    pub fn current_token_kind(&mut self) -> OscSyntaxKind {
+        self.lexer.nth(0).kind
     }
 
     pub fn has_leading_trivia(&self) -> bool {
@@ -105,12 +117,12 @@ impl<'a> Parser<'a> {
         let start = self.lexer.offset();
         let end = start + self.lexer.nth(0).length;
         let expected = self.expected;
-        let actual = self.lexer.nth(0).kind;
+        let found = self.lexer.nth(0).kind;
 
         self.diagnostic(SyntaxDiagnostic::UnexpectedToken {
             range: start..end,
             expected,
-            actual,
+            found,
         });
 
         self.recover(EOF);
@@ -291,7 +303,7 @@ scenario sut.my__scenario:
             speed([40kph..80kph], at: end)
             lane([2..4])
         phase2: car1.drive(duration: 24s) with:
-            speed([70kph..60kph], at: x)
+            speed([70kph..60kph], at: )
 "#;
 
         let mut p = Parser::new(source);
