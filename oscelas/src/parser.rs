@@ -24,6 +24,7 @@ pub struct Parser<'a> {
     diagnostic: Vec<SyntaxDiagnostic>,
     expected: OscSyntaxKindSet,
     leading_trivia: bool,
+    has_error: bool,
 }
 
 impl<'a> Parser<'a> {
@@ -35,6 +36,7 @@ impl<'a> Parser<'a> {
             diagnostic: Vec::new(),
             expected: OscSyntaxKindSet::new(),
             leading_trivia: false,
+            has_error: false,
         };
         parser.skip_trivia();
         parser
@@ -62,6 +64,7 @@ impl<'a> Parser<'a> {
     }
 
     pub fn diagnostic(&mut self, diagnostic: SyntaxDiagnostic) {
+        self.has_error = true;
         self.diagnostic.push(diagnostic);
     }
 
@@ -107,7 +110,7 @@ impl<'a> Parser<'a> {
 
     pub fn expect(&mut self, kinds: impl Into<OscSyntaxKindSet>) -> bool {
         let result = self.eat(kinds);
-        if !result {
+        if !result && !self.has_error {
             self.unexpected();
         }
         result
@@ -310,15 +313,11 @@ scenario sut.my__scenario:
         parse_osc_file(&mut p);
         let (diagnostics, tree) = p.finish();
 
-        let mut pretty = Vec::new();
-        syntree::print::print_with_source(&mut pretty, &tree, &source)?;
-        let pretty = String::from_utf8(pretty)?;
-        println!("{}", pretty);
+        let writer = StandardStream::stderr(ColorChoice::Always);
+        syntree::print::print_with_source(&mut writer.lock(), &tree, &source)?;
 
         let mut files = SimpleFiles::new();
         let file_id = files.add("<builtin>", source);
-
-        let writer = StandardStream::stderr(ColorChoice::Always);
         let config = codespan_reporting::term::Config::default();
 
         for diagnostic in diagnostics {
