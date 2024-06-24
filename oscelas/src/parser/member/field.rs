@@ -60,7 +60,7 @@ pub fn parse_parameter_with_declaration(p: &mut Parser) {
     p.expect(INDENT);
 
     let list_checkpoint = p.open();
-    while !p.check(DEDENT) {
+    while !p.check(DEDENT | EOF) {
         if p.check(KEEP_KW | REMOVE_DEFAULT_KW) {
             parse_constraint_declaration(p);
         } else {

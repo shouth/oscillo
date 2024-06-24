@@ -50,7 +50,7 @@ pub fn parse_struct_body(p: &mut Parser) {
 
 pub fn parse_struct_member_list(p: &mut Parser) {
     let checkpoint = p.open();
-    while !p.check(DEDENT) {
+    while !p.check(DEDENT | EOF) {
         if p.check(EVENT_KW) {
             parse_event_declaration(p);
         } else if p.check(KEEP_KW | REMOVE_DEFAULT_KW) {

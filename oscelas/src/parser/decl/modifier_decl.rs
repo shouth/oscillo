@@ -46,7 +46,7 @@ pub fn parse_modifier_body(p: &mut Parser) {
 
 pub fn parse_modifier_member_item_list(p: &mut Parser) {
     let checkpoint = p.open();
-    while !p.check(DEDENT) {
+    while !p.check(DEDENT | EOF) {
         if p.check(ON_KW) {
             parse_on_directive(p);
         } else if p.check(EVENT_KW) {

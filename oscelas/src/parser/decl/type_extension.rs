@@ -37,7 +37,7 @@ pub fn parse_type_extension_body(p: &mut Parser) {
 
 pub fn parse_extension_member_decl_list(p: &mut Parser) {
     let checkpoint = p.open();
-    while !p.check(DEDENT) {
+    while !p.check(DEDENT | EOF) {
         if p.check(ON_KW | DO_KW) {
             parse_behavior_specification(p);
         } else if p.check(EVENT_KW) {

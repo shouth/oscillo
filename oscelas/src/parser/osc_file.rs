@@ -13,7 +13,7 @@ pub fn parse_osc_file(p: &mut Parser) {
 
 pub fn parse_prelude_statement_list(p: &mut Parser) {
     let checkpoint = p.open();
-    loop {
+    while !p.check(EOF) {
         if p.check(IMPORT_KW) {
             parse_import_statement(p);
         } else {
@@ -53,7 +53,7 @@ pub fn parse_structured_identifier(p: &mut Parser) {
 
 pub fn parse_main_statement_list(p: &mut Parser) {
     let checkpoint = p.open();
-    loop {
+    while !p.check(EOF) {
         if p.check(NAMESPACE_KW) {
             parse_namespace_statement(p);
         } else if p.check(EXPORT_KW) {
