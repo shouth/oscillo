@@ -53,7 +53,7 @@ impl<'a> Parser<'a> {
         self.diagnostic.push(diagnostic);
     }
 
-    pub fn bump(&mut self, kind: OscSyntaxKind) {
+    fn bump(&mut self, kind: OscSyntaxKind) {
         let token = self.lexer.bump();
         self.builder.token(kind, token.length).unwrap();
         self.expected.clear();
@@ -62,6 +62,7 @@ impl<'a> Parser<'a> {
     }
 
     fn do_check(&mut self, kinds: OscSyntaxKindSet) -> Option<OscSyntaxKind> {
+        self.expected |= kinds;
         let next = self.lexer.nth(0).kind;
 
         let keyword = match next {
@@ -111,12 +112,14 @@ impl<'a> Parser<'a> {
             expected,
             actual,
         });
+
+        self.recover(EOF);
     }
 
     pub fn recover(&mut self, kinds: impl Into<OscSyntaxKindSet>) {
         let kinds = kinds.into();
         while !self.check(kinds) {
-            self.lexer.bump();
+            self.bump(ERROR);
         }
     }
 
@@ -129,15 +132,8 @@ impl<'a> Parser<'a> {
     }
 
     pub fn finish(mut self) -> (Vec<SyntaxDiagnostic>, Tree<OscSyntaxKind, u32, usize>) {
-        loop {
-            self.skip_trivia();
-            let token = self.lexer.bump();
-            if token.kind == EOF {
-                self.builder.token(EOF, 0).unwrap();
-                break;
-            }
-            self.builder.token(ERROR, token.length).unwrap();
-        }
+        self.recover(EOF);
+        self.bump(EOF);
 
         let mut diagnostics = Vec::new();
         diagnostics.extend(self.lexer.finish().finish());
@@ -149,6 +145,9 @@ impl<'a> Parser<'a> {
 
 #[cfg(test)]
 mod tests {
+    use codespan_reporting::files::SimpleFiles;
+    use codespan_reporting::term;
+    use codespan_reporting::term::termcolor::{ColorChoice, StandardStream};
     use expr::parse_expr;
     use osc_file::parse_osc_file;
 
@@ -292,7 +291,7 @@ scenario sut.my__scenario:
             speed([40kph..80kph], at: end)
             lane([2..4])
         phase2: car1.drive(duration: 24s) with:
-            speed([70kph..60kph], at: end)
+            speed([70kph..60kph], at: x)
 "#;
 
         let mut p = Parser::new(source);
@@ -303,6 +302,18 @@ scenario sut.my__scenario:
         syntree::print::print_with_source(&mut pretty, &tree, &source)?;
         let pretty = String::from_utf8(pretty)?;
         println!("{}", pretty);
+
+        let mut files = SimpleFiles::new();
+        let file_id = files.add("<builtin>", source);
+
+        let writer = StandardStream::stderr(ColorChoice::Always);
+        let config = codespan_reporting::term::Config::default();
+
+        for diagnostic in diagnostics {
+            let diagnostic = diagnostic.into_codespan_reporting(&file_id);
+            term::emit(&mut writer.lock(), &config, &files, &diagnostic)?;
+        }
+
         Ok(())
     }
 }
