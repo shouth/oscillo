@@ -481,10 +481,7 @@ GlobalParameterDeclaration =
 // duration-expression ::= expression
 
 EventDeclaration =
-  'event' event_name:QualifiedIdentifier EventArgumentListSpecification? EventIsClause? 'newline'
-
-EventArgumentListSpecification =
-  '(' ArgumentListSpecification ')'
+  'event' event_name:QualifiedIdentifier ArgumentSpecifications? EventIsClause? 'newline'
 
 EventIsClause =
   'is' EventSpecification
@@ -616,7 +613,7 @@ RemoveDefaultDeclaration =
 // method-name ::= qualified-identifier
 
 MethodDeclaration =
-  'def' method_name:QualifiedIdentifier '(' ArgumentListSpecification ')' MethodReturnType? MethodImplementation 'newline'
+  'def' method_name:QualifiedIdentifier ArgumentSpecifications MethodReturnType? MethodImplementation 'newline'
 
 MethodReturnType =
   '->' return_type:TypeDeclarator
@@ -636,13 +633,13 @@ MethodExpressionBody =
   'expression' Expression
 
 MethodExternalBody =
-  'external' StructuredIdentifier '(' ArgumentList ')'
+  'external' StructuredIdentifier Arguments
 
 
 // coverage-declaration ::= ('cover' | 'record') '(' argument-list ')' NEWLINE
 
 CoverageDeclaration =
-  CoverageOperator '(' ArgumentList ')' 'newline'
+  CoverageOperator Arguments 'newline'
 
 CoverageOperator =
   'cover' | 'record'
@@ -703,10 +700,7 @@ DoMemberBody =
 // composition-operator ::= 'serial' | 'one_of' | 'parallel'
 
 Composition =
-  CompositionOperator CompositionArguments? ':' 'newline' 'indent' DoMemberList 'dedent' BehaviorWithDeclaration?
-
-CompositionArguments =
-  '(' ArgumentList ')'
+  CompositionOperator Arguments? ':' 'newline' 'indent' DoMemberList 'dedent' BehaviorWithDeclaration?
 
 DoMemberList =
   DoMember*
@@ -752,10 +746,7 @@ WaitDirective =
 // emit-directive ::= 'emit' event-name ['(' argument-list ')'] NEWLINE
 
 EmitDirective =
-  'emit' event_name:QualifiedIdentifier EmitArguments? 'newline'
-
-EmitArguments =
-  '(' ArgumentList ')'
+  'emit' event_name:QualifiedIdentifier Arguments? 'newline'
 
 
 // call-directive ::= 'call' method-invocation NEWLINE
@@ -778,7 +769,10 @@ UntilDirective =
 //
 // argument-name ::= qualified-identifier
 
-ArgumentListSpecification =
+ArgumentSpecifications =
+  '(' ArgumentSpecificationList ')'
+
+ArgumentSpecificationList =
   ArgumentSpecification*
 
 ArgumentSpecification =
@@ -799,6 +793,9 @@ ArgumentInitializerClause =
 //
 // unqualified-argument-name ::= identifier
 // unqualified-named-argument ::= unqualified-argument-name ':' expression
+
+Arguments =
+  '(' ArgumentList ')'
 
 ArgumentList =
   Argument*
@@ -900,7 +897,7 @@ ElementAccess =
   list_expr:Expression '[' index_expr:Expression ']'
 
 FunctionApplication =
-  function_expr:Expression '(' ArgumentList ')'
+  function_expr:Expression Arguments
 
 MemberReference =
   object_expr:Expression '.' field_name:QualifiedIdentifier
