@@ -103,7 +103,7 @@ impl SyntaxDiagnostic {
                         if i + 1 < expected.len() {
                             write!(&mut message, ", ").unwrap();
                         } else {
-                            write!(&mut message, " and ").unwrap();
+                            write!(&mut message, " or ").unwrap();
                         }
                     }
                     write!(&mut message, "{}", kind.display()).unwrap();
