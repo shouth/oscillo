@@ -11,7 +11,7 @@ pub use method::*;
 use crate::syntax::OscSyntaxKind::*;
 
 use crate::parser::Parser;
-use crate::parser::common::{parse_argument_list, parse_qualified_identifier};
+use crate::parser::common::{parse_arguments, parse_qualified_identifier};
 use crate::parser::expr::parse_expr;
 
 pub fn parse_field_name_list(p: &mut Parser) {
@@ -60,9 +60,9 @@ pub fn parse_remove_default_declaration(p: &mut Parser) {
 pub fn parse_coverage_declaration(p: &mut Parser) {
     let checkpoint = p.open();
     p.expect(COVER_KW | RECORD_KW);
-    p.expect(LEFT_PAREN);
-    parse_argument_list(p);
-    p.expect(RIGHT_PAREN);
+    if p.check(LEFT_PAREN) {
+        parse_arguments(p);
+    }
     p.expect(NEWLINE);
     p.close(checkpoint, COVERAGE_DECLARATION);
 }

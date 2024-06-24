@@ -1,7 +1,7 @@
 use crate::syntax::OscSyntaxKind::*;
 
 use crate::parser::common::{
-    parse_argument_list, parse_argument_list_specification, parse_qualified_identifier,
+    parse_arguments, parse_argument_spcifications, parse_qualified_identifier,
 };
 use crate::parser::decl::parse_type_declarator;
 use crate::parser::expr::parse_expr;
@@ -12,9 +12,9 @@ pub fn parse_method_declaration(p: &mut Parser) {
     let checkpoint = p.open();
     p.expect(DEF_KW);
     parse_qualified_identifier(p);
-    p.expect(LEFT_PAREN);
-    parse_argument_list_specification(p);
-    p.expect(RIGHT_PAREN);
+    if p.check(LEFT_PAREN) {
+        parse_argument_spcifications(p);
+    }
 
     if p.check(ARROW) {
         parse_method_return_type(p);
@@ -44,9 +44,9 @@ pub fn parse_method_implementation(p: &mut Parser) {
         // undefined method body
     } else if p.eat(EXTERNAL_KW) {
         parse_structured_identifier(p);
-        p.expect(LEFT_PAREN);
-        parse_argument_list(p);
-        p.expect(RIGHT_PAREN);
+        if p.check(LEFT_PAREN) {
+            parse_arguments(p);
+        }
         p.close(body_checkpoint, METHOD_EXTERNAL_BODY);
     }
     p.close(checkpoint, METHOD_IMPLEMENTATION);

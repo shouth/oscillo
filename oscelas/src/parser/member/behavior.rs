@@ -84,14 +84,9 @@ pub fn parse_do_member_body(p: &mut Parser) {
 pub fn parse_composition(p: &mut Parser) {
     let checkpoint = p.open();
     p.expect(SERIAL_KW | ONE_OF_KW | PARALLEL_KW);
-
-    let arguments_checkpoint = p.open();
-    if p.eat(LEFT_PAREN) {
-        parse_argument_list(p);
-        p.expect(RIGHT_PAREN);
-        p.close(arguments_checkpoint, COMPOSITION_ARGUMENTS);
+    if p.check(LEFT_PAREN) {
+        parse_arguments(p);
     }
-
     p.expect(COLON);
     p.expect(NEWLINE);
     p.expect(INDENT);

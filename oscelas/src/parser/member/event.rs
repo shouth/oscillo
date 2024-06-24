@@ -1,4 +1,4 @@
-use crate::parser::common::parse_argument_list_specification;
+use crate::parser::common::parse_argument_spcifications;
 use crate::syntax::OscSyntaxKind::*;
 
 use crate::parser::Parser;
@@ -11,7 +11,7 @@ pub fn parse_event_declaration(p: &mut Parser) {
     parse_qualified_identifier(p);
 
     if p.check(LEFT_PAREN) {
-        parse_event_argument_list_specification(p);
+        parse_argument_spcifications(p);
     }
 
     if p.check(IS_KW) {
@@ -20,14 +20,6 @@ pub fn parse_event_declaration(p: &mut Parser) {
 
     p.expect(NEWLINE);
     p.close(checkpoint, EVENT_DECLARATION);
-}
-
-pub fn parse_event_argument_list_specification(p: &mut Parser) {
-    let checkpoint = p.open();
-    p.expect(LEFT_PAREN);
-    parse_argument_list_specification(p);
-    p.expect(RIGHT_PAREN);
-    p.close(checkpoint, EVENT_ARGUMENT_LIST_SPECIFICATION);
 }
 
 pub fn parse_event_is_clause(p: &mut Parser) {

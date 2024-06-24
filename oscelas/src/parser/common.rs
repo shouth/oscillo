@@ -2,7 +2,7 @@ use crate::syntax::OscSyntaxKind::*;
 
 use crate::parser::Parser;
 use crate::parser::decl::parse_type_declarator;
-use crate::parser::expr::{parse_expr, parse_trailing_expr};
+use crate::parser::expr::{parse_expr, parse_remaining_expr};
 
 pub fn parse_qualified_identifier(p: &mut Parser) {
     let checkpoint = p.open();
@@ -23,27 +23,39 @@ pub fn parse_qualified_identifier(p: &mut Parser) {
     }
 }
 
-pub fn parse_argument_list_specification(p: &mut Parser) {
+pub fn parse_argument_spcifications(p: &mut Parser) {
     let checkpoint = p.open();
-    let mut flag = true;
-    while flag {
-        let argument_checkpoint = p.open();
+    p.expect(LEFT_PAREN);
+
+    let list_checkpoint = p.open();
+    while !p.check(RIGHT_PAREN | EOF) {
+        let element_checkpoint = p.open();
         parse_qualified_identifier(p);
         p.expect(COLON);
         parse_type_declarator(p);
+
+        let init_checkpoint = p.open();
         if p.eat(EQUAL) {
             parse_expr(p);
+            p.close(init_checkpoint, ARGUMENT_INITIALIZER_CLAUSE);
         }
-        flag = p.eat(COMMA);
-        p.close(argument_checkpoint, ARGUMENT_SPECIFICATION);
+
+        if !p.check(RIGHT_PAREN) {
+            p.expect(COMMA);
+        }
+        p.close(element_checkpoint, ARGUMENT_SPECIFICATION);
     }
-    p.close(checkpoint, ARGUMENT_LIST_SPECIFICATION);
+    p.close(list_checkpoint, ARGUMENT_SPECIFICATION_LIST);
+
+    p.expect(RIGHT_PAREN);
+    p.close(checkpoint, ARGUMENT_SPECIFICATIONS);
 }
 
-pub fn parse_argument_list(p: &mut Parser) {
+pub fn parse_arguments(p: &mut Parser) {
     let checkpoint = p.open();
-    let mut flag = true;
-    while flag {
+    p.expect(LEFT_PAREN);
+
+    while !p.check(RIGHT_PAREN | EOF) {
         let argument_checkpoint = p.open();
         if p.check(IDENTIFIER | NULL_KW | COLON_COLON) {
             let expr_checkpoint = p.open();
@@ -51,18 +63,26 @@ pub fn parse_argument_list(p: &mut Parser) {
 
             if p.eat(COLON) {
                 parse_expr(p);
-                flag = p.eat(COMMA);
+                if !p.check(RIGHT_PAREN) {
+                    p.expect(COMMA);
+                }
                 p.close(argument_checkpoint, NAMED_ARGUMENT);
             } else {
-                parse_trailing_expr(p, expr_checkpoint);
-                flag = p.eat(COMMA);
+                parse_remaining_expr(p, expr_checkpoint);
+                if !p.check(RIGHT_PAREN) {
+                    p.expect(COMMA);
+                }
                 p.close(argument_checkpoint, POSITIONAL_ARGUMENT);
             }
         } else {
             parse_expr(p);
-            flag = p.eat(COMMA);
+            if !p.check(RIGHT_PAREN) {
+                p.expect(COMMA);
+            }
             p.close(argument_checkpoint, POSITIONAL_ARGUMENT);
         }
     }
+
+    p.expect(RIGHT_PAREN);
     p.close(checkpoint, ARGUMENT_LIST);
 }
