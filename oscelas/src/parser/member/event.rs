@@ -1,9 +1,7 @@
-use crate::parser::common::parse_argument_spcifications;
-use crate::syntax::OscSyntaxKind::*;
-
-use crate::parser::Parser;
-use crate::parser::common::parse_qualified_identifier;
+use crate::parser::common::{parse_argument_spcifications, parse_qualified_identifier};
 use crate::parser::expr::parse_expr;
+use crate::parser::Parser;
+use crate::syntax::OscSyntaxKind::*;
 
 pub fn parse_event_declaration(p: &mut Parser) {
     let checkpoint = p.open();
@@ -22,7 +20,7 @@ pub fn parse_event_declaration(p: &mut Parser) {
     p.close(checkpoint, EVENT_DECLARATION);
 }
 
-pub fn parse_event_is_clause(p: &mut Parser) {
+fn parse_event_is_clause(p: &mut Parser) {
     let checkpoint = p.open();
     p.expect(IS_KW);
     parse_event_specification(p);
@@ -37,7 +35,7 @@ pub fn parse_event_specification(p: &mut Parser) {
     }
 }
 
-pub fn parse_event_reference_specification(p: &mut Parser) {
+fn parse_event_reference_specification(p: &mut Parser) {
     let checkpoint = p.open();
     parse_event_reference(p);
     if p.check(IF_KW | AS_KW) {
@@ -46,14 +44,14 @@ pub fn parse_event_reference_specification(p: &mut Parser) {
     p.close(checkpoint, EVENT_REFERENCE_SPECIFICATION);
 }
 
-pub fn parse_event_reference(p: &mut Parser) {
+fn parse_event_reference(p: &mut Parser) {
     let checkpoint = p.open();
     p.expect(AT);
     parse_expr(p);
     p.close(checkpoint, EVENT_REFERENCE);
 }
 
-pub fn parse_event_reference_condition(p: &mut Parser) {
+fn parse_event_reference_condition(p: &mut Parser) {
     let checkpoint = p.open();
 
     let decl_checkpoint = p.open();
@@ -67,7 +65,7 @@ pub fn parse_event_reference_condition(p: &mut Parser) {
     p.close(checkpoint, EVENT_REFERENCE_CONDITION);
 }
 
-pub fn parse_event_condition(p: &mut Parser) {
+fn parse_event_condition(p: &mut Parser) {
     let checkpoint = p.open();
 
     if p.eat(RISE_KW) {

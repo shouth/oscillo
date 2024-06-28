@@ -1,9 +1,10 @@
-use crate::syntax::OscSyntaxKind::*;
-
-use crate::parser::Parser;
 use crate::parser::common::{parse_arguments, parse_qualified_identifier};
-use crate::parser::expr::{parse_expr, parse_remaining_expr};
-use crate::parser::member::{parse_constraint_declaration, parse_event_specification, parse_modifier_application};
+use crate::parser::expr::{check_expr, parse_expr, parse_remaining_expr};
+use crate::parser::member::{
+    parse_constraint_declaration, parse_event_specification, parse_modifier_application,
+};
+use crate::parser::{error_unexpected, Parser};
+use crate::syntax::OscSyntaxKind::*;
 
 pub fn parse_behavior_specification(p: &mut Parser) {
     if p.check(ON_KW) {
@@ -11,7 +12,7 @@ pub fn parse_behavior_specification(p: &mut Parser) {
     } else if p.check(DO_KW) {
         parse_do_directive(p);
     } else {
-        p.unexpected();
+        error_unexpected(p);
     }
 }
 
@@ -24,8 +25,13 @@ pub fn parse_on_directive(p: &mut Parser) {
     p.expect(INDENT);
 
     let list_checkpoint = p.open();
-    while p.check(CALL_KW | EMIT_KW | EOF) {
-        parse_on_member(p);
+    while !p.check(DEDENT | EOF) {
+        if p.check(CALL_KW | EMIT_KW) {
+            parse_on_member(p);
+        } else {
+            error_unexpected(p);
+            p.error();
+        }
     }
     p.close(list_checkpoint, ON_MEMBER_LIST);
 
@@ -39,7 +45,7 @@ pub fn parse_on_member(p: &mut Parser) {
     } else if p.check(EMIT_KW) {
         parse_emit_directive(p);
     } else {
-        p.unexpected();
+        error_unexpected(p);
     }
 }
 
@@ -48,6 +54,10 @@ pub fn parse_do_directive(p: &mut Parser) {
     p.expect(DO_KW);
     parse_do_member(p);
     p.close(checkpoint, DO_DIRECTIVE);
+}
+
+pub fn check_do_member(p: &mut Parser) -> bool {
+    p.check(SERIAL_KW | ONE_OF_KW | PARALLEL_KW | WAIT_KW | EMIT_KW | CALL_KW) || check_expr(p)
 }
 
 pub fn parse_do_member(p: &mut Parser) {
@@ -67,7 +77,7 @@ pub fn parse_do_member(p: &mut Parser) {
     p.close(checkpoint, DO_MEMBER);
 }
 
-pub fn parse_do_member_body(p: &mut Parser) {
+fn parse_do_member_body(p: &mut Parser) {
     if p.check(SERIAL_KW | ONE_OF_KW | PARALLEL_KW) {
         parse_composition(p);
     } else if p.check(WITH_KW) {
@@ -76,8 +86,10 @@ pub fn parse_do_member_body(p: &mut Parser) {
         parse_emit_directive(p);
     } else if p.check(CALL_KW) {
         parse_call_directive(p);
-    } else {
+    } else if check_expr(p) {
         parse_behavior_invocation(p);
+    } else {
+        error_unexpected(p);
     }
 }
 
@@ -93,7 +105,12 @@ pub fn parse_composition(p: &mut Parser) {
 
     let list_checkpoint = p.open();
     while !p.check(DEDENT | EOF) {
-        parse_do_member(p);
+        if check_do_member(p) {
+            parse_do_member(p);
+        } else {
+            error_unexpected(p);
+            p.error();
+        }
     }
     p.close(list_checkpoint, DO_MEMBER_LIST);
     p.expect(DEDENT);
@@ -111,17 +128,17 @@ pub fn parse_behavior_invocation(p: &mut Parser) {
     p.close(checkpoint, BEHAVIOR_INVOCATION);
 }
 
-pub fn parse_behavior_with_declaration_or_newline(p: &mut Parser) {
+fn parse_behavior_with_declaration_or_newline(p: &mut Parser) {
     if p.check(WITH_KW) {
         parse_behavior_with_declaration(p);
     } else if p.eat(NEWLINE) {
         // newline
     } else {
-        p.unexpected();
+        error_unexpected(p);
     }
 }
 
-pub fn parse_behavior_with_declaration(p: &mut Parser) {
+fn parse_behavior_with_declaration(p: &mut Parser) {
     let checkpoint = p.open();
     p.expect(WITH_KW);
     p.expect(COLON);
@@ -130,20 +147,31 @@ pub fn parse_behavior_with_declaration(p: &mut Parser) {
 
     let list_checkpoint = p.open();
     while !p.check(DEDENT | EOF) {
-        parse_behavior_with_member(p);
+        if check_behavior_with_member(p) {
+            parse_behavior_with_member(p);
+        } else {
+            error_unexpected(p);
+            p.error();
+        }
     }
     p.close(list_checkpoint, BEHAVIOR_WITH_MEMBER_LIST);
     p.expect(DEDENT);
     p.close(checkpoint, BEHAVIOR_WITH_DECLARATION);
 }
 
-pub fn parse_behavior_with_member(p: &mut Parser) {
+fn check_behavior_with_member(p: &mut Parser) -> bool {
+    p.check(KEEP_KW | REMOVE_DEFAULT_KW | UNTIL_KW) || check_expr(p)
+}
+
+fn parse_behavior_with_member(p: &mut Parser) {
     if p.check(KEEP_KW | REMOVE_DEFAULT_KW) {
         parse_constraint_declaration(p);
     } else if p.check(UNTIL_KW) {
         parse_until_directive(p);
-    } else {
+    } else if check_expr(p) {
         parse_modifier_application(p);
+    } else {
+        error_unexpected(p);
     }
 }
 

@@ -1,11 +1,12 @@
-use crate::syntax::OscSyntaxKind::*;
-
-use crate::parser::Parser;
-use crate::parser::decl::{parse_qualified_behavior_name, parse_modifier_declaration};
+use crate::parser::decl::{parse_modifier_declaration, parse_qualified_behavior_name};
 use crate::parser::expr::parse_expr;
 use crate::parser::member::{
-    parse_behavior_specification, parse_constraint_declaration, parse_coverage_declaration, parse_event_declaration, parse_field_declaration, parse_method_declaration
+    check_field_declaration, parse_behavior_specification, parse_constraint_declaration,
+    parse_coverage_declaration, parse_event_declaration, parse_field_declaration,
+    parse_method_declaration,
 };
+use crate::parser::{error_unexpected, Parser};
+use crate::syntax::OscSyntaxKind::*;
 
 pub fn parse_scenario_declaration(p: &mut Parser) {
     let checkpoint = p.open();
@@ -21,13 +22,13 @@ pub fn parse_scenario_declaration(p: &mut Parser) {
     } else if p.eat(NEWLINE) {
         // new line
     } else {
-        p.unexpected();
+        error_unexpected(p);
     }
 
     p.close(checkpoint, SCENARIO_DECLARATION);
 }
 
-pub fn parse_scenario_inherits_clause(p: &mut Parser) {
+fn parse_scenario_inherits_clause(p: &mut Parser) {
     let checkpoint = p.open();
     p.expect(INHERITS_KW);
     parse_qualified_behavior_name(p);
@@ -51,7 +52,7 @@ pub fn parse_scenario_body(p: &mut Parser) {
     p.close(checkpoint, SCENARIO_BODY);
 }
 
-pub fn parse_scenario_member_list(p: &mut Parser) {
+fn parse_scenario_member_list(p: &mut Parser) {
     let checkpoint = p.open();
     while !p.check(DEDENT | EOF) {
         if p.check(ON_KW | DO_KW) {
@@ -66,8 +67,11 @@ pub fn parse_scenario_member_list(p: &mut Parser) {
             parse_coverage_declaration(p);
         } else if p.check(MODIFIER_KW) {
             parse_modifier_declaration(p);
-        } else {
+        } else if check_field_declaration(p) {
             parse_field_declaration(p);
+        } else {
+            error_unexpected(p);
+            p.error();
         }
     }
     p.close(checkpoint, SCENARIO_MEMBER_LIST);

@@ -5,6 +5,7 @@ use super::lookahead::{Lookahead, LookaheadSource};
 use super::LexedToken;
 use super::lexer::Lexer;
 
+#[derive(Debug)]
 pub struct Indentation<'a> {
     pub text: &'a str,
     pub offset: usize,
@@ -74,7 +75,7 @@ impl<'a> LexicalAnalyzer<'a> {
                 TRIVIAL_NEWLINE => {
                     self.lexer.bump()
                 }
-                WHITESPACE => {
+                WHITESPACE | EOF => {
                     if self.lexer.nth(1).kind == TRIVIAL_NEWLINE {
                         return self.lexer.bump();
                     }
@@ -92,6 +93,10 @@ impl<'a> LexicalAnalyzer<'a> {
                             .expect("indentations should not be empty");
                         let outer_indentation = self.indentations.last()
                             .expect("indentations should not be empty");
+
+                        if indentation.width < outer_indentation.width {
+                            self.state = LexicalAnalyzerState::StartOfLine;
+                        }
 
                         if indentation.width > outer_indentation.width {
                             let start = self.lexer.offset();

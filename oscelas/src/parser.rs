@@ -27,6 +27,14 @@ pub struct Parser<'a> {
     has_error: bool,
 }
 
+pub fn error_unexpected(p: &mut Parser) {
+    let range = p.current_token_range();
+    let expected = p.current_expected_set();
+    let found = p.current_token_kind();
+
+    p.diagnostic(SyntaxDiagnostic::UnexpectedToken { range, expected, found });
+}
+
 impl<'a> Parser<'a> {
     pub fn new(source: &'a str) -> Parser<'a> {
         let mut parser = Parser {
@@ -57,6 +65,10 @@ impl<'a> Parser<'a> {
 
     pub fn current_token_kind(&mut self) -> OscSyntaxKind {
         self.lexer.nth(0).kind
+    }
+
+    pub fn current_expected_set(&mut self) -> OscSyntaxKindSet {
+        self.expected
     }
 
     pub fn has_leading_trivia(&self) -> bool {
@@ -111,26 +123,13 @@ impl<'a> Parser<'a> {
     pub fn expect(&mut self, kinds: impl Into<OscSyntaxKindSet>) -> bool {
         let result = self.eat(kinds);
         if !result && !self.has_error {
-            self.unexpected();
+            error_unexpected(self);
         }
         result
     }
 
-    pub fn unexpected(&mut self) {
-        let start = self.lexer.offset();
-        let end = start + self.lexer.nth(0).length;
-        let expected = self.expected;
-        let found = self.lexer.nth(0).kind;
-
-        self.diagnostic(SyntaxDiagnostic::UnexpectedToken {
-            range: start..end,
-            expected,
-            found,
-        });
-
-        while !self.check(EOF) {
-            self.bump(ERROR);
-        }
+    pub fn error(&mut self) {
+        self.bump(ERROR);
     }
 
     pub fn open(&mut self) -> Checkpoint {
@@ -143,7 +142,7 @@ impl<'a> Parser<'a> {
 
     pub fn finish(mut self) -> (Vec<SyntaxDiagnostic>, Tree<OscSyntaxKind, u32, usize>) {
         while !self.check(EOF) {
-            self.bump(ERROR);
+            self.error();
         }
         self.bump(EOF);
 
@@ -292,7 +291,6 @@ mod tests {
 
     #[test]
     fn test_parse_osc_file() -> Result<(), Box<dyn std::error::Error>> {
-        println!("test_parse_osc_file");
         let source = r#"
 scenario sut.my__scenario:
     car1: vehicle

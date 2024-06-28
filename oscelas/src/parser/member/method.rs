@@ -1,5 +1,3 @@
-use crate::syntax::OscSyntaxKind::*;
-
 use crate::parser::common::{
     parse_arguments, parse_argument_spcifications, parse_qualified_identifier,
 };
@@ -7,6 +5,7 @@ use crate::parser::decl::parse_type_declarator;
 use crate::parser::expr::parse_expr;
 use crate::parser::osc_file::parse_structured_identifier;
 use crate::parser::Parser;
+use crate::syntax::OscSyntaxKind::*;
 
 pub fn parse_method_declaration(p: &mut Parser) {
     let checkpoint = p.open();
@@ -24,14 +23,14 @@ pub fn parse_method_declaration(p: &mut Parser) {
     p.close(checkpoint, METHOD_DECLARATION);
 }
 
-pub fn parse_method_return_type(p: &mut Parser) {
+fn parse_method_return_type(p: &mut Parser) {
     let checkpoint = p.open();
     p.expect(ARROW);
     parse_type_declarator(p);
     p.close(checkpoint, METHOD_RETURN_TYPE);
 }
 
-pub fn parse_method_implementation(p: &mut Parser) {
+fn parse_method_implementation(p: &mut Parser) {
     let checkpoint = p.open();
     p.expect(IS_KW);
     p.eat(ONLY_KW); // method qualifier (optional)

@@ -1,13 +1,13 @@
-use crate::syntax::OscSyntaxKind::*;
-
 use crate::parser::decl::{
-    parse_enum_member_decl_list, parse_modifier_declaration, parse_qualified_behavior_name,
+    parse_enum_member_decls, parse_modifier_declaration, parse_qualified_behavior_name,
 };
 use crate::parser::member::{
-    parse_behavior_specification, parse_constraint_declaration, parse_coverage_declaration,
-    parse_event_declaration, parse_field_declaration, parse_method_declaration,
+    check_field_declaration, parse_behavior_specification, parse_constraint_declaration,
+    parse_coverage_declaration, parse_event_declaration, parse_field_declaration,
+    parse_method_declaration,
 };
-use crate::parser::Parser;
+use crate::parser::{error_unexpected, Parser};
+use crate::syntax::OscSyntaxKind::*;
 
 pub fn parse_type_extenstion(p: &mut Parser) {
     let checkpoint = p.open();
@@ -17,12 +17,11 @@ pub fn parse_type_extenstion(p: &mut Parser) {
     p.close(checkpoint, TYPE_EXTENSION);
 }
 
-pub fn parse_type_extension_body(p: &mut Parser) {
+fn parse_type_extension_body(p: &mut Parser) {
     let checkpoint = p.open();
     p.expect(COLON);
-    if p.eat(LEFT_BRACKET) {
-        parse_enum_member_decl_list(p);
-        p.expect(RIGHT_BRACKET);
+    if p.check(LEFT_BRACKET) {
+        parse_enum_member_decls(p);
         p.expect(NEWLINE);
         p.close(checkpoint, ENUM_TYPE_EXTENSION_BODY);
     } else if p.eat(NEWLINE) {
@@ -31,11 +30,11 @@ pub fn parse_type_extension_body(p: &mut Parser) {
         p.expect(DEDENT);
         p.close(checkpoint, STRUCTURED_TYPE_EXTENSION_BODY);
     } else {
-        p.unexpected();
+        error_unexpected(p);
     }
 }
 
-pub fn parse_extension_member_decl_list(p: &mut Parser) {
+fn parse_extension_member_decl_list(p: &mut Parser) {
     let checkpoint = p.open();
     while !p.check(DEDENT | EOF) {
         if p.check(ON_KW | DO_KW) {
@@ -50,8 +49,11 @@ pub fn parse_extension_member_decl_list(p: &mut Parser) {
             parse_coverage_declaration(p);
         } else if p.check(MODIFIER_KW) {
             parse_modifier_declaration(p);
-        } else {
+        } else if check_field_declaration(p) {
             parse_field_declaration(p);
+        } else {
+            error_unexpected(p);
+            p.error();
         }
     }
     p.close(checkpoint, EXTENSION_MEMBER_LIST);

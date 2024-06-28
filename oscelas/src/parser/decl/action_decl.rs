@@ -1,14 +1,10 @@
-use crate::syntax::OscSyntaxKind::*;
-
-use crate::parser::Parser;
-use crate::parser::decl::parse_qualified_behavior_name;
+use crate::parser::decl::{parse_modifier_declaration, parse_qualified_behavior_name};
 use crate::parser::expr::parse_expr;
 use crate::parser::member::{
-    parse_constraint_declaration, parse_coverage_declaration, parse_event_declaration,
-    parse_field_declaration, parse_method_declaration, parse_on_directive,
+    check_field_declaration, parse_constraint_declaration, parse_coverage_declaration, parse_event_declaration, parse_field_declaration, parse_method_declaration, parse_on_directive
 };
-
-use super::parse_modifier_declaration;
+use crate::parser::{error_unexpected, Parser};
+use crate::syntax::OscSyntaxKind::*;
 
 pub fn parse_action_declaration(p: &mut Parser) {
     let checkpoint = p.open();
@@ -24,7 +20,7 @@ pub fn parse_action_declaration(p: &mut Parser) {
     } else if p.eat(NEWLINE) {
         // new line
     } else {
-        p.unexpected();
+        error_unexpected(p);
     }
 
     p.close(checkpoint, ACTION_DECLARATION);
@@ -69,8 +65,11 @@ pub fn parse_action_member_list(p: &mut Parser) {
             parse_coverage_declaration(p);
         } else if p.check(MODIFIER_KW) {
             parse_modifier_declaration(p);
-        } else {
+        } else if check_field_declaration(p) {
             parse_field_declaration(p);
+        } else {
+            error_unexpected(p);
+            p.error();
         }
     }
     p.close(checkpoint, ACTION_MEMBER_LIST);

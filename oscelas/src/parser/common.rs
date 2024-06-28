@@ -1,8 +1,11 @@
-use crate::syntax::OscSyntaxKind::*;
-
-use crate::parser::Parser;
+use crate::parser::{error_unexpected, Parser};
 use crate::parser::decl::parse_type_declarator;
 use crate::parser::expr::{parse_expr, parse_remaining_expr};
+use crate::syntax::OscSyntaxKind::*;
+
+pub fn check_qualifed_identifier(p: &mut Parser) -> bool {
+    p.check(IDENTIFIER | NULL_KW | COLON_COLON)
+}
 
 pub fn parse_qualified_identifier(p: &mut Parser) {
     let checkpoint = p.open();
@@ -19,7 +22,7 @@ pub fn parse_qualified_identifier(p: &mut Parser) {
         p.expect(IDENTIFIER);
         p.close(checkpoint, PREFIXED_IDENTIFIER);
     } else {
-        p.unexpected();
+        error_unexpected(p);
     }
 }
 

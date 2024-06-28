@@ -8,23 +8,10 @@ pub use event::*;
 pub use field::*;
 pub use method::*;
 
-use crate::syntax::OscSyntaxKind::*;
-
-use crate::parser::Parser;
-use crate::parser::common::{parse_arguments, parse_qualified_identifier};
+use crate::parser::{error_unexpected, Parser};
+use crate::parser::common::parse_arguments;
 use crate::parser::expr::parse_expr;
-
-pub fn parse_field_name_list(p: &mut Parser) {
-    let checkpoint = p.open();
-    let mut flag = true;
-    while flag {
-        let element_checkpoint = p.open();
-        parse_qualified_identifier(p);
-        flag = p.eat(COMMA);
-        p.close(element_checkpoint, FIELD_NAME_LIST_ELEMENT);
-    }
-    p.close(checkpoint, FIELD_NAME_LIST);
-}
+use crate::syntax::OscSyntaxKind::*;
 
 pub fn parse_constraint_declaration(p: &mut Parser) {
     if p.check(KEEP_KW) {
@@ -32,7 +19,7 @@ pub fn parse_constraint_declaration(p: &mut Parser) {
     } else if p.check(REMOVE_DEFAULT_KW) {
         parse_remove_default_declaration(p);
     } else {
-        p.unexpected();
+        error_unexpected(p);
     }
 }
 

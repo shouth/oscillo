@@ -1,9 +1,14 @@
 use crate::diagnostic::SyntaxDiagnostic;
-use crate::syntax::OscSyntaxKind::*;
-
-use crate::parser::{Checkpoint, Parser};
 use crate::parser::common::{parse_arguments, parse_qualified_identifier};
 use crate::parser::decl::parse_type_declarator;
+use crate::parser::{error_unexpected, Checkpoint, Parser};
+use crate::syntax::OscSyntaxKind::*;
+
+pub fn check_expr(p: &mut Parser) -> bool {
+    p.check(
+        NOT_KW | MINUS | LEFT_PAREN | LEFT_BRACKET | RANGE_KW | IDENTIFIER | NULL_KW | COLON_COLON
+            | IT_KW | INTEGER_LITERAL | FLOAT_LITERAL | TRUE_KW | FALSE_KW | STRING_LITERAL)
+}
 
 pub fn parse_expr(p: &mut Parser) {
     parse_leading_expr(p, 0);
@@ -54,7 +59,7 @@ fn parse_leading_expr(p: &mut Parser, power: u8) {
         parse_expr(p);
         p.expect(RIGHT_PAREN);
         p.close(checkpoint.clone(), PARENTHESES_RANGE_CONSTRUCTOR);
-    } else if p.check(IDENTIFIER | NULL_KW | COLON_COLON){
+    } else if p.check(IDENTIFIER | NULL_KW | COLON_COLON) {
         parse_qualified_identifier(p);
         if p.eat(EXCLAMATION) {
             parse_qualified_identifier(p);
@@ -71,7 +76,7 @@ fn parse_leading_expr(p: &mut Parser, power: u8) {
         } else {
             // number literals
         }
-    } else if p.eat(TRUE_KW | FALSE_KW){
+    } else if p.eat(TRUE_KW | FALSE_KW) {
         // boolean literals
     } else if p.eat(STRING_LITERAL) {
         // string literals
@@ -102,7 +107,7 @@ fn parse_trailing_expr(p: &mut Parser, checkpoint: Checkpoint, power: u8) {
                 parse_qualified_identifier(p);
                 p.close(checkpoint.clone(), MEMBER_REFERENCE);
             } else {
-                p.unexpected();
+                error_unexpected(p);
             }
         } else if p.eat(LEFT_BRACKET) {
             parse_expr(p);
@@ -125,7 +130,9 @@ fn parse_trailing_expr(p: &mut Parser, checkpoint: Checkpoint, power: u8) {
         } else if power < 40 && p.eat(AND_KW) {
             parse_leading_expr(p, 41);
             p.close(checkpoint.clone(), LOGICAL_EXP);
-        } else if power < 50 && p.eat(EQUAL | NOT_EQUAL | LESS | LESS_EQUAL | GREATER | GREATER_EQUAL | IN_KW) {
+        } else if power < 50
+            && p.eat(EQUAL | NOT_EQUAL | LESS | LESS_EQUAL | GREATER | GREATER_EQUAL | IN_KW)
+        {
             parse_leading_expr(p, 51);
             p.close(checkpoint.clone(), BINARY_EXP);
         } else if power < 60 && p.eat(PLUS | MINUS) {

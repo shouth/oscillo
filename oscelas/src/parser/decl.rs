@@ -16,11 +16,10 @@ pub use scenario_decl::*;
 pub use struct_decl::*;
 pub use type_extension::*;
 
-use crate::syntax::OscSyntaxKind::*;
-
-use crate::parser::Parser;
+use crate::parser::{error_unexpected, Parser};
 use crate::parser::common::parse_qualified_identifier;
 use crate::parser::member::parse_parameter_declaration;
+use crate::syntax::OscSyntaxKind::*;
 
 pub fn parse_qualified_behavior_name(p: &mut Parser) {
     let checkpoint = p.open();
@@ -45,7 +44,7 @@ pub fn parse_non_aggregate_type_declarator(p: &mut Parser) {
     } else if p.check(IDENTIFIER | NULL_KW | COLON_COLON) {
         parse_qualified_behavior_name(p);
     } else {
-        p.unexpected();
+        error_unexpected(p);
     }
 }
 
@@ -56,7 +55,7 @@ pub fn parse_aggregate_type_declarator(p: &mut Parser) {
         parse_non_aggregate_type_declarator(p);
         p.close(checkpoint, LIST_TYPE_DECLARATOR);
     } else {
-        p.unexpected();
+        error_unexpected(p);
     }
 }
 
