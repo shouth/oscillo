@@ -128,12 +128,7 @@ impl<'a> Parser<'a> {
             found,
         });
 
-        self.recover(EOF);
-    }
-
-    pub fn recover(&mut self, kinds: impl Into<OscSyntaxKindSet>) {
-        let kinds = kinds.into();
-        while !self.check(kinds) {
+        while !self.check(EOF) {
             self.bump(ERROR);
         }
     }
@@ -147,7 +142,9 @@ impl<'a> Parser<'a> {
     }
 
     pub fn finish(mut self) -> (Vec<SyntaxDiagnostic>, Tree<OscSyntaxKind, u32, usize>) {
-        self.recover(EOF);
+        while !self.check(EOF) {
+            self.bump(ERROR);
+        }
         self.bump(EOF);
 
         let mut diagnostics = Vec::new();
@@ -302,7 +299,7 @@ scenario sut.my__scenario:
     car2: vehicle
 
     do serial:
-        phase1: car1.drive(duration: 24s) with:
+        phase1: car1.drive(duration: ) with:
             speed([40kph..80kph], at: end)
             lane([2..4])
         phase2: car1.drive(duration: 24s) with:
