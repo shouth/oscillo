@@ -52,7 +52,7 @@ pub enum SyntaxDiagnostic {
     },
     IrregularIndentationSequence {
         range: Range<usize>,
-        previous: Range<usize>,
+        last: Range<usize>,
     },
     UnexpectedToken {
         range: Range<usize>,
@@ -82,13 +82,13 @@ impl SyntaxDiagnostic {
                         Label::primary(file_id.clone(), range)
                     ])
             }
-            SyntaxDiagnostic::IrregularIndentationSequence { range, previous } => {
+            SyntaxDiagnostic::IrregularIndentationSequence { range, last } => {
                 Diagnostic::error()
                     .with_message(format!("indentation characters are inconsistent"))
                     .with_labels(vec![
                         Label::primary(file_id.clone(), range)
                             .with_message("inconsistent indentation"),
-                        Label::secondary(file_id.clone(), previous)
+                        Label::secondary(file_id.clone(), last)
                             .with_message("previous indentation"),
                     ])
             }

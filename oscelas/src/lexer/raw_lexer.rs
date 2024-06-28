@@ -19,10 +19,6 @@ impl RawLexer<'_> {
         }
     }
 
-    pub fn offset(&self) -> usize {
-        self.cursor.source_offset()
-    }
-
     fn eat_digits(&mut self, radix: u32) -> bool {
         let offset = self.cursor.token_offset();
         while self.cursor.first().is_some_and(|c| c.is_digit(radix)) {

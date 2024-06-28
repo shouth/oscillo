@@ -13,12 +13,12 @@ pub struct Indentation<'a> {
 
 impl<'a> Indentation<'a> {
     pub fn new(text: &str, offset: usize) -> Indentation {
-        let text_width = text
+        let text_width = text[offset..]
             .chars()
             .take_while(|c| [' ', '\t'].contains(c))
             .count();
 
-        let text = &text[..text_width];
+        let text = &text[offset..][..text_width];
         let width = text
             .chars()
             .map(|c| if c == ' ' { 1 } else { 8 })
@@ -28,38 +28,40 @@ impl<'a> Indentation<'a> {
     }
 }
 
+enum LexicalAnalyzerState {
+    StartOfLine,
+    Normal,
+    EndOfLine,
+}
+
 pub struct LexicalAnalyzer<'a> {
     source: &'a str,
-    inner: Lookahead<Lexer<'a>>,
-    indents: Vec<Indentation<'a>>,
-    enclosures: Vec<OscSyntaxKind>,
-    is_new_line: bool,
-    is_empty_line: bool,
-    has_indetation_error: bool,
+    lexer: Lookahead<Lexer<'a>>,
+    indentations: Vec<Indentation<'a>>,
+    enclosing_level: i32,
     diagnostics: Vec<SyntaxDiagnostic>,
+    state: LexicalAnalyzerState,
 }
 
 impl<'a> LexicalAnalyzer<'a> {
     pub fn new(source: &'a str) -> LexicalAnalyzer<'a> {
         LexicalAnalyzer {
             source,
-            inner: Lookahead::new(Lexer::new(source)),
-            indents: vec![Indentation::new("", 0)],
-            enclosures: Vec::new(),
-            is_new_line: true,
-            is_empty_line: false,
-            has_indetation_error: false,
+            lexer: Lookahead::new(Lexer::new(source)),
+            indentations: vec![Indentation::new("", 0)],
+            enclosing_level: 0,
             diagnostics: Vec::new(),
+            state: LexicalAnalyzerState::StartOfLine,
         }
     }
 
-    pub fn offset(&self) -> usize {
-        self.inner.offset()
+    pub fn push_enclosure(&mut self) {
+        self.enclosing_level += 1;
     }
 
-    fn alter(&mut self, kind: OscSyntaxKind) -> LexedToken {
-        let token = self.inner.bump();
-        LexedToken { kind, ..token }
+    pub fn pop_enclosure(&mut self) {
+        assert!(self.enclosing_level > 0);
+        self.enclosing_level -= 1;
     }
 
     fn spawn(&self, kind: OscSyntaxKind) -> LexedToken {
@@ -67,114 +69,80 @@ impl<'a> LexicalAnalyzer<'a> {
     }
 
     pub fn next_token(&mut self) -> LexedToken {
-        if self.is_new_line {
-            self.is_new_line = false;
-
-            let indent = match self.inner.nth(0).kind {
+        match self.state {
+            LexicalAnalyzerState::StartOfLine => match self.lexer.nth(0).kind {
                 TRIVIAL_NEWLINE => {
-                    self.is_empty_line = true;
-                    return self.next_token();
+                    self.lexer.bump()
                 }
                 WHITESPACE => {
-                    if self.inner.nth(1).kind == TRIVIAL_NEWLINE {
-                        self.is_empty_line = true;
-                        return self.inner.bump();
+                    if self.lexer.nth(1).kind == TRIVIAL_NEWLINE {
+                        return self.lexer.bump();
                     }
 
-                    let lexeme = &self.source[self.offset()..][..self.inner.nth(0).length];
-                    Indentation::new(lexeme, self.offset())
-                }
-                _ => Indentation::new("", self.offset()),
-            };
+                    let indentation = Indentation::new(&self.source, self.lexer.offset());
+                    let last_indentation = self.indentations.last()
+                        .expect("indentations should not be empty");
 
-            let last_indent = self
-                .indents
-                .last()
-                .expect("indentation stack is empty")
-                .to_owned();
+                    self.state = LexicalAnalyzerState::Normal;
+                    if indentation.width > last_indentation.width {
+                        self.indentations.push(indentation);
+                        self.spawn(INDENT)
+                    } else if indentation.width < last_indentation.width {
+                        self.indentations.pop();
+                        let last_indentation = self.indentations.last()
+                            .expect("indentations should not be empty");
 
-            if indent.width > last_indent.width {
-                if self.has_indetation_error {
-                    self.inner.bump()
-                } else {
-                    self.indents.push(indent);
-                    self.spawn(INDENT)
-                }
-            } else if indent.width < last_indent.width {
-                self.indents.pop();
-                let last_indent = self
-                    .indents
-                    .last()
-                    .expect("indentation stack is empty")
-                    .to_owned();
-
-                if indent.width <= last_indent.width {
-                    self.is_new_line = true;
-                    self.has_indetation_error = false;
-                    self.spawn(DEDENT)
-                } else {
-                    let start = self.offset();
-                    let end = start + self.inner.nth(0).length;
-                    self.diagnostics.push(SyntaxDiagnostic::IrregularIndentationSize {
-                        range: start..end,
-                        expected: last_indent.width,
-                        actual: indent.width,
-                    });
-                    self.has_indetation_error = true;
-                    self.spawn(ERROR)
-                }
-            } else if indent.text == last_indent.text {
-                self.inner.bump()
-            } else {
-                let start = self.offset();
-                let end = start + self.inner.nth(0).length;
-
-                let last_start = last_indent.offset;
-                let last_end = last_start + last_indent.text.len();
-
-                self.diagnostics.push(SyntaxDiagnostic::IrregularIndentationSequence {
-                    range: start..end,
-                    previous: last_start..last_end,
-                });
-                self.spawn(ERROR)
-            }
-        } else {
-            match self.inner.nth(0).kind {
-                TRIVIAL_NEWLINE => {
-                    self.is_new_line = true;
-                    if !self.is_empty_line && self.enclosures.is_empty() {
-                        self.alter(NEWLINE)
+                        if indentation.width > last_indentation.width {
+                            let start = self.lexer.offset();
+                            let end = start + self.lexer.nth(0).length;
+                            self.diagnostics.push(SyntaxDiagnostic::IrregularIndentationSize {
+                                range: start..end,
+                                expected: last_indentation.width,
+                                actual: indentation.width,
+                            });
+                            self.spawn(ERROR)
+                        } else {
+                            self.spawn(DEDENT)
+                        }
                     } else {
-                        self.is_empty_line = false;
-                        self.inner.bump()
+                        if indentation.text != last_indentation.text {
+                            let start = self.lexer.offset();
+                            let end = start + self.lexer.nth(0).length;
+                            let last_start = last_indentation.offset;
+                            let last_end = last_start + last_indentation.text.len();
+
+                            self.diagnostics.push(SyntaxDiagnostic::IrregularIndentationSequence {
+                                range: start..end,
+                                last: last_start..last_end,
+                            });
+                        }
+                        self.lexer.bump()
                     }
                 }
-                left @ (LEFT_BRACKET | LEFT_PAREN) => {
-                    self.enclosures.push(left);
-                    self.inner.bump()
+                _ => {
+                    self.state = LexicalAnalyzerState::Normal;
+                    self.lexer.bump()
                 }
-                right @ (RIGHT_BRACKET | RIGHT_PAREN) => {
-                    match self.enclosures.last().map(|left| (left, right)) {
-                        Some((LEFT_BRACKET, RIGHT_BRACKET) | (LEFT_PAREN, RIGHT_PAREN)) => {
-                            self.enclosures.pop();
-                        }
-                        _ => {
-                            // enclosures are mismatched.
-                            // clear enclosures to make suceeding TRIVIAL_NEWLINE to be treated as NEWLINE.
-                            // making error from mismatched enclosures is parser's responsibility.
-                            self.enclosures.clear();
-                        }
+            }
+            LexicalAnalyzerState::Normal => match self.lexer.nth(0).kind {
+                TRIVIAL_NEWLINE => {
+                    if self.enclosing_level == 0 {
+                        self.state = LexicalAnalyzerState::EndOfLine;
                     }
-                    self.inner.bump()
+                    self.lexer.bump()
                 }
-                _ => self.inner.bump(),
+                _ => self.lexer.bump(),
+            }
+            LexicalAnalyzerState::EndOfLine => {
+                self.state = LexicalAnalyzerState::StartOfLine;
+                self.spawn(NEWLINE)
             }
         }
     }
 
     pub fn finish(self) -> Vec<SyntaxDiagnostic> {
         let mut diagnostics = self.diagnostics;
-        diagnostics.extend(self.inner.finish().finish());
+        diagnostics.extend(self.lexer.finish().finish());
         diagnostics
     }
 }

@@ -16,10 +16,6 @@ impl Lexer<'_> {
         }
     }
 
-    pub fn offset(&self) -> usize {
-        self.inner.offset()
-    }
-
     fn glue(&mut self, kind: OscSyntaxKind, prev: LexedToken) -> LexedToken {
         let next = self.inner.bump();
         LexedToken {
