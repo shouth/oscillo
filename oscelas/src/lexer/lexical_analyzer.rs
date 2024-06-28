@@ -88,19 +88,22 @@ impl<'a> LexicalAnalyzer<'a> {
                         self.indentations.push(indentation);
                         self.spawn(INDENT)
                     } else if indentation.width < last_indentation.width {
-                        self.indentations.pop();
-                        let last_indentation = self.indentations.last()
+                        let last_indentation = self.indentations.pop()
+                            .expect("indentations should not be empty");
+                        let outer_indentation = self.indentations.last()
                             .expect("indentations should not be empty");
 
-                        if indentation.width > last_indentation.width {
+                        if indentation.width > outer_indentation.width {
                             let start = self.lexer.offset();
                             let end = start + self.lexer.nth(0).length;
                             self.diagnostics.push(SyntaxDiagnostic::IrregularIndentationSize {
                                 range: start..end,
-                                expected: last_indentation.width,
+                                expected: outer_indentation.width,
                                 actual: indentation.width,
                             });
-                            self.spawn(ERROR)
+
+                            self.indentations.push(last_indentation);
+                            self.lexer.bump()
                         } else {
                             self.spawn(DEDENT)
                         }
@@ -110,7 +113,6 @@ impl<'a> LexicalAnalyzer<'a> {
                             let end = start + self.lexer.nth(0).length;
                             let last_start = last_indentation.offset;
                             let last_end = last_start + last_indentation.text.len();
-
                             self.diagnostics.push(SyntaxDiagnostic::IrregularIndentationSequence {
                                 range: start..end,
                                 last: last_start..last_end,
