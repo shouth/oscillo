@@ -1895,12 +1895,9 @@ impl<'a> TypedNode for NumberLiteral<'a> {
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct OscFile<'a>(OscNode<'a>);
-impl OscFile<'_> {
-    pub fn prelude_statement_list(&self) -> Option<PreludeStatementList> {
-        support::child(&self.0, 0usize)
-    }
-    pub fn main_statement_list(&self) -> Option<MainStatementList> {
-        support::child(&self.0, 0usize)
+impl<'a> OscFile<'a> {
+    pub fn osc_statement(&self) -> impl Iterator<Item = OscStatement<'a>> + 'a {
+        support::children(&self.0)
     }
 }
 impl<'a> TypedNode for OscFile<'a> {
@@ -1917,43 +1914,72 @@ impl<'a> TypedNode for OscFile<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct PreludeStatementList<'a>(OscNode<'a>);
-impl<'a> PreludeStatementList<'a> {
-    pub fn prelude_statement(&self) -> impl Iterator<Item = PreludeStatement<'a>> + 'a {
-        support::children(&self.0)
+pub enum OscStatement<'a> {
+    PreludeStatement(PreludeStatement<'a>),
+    MainStatement(MainStatement<'a>),
+}
+impl OscStatement<'_> {
+    pub fn as_prelude_statement(&self) -> Option<PreludeStatement> {
+        match self {
+            Self::PreludeStatement(node) => Some(node.clone()),
+            _ => None,
+        }
+    }
+    pub fn as_main_statement(&self) -> Option<MainStatement> {
+        match self {
+            Self::MainStatement(node) => Some(node.clone()),
+            _ => None,
+        }
     }
 }
-impl<'a> TypedNode for PreludeStatementList<'a> {
+impl<'a> TypedNode for OscStatement<'a> {
     type Value = OscSyntaxKind;
     type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
-        value == PRELUDE_STATEMENT_LIST
+        matches!(
+            value,
+            IMPORT_STATEMENT
+                | NAMESPACE_STATEMENT
+                | EXPORT_STATEMENT
+                | PHYSICAL_TYPE_DECLARATION
+                | UNIT_DECLARATION
+                | ENUM_DECLARATION
+                | STRUCT_DECLARATION
+                | ACTOR_DECLARATION
+                | ACTION_DECLARATION
+                | SCENARIO_DECLARATION
+                | MODIFIER_DECLARATION
+                | TYPE_EXTENSION
+                | GLOBAL_PARAMETER_DECLARATION
+        )
     }
     fn cast(node: Self::Node) -> Option<Self> {
-        Self::can_cast(*node.value()).then(|| Self(node))
+        match *node.value() {
+            IMPORT_STATEMENT => Some(Self::PreludeStatement(PreludeStatement::cast(
+                node.clone(),
+            )?)),
+            NAMESPACE_STATEMENT
+            | EXPORT_STATEMENT
+            | PHYSICAL_TYPE_DECLARATION
+            | UNIT_DECLARATION
+            | ENUM_DECLARATION
+            | STRUCT_DECLARATION
+            | ACTOR_DECLARATION
+            | ACTION_DECLARATION
+            | SCENARIO_DECLARATION
+            | MODIFIER_DECLARATION
+            | TYPE_EXTENSION
+            | GLOBAL_PARAMETER_DECLARATION => {
+                Some(Self::MainStatement(MainStatement::cast(node.clone())?))
+            }
+            _ => None,
+        }
     }
     fn syntax(&self) -> &Self::Node {
-        &self.0
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct MainStatementList<'a>(OscNode<'a>);
-impl<'a> MainStatementList<'a> {
-    pub fn main_statement(&self) -> impl Iterator<Item = MainStatement<'a>> + 'a {
-        support::children(&self.0)
-    }
-}
-impl<'a> TypedNode for MainStatementList<'a> {
-    type Value = OscSyntaxKind;
-    type Node = OscNode<'a>;
-    fn can_cast(value: Self::Value) -> bool {
-        value == MAIN_STATEMENT_LIST
-    }
-    fn cast(node: Self::Node) -> Option<Self> {
-        Self::can_cast(*node.value()).then(|| Self(node))
-    }
-    fn syntax(&self) -> &Self::Node {
-        &self.0
+        match self {
+            Self::PreludeStatement(node) => node.syntax(),
+            Self::MainStatement(node) => node.syntax(),
+        }
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -2110,16 +2136,19 @@ impl<'a> TypedNode for ImportReference<'a> {
     type Value = OscSyntaxKind;
     type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
-        matches!(value, STRING_LITERAL | STRUCTURED_IDENTIFIER)
+        matches!(
+            value,
+            STRING_LITERAL | IDENTIFIER | PREFIXED_STRUCTURED_IDENTIFIER
+        )
     }
     fn cast(node: Self::Node) -> Option<Self> {
         match *node.value() {
             STRING_LITERAL => Some(Self::StringLiteralToken(StringLiteralToken::cast(
                 node.clone(),
             )?)),
-            STRUCTURED_IDENTIFIER => Some(Self::StructuredIdentifier(StructuredIdentifier::cast(
-                node.clone(),
-            )?)),
+            IDENTIFIER | PREFIXED_STRUCTURED_IDENTIFIER => Some(Self::StructuredIdentifier(
+                StructuredIdentifier::cast(node.clone())?,
+            )),
             _ => None,
         }
     }
@@ -2131,42 +2160,64 @@ impl<'a> TypedNode for ImportReference<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct StructuredIdentifier<'a>(OscNode<'a>);
-impl<'a> StructuredIdentifier<'a> {
-    pub fn structured_identifier_element(
-        &self,
-    ) -> impl Iterator<Item = StructuredIdentifierElement<'a>> + 'a {
-        support::children(&self.0)
+pub enum StructuredIdentifier<'a> {
+    IdentifierToken(IdentifierToken<'a>),
+    PrefixedStructuredIdentifier(PrefixedStructuredIdentifier<'a>),
+}
+impl StructuredIdentifier<'_> {
+    pub fn as_identifier_token(&self) -> Option<IdentifierToken> {
+        match self {
+            Self::IdentifierToken(node) => Some(node.clone()),
+            _ => None,
+        }
+    }
+    pub fn as_prefixed_structured_identifier(&self) -> Option<PrefixedStructuredIdentifier> {
+        match self {
+            Self::PrefixedStructuredIdentifier(node) => Some(node.clone()),
+            _ => None,
+        }
     }
 }
 impl<'a> TypedNode for StructuredIdentifier<'a> {
     type Value = OscSyntaxKind;
     type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
-        value == STRUCTURED_IDENTIFIER
+        matches!(value, IDENTIFIER | PREFIXED_STRUCTURED_IDENTIFIER)
     }
     fn cast(node: Self::Node) -> Option<Self> {
-        Self::can_cast(*node.value()).then(|| Self(node))
+        match *node.value() {
+            IDENTIFIER => Some(Self::IdentifierToken(IdentifierToken::cast(node.clone())?)),
+            PREFIXED_STRUCTURED_IDENTIFIER => Some(Self::PrefixedStructuredIdentifier(
+                PrefixedStructuredIdentifier::cast(node.clone())?,
+            )),
+            _ => None,
+        }
     }
     fn syntax(&self) -> &Self::Node {
-        &self.0
+        match self {
+            Self::IdentifierToken(node) => node.syntax(),
+            Self::PrefixedStructuredIdentifier(node) => node.syntax(),
+        }
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct StructuredIdentifierElement<'a>(OscNode<'a>);
-impl StructuredIdentifierElement<'_> {
-    pub fn identifier_token(&self) -> Option<IdentifierToken> {
+pub struct PrefixedStructuredIdentifier<'a>(OscNode<'a>);
+impl PrefixedStructuredIdentifier<'_> {
+    pub fn structured_identifier(&self) -> Option<StructuredIdentifier> {
         support::child(&self.0, 0usize)
     }
     pub fn dot_token(&self) -> Option<DotToken> {
         support::child(&self.0, 0usize)
     }
+    pub fn identifier_token(&self) -> Option<IdentifierToken> {
+        support::child(&self.0, 0usize)
+    }
 }
-impl<'a> TypedNode for StructuredIdentifierElement<'a> {
+impl<'a> TypedNode for PrefixedStructuredIdentifier<'a> {
     type Value = OscSyntaxKind;
     type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
-        value == STRUCTURED_IDENTIFIER_ELEMENT
+        value == PREFIXED_STRUCTURED_IDENTIFIER
     }
     fn cast(node: Self::Node) -> Option<Self> {
         Self::can_cast(*node.value()).then(|| Self(node))
@@ -2632,13 +2683,7 @@ impl EnumDeclaration<'_> {
     pub fn colon_token(&self) -> Option<ColonToken> {
         support::child(&self.0, 0usize)
     }
-    pub fn left_bracket_token(&self) -> Option<LeftBracketToken> {
-        support::child(&self.0, 0usize)
-    }
-    pub fn enum_member_decl_list(&self) -> Option<EnumMemberDeclList> {
-        support::child(&self.0, 0usize)
-    }
-    pub fn right_bracket_token(&self) -> Option<RightBracketToken> {
+    pub fn enum_member_decls(&self) -> Option<EnumMemberDecls> {
         support::child(&self.0, 0usize)
     }
     pub fn newline_token(&self) -> Option<NewlineToken> {
@@ -3702,6 +3747,32 @@ impl<'a> TypedNode for SiUnitArgumentName<'a> {
             Self::OffsetToken(node) => node.syntax(),
             Self::SiBaseUnitName(node) => node.syntax(),
         }
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct EnumMemberDecls<'a>(OscNode<'a>);
+impl EnumMemberDecls<'_> {
+    pub fn left_bracket_token(&self) -> Option<LeftBracketToken> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn enum_member_decl_list(&self) -> Option<EnumMemberDeclList> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn right_bracket_token(&self) -> Option<RightBracketToken> {
+        support::child(&self.0, 0usize)
+    }
+}
+impl<'a> TypedNode for EnumMemberDecls<'a> {
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == ENUM_MEMBER_DECLS
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -5269,13 +5340,7 @@ impl EnumTypeExtensionBody<'_> {
     pub fn colon_token(&self) -> Option<ColonToken> {
         support::child(&self.0, 0usize)
     }
-    pub fn left_bracket_token(&self) -> Option<LeftBracketToken> {
-        support::child(&self.0, 0usize)
-    }
-    pub fn enum_member_decl_list(&self) -> Option<EnumMemberDeclList> {
-        support::child(&self.0, 0usize)
-    }
-    pub fn right_bracket_token(&self) -> Option<RightBracketToken> {
+    pub fn enum_member_decls(&self) -> Option<EnumMemberDecls> {
         support::child(&self.0, 0usize)
     }
     pub fn newline_token(&self) -> Option<NewlineToken> {

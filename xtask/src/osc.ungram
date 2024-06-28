@@ -39,27 +39,25 @@ NumberLiteral =
 
 
 // osc-file ::= prelude-statement* main-statement*
-
-OscFile =
-  PreludeStatementList MainStatementList
-
-PreludeStatementList =
-  PreludeStatement*
-
-MainStatementList =
-  MainStatement*
-
-
+//
 // prelude-statement ::= import-statement
-
-PreludeStatement =
-  ImportStatement
-
-
+//
 // import-statement ::= 'import' import-reference NEWLINE
 // import-reference ::= string-literal | structured-identifier
 //
 // structured-identifier ::= identifier | structured-identifier '.' identifier
+//
+// main-statement ::= namespace-statement | export-statement | osc-declaration
+
+OscFile =
+  OscStatement*
+
+OscStatement =
+  PreludeStatement
+| MainStatement
+
+PreludeStatement =
+  ImportStatement
 
 ImportStatement =
   'import' ImportReference 'newline'
@@ -69,13 +67,11 @@ ImportReference =
 | StructuredIdentifier
 
 StructuredIdentifier =
-  StructuredIdentifierElement*
+  'identifier'
+| PrefixedStructuredIdentifier
 
-StructuredIdentifierElement =
-  'identifier' '.'?
-
-
-// main-statement ::= namespace-statement | export-statement | osc-declaration
+PrefixedStructuredIdentifier =
+  StructuredIdentifier '.' 'identifier'
 
 MainStatement =
   NamespaceStatement
@@ -239,7 +235,10 @@ SiBaseUnitName =
 // enum-value-reference ::= [enum-name '!'] enum-member-name
 
 EnumDeclaration =
-  'enum' enum_name:QualifiedIdentifier ':' '[' EnumMemberDeclList ']' 'newline'
+  'enum' enum_name:QualifiedIdentifier ':' EnumMemberDecls 'newline'
+
+EnumMemberDecls =
+  '[' EnumMemberDeclList ']'
 
 EnumMemberDeclList =
   EnumMemberDecl*
@@ -434,7 +433,7 @@ TypeExtensionBody =
 | StructuredTypeExtensionBody
 
 EnumTypeExtensionBody =
-  ':' '[' EnumMemberDeclList ']' 'newline'
+  ':' EnumMemberDecls 'newline'
 
 StructuredTypeExtensionBody =
   ':' 'newline' 'indent' ExtensionMemberList 'dedent'
