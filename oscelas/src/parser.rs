@@ -52,7 +52,8 @@ impl<'a> Parser<'a> {
 
     fn skip_trivia(&mut self) {
         while let kind @ (WHITESPACE | COMMENT | TRIVIAL_NEWLINE) = self.lexer.nth(0).kind {
-            self.bump(kind);
+            let token = self.lexer.bump();
+            self.builder.token(kind, token.length).unwrap();
             self.leading_trivia = true;
         }
     }
