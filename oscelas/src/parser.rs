@@ -31,6 +31,7 @@ pub struct Parser<'a> {
     expected: OscSyntaxKindSet,
     leading_trivia: bool,
     indentations: Vec<Indentation>,
+    recovering: bool,
 }
 
 impl<'a> Parser<'a> {
@@ -43,6 +44,7 @@ impl<'a> Parser<'a> {
             expected: OscSyntaxKindSet::new(),
             leading_trivia: false,
             indentations: Vec::new(),
+            recovering: false,
         };
         parser.skip_trivia();
         parser
@@ -82,7 +84,7 @@ impl<'a> Parser<'a> {
                 .count();
             let range = start..start + length;
             self.diagnostic(SyntaxDiagnostic::UnexpectedIndentation { range });
-        } else {
+        } else if !self.recovering {
             let range = self.current_token_range();
             let expected = self.expected;
             let found = self.current_token_kind();
@@ -95,6 +97,8 @@ impl<'a> Parser<'a> {
     }
 
     fn bump(&mut self, kind: OscSyntaxKind) {
+        self.recovering = kind != ERROR;
+
         if self.lexer.nth(0).kind == INDENT {
             let indentation = match kind {
                 ERROR => Indentation::Extra,
