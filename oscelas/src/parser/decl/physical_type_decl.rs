@@ -1,4 +1,4 @@
-use crate::parser::{error_unexpected, Parser};
+use crate::parser::Parser;
 use crate::parser::common::parse_qualified_identifier;
 use crate::parser::expr::parse_expr;
 use crate::syntax::OscSyntaxKind::*;
