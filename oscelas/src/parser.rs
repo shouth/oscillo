@@ -76,7 +76,7 @@ impl<'a> Parser<'a> {
     }
 
     pub fn unexpected(&mut self) {
-        if self.check(INDENT) {
+        if self.lexer.nth(0).kind == INDENT {
             let start = self.lexer.offset();
             let length = self.source[start..]
                 .chars()
