@@ -165,6 +165,10 @@ impl<'a> Parser<'a> {
         result
     }
 
+    pub fn eof(&mut self) -> bool {
+        self.lexer.nth(0).kind == EOF
+    }
+
     pub fn error(&mut self) {
         self.bump(ERROR);
     }

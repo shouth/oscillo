@@ -8,7 +8,7 @@ use crate::syntax::{OscSyntaxKind::*, OscSyntaxKindSet};
 
 fn parse_field_name_list(p: &mut Parser) {
     let checkpoint = p.open();
-    while !p.check(COLON | EOF) {
+    while !p.check(COLON) && !p.eof() {
         if p.check(first_qualified_identifier()) {
             let element_checkpoint = p.open();
             parse_qualified_identifier(p);
@@ -84,7 +84,7 @@ fn parse_parameter_with_declaration(p: &mut Parser) {
     p.expect(INDENT);
 
     let list_checkpoint = p.open();
-    while !p.check(DEDENT | EOF) {
+    while !p.check(DEDENT) && !p.eof() {
         if p.check(KEEP_KW | REMOVE_DEFAULT_KW) {
             parse_constraint_declaration(p);
         } else {

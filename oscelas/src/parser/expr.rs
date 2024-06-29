@@ -40,7 +40,7 @@ fn parse_leading_expr(p: &mut Parser, power: u8, recovery: OscSyntaxKindSet) {
                 p.expect(RIGHT_BRACKET);
                 p.close(checkpoint.clone(), BRACKETS_RANGE_CONSTRUCTOR);
             } else {
-                while !p.check(RIGHT_BRACKET | EOF) {
+                while !p.check(RIGHT_BRACKET) && !p.eof() {
                     p.expect(COMMA);
                     p.close(element_checkpoint, EXPRESSION_LIST_ELEMENT);
                     element_checkpoint = p.open();

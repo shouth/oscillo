@@ -20,7 +20,7 @@ pub fn first_structured_type_member() -> OscSyntaxKindSet {
 
 pub fn parse_structured_type_member_list(p: &mut Parser) {
     let checkpoint = p.open();
-    while !p.check(DEDENT | EOF) {
+    while !p.check(DEDENT) && !p.eof() {
         if p.check(ON_KW | DO_KW) {
             parse_behavior_specification(p);
         } else if p.check(EVENT_KW) {

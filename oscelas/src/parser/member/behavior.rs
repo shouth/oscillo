@@ -25,7 +25,7 @@ pub fn parse_on_directive(p: &mut Parser) {
     p.expect(INDENT);
 
     let list_checkpoint = p.open();
-    while !p.check(DEDENT | EOF) {
+    while !p.check(DEDENT) && !p.eof() {
         if p.check(CALL_KW | EMIT_KW) {
             parse_on_member(p);
         } else {
@@ -104,7 +104,7 @@ pub fn parse_composition(p: &mut Parser) {
     p.expect(INDENT);
 
     let list_checkpoint = p.open();
-    while !p.check(DEDENT | EOF) {
+    while !p.check(DEDENT) && !p.eof() {
         if p.check(first_do_member()) {
             parse_do_member(p);
         } else {
@@ -146,7 +146,7 @@ fn parse_behavior_with_declaration(p: &mut Parser) {
     p.expect(INDENT);
 
     let list_checkpoint = p.open();
-    while !p.check(DEDENT | EOF) {
+    while !p.check(DEDENT) && !p.eof() {
         if p.check(first_behavior_with_member()) {
             parse_behavior_with_member(p);
         } else {

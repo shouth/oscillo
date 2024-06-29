@@ -6,7 +6,7 @@ use crate::parser::Parser;
 
 pub fn parse_osc_file(p: &mut Parser) {
     let checkpoint = p.open();
-    while !p.check(EOF) {
+    while !p.eof() {
         if p.check(IMPORT_KW) {
             parse_prelude_statement(p);
         } else if p.check(first_main_statement()) {
@@ -90,7 +90,7 @@ fn parse_namespace_use_clause(p: &mut Parser) {
 
 fn parse_namespace_list(p: &mut Parser) {
     let checkpoint = p.open();
-    while !p.check(NEWLINE | EOF) {
+    while !p.check(NEWLINE) && !p.eof() {
         if p.check(first_qualified_identifier()) {
             let element_checkpoint = p.open();
             p.expect(IDENTIFIER | NULL_KW);
@@ -116,7 +116,7 @@ pub fn parse_export_statement(p: &mut Parser) {
 
 pub fn parse_export_specificatoin_list(p: &mut Parser) {
     let checkpoint = p.open();
-    while !p.check(NEWLINE | EOF) {
+    while !p.check(NEWLINE) && !p.eof() {
         if !p.check(first_qualified_identifier() | STAR) {
             let element_checkpoint = p.open();
             parse_export_specification(p);

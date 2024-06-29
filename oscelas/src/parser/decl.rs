@@ -128,7 +128,7 @@ fn parse_si_base_unit_specifier(p: &mut Parser) {
     p.expect(LEFT_PAREN);
 
     let list_checkpoint = p.open();
-    while !p.check(RIGHT_PAREN | EOF) {
+    while !p.check(RIGHT_PAREN) && !p.eof() {
         if p.check(first_si_base_unit_name()) {
             let element_checkpoint = p.open();
             p.expect(first_si_base_unit_name());
@@ -159,7 +159,7 @@ fn parse_si_unit_specifier(p: &mut Parser) {
     p.expect(LEFT_PAREN);
 
     let list_checkpoint = p.open();
-    while !p.check(RIGHT_PAREN | EOF) {
+    while !p.check(RIGHT_PAREN) && !p.eof() {
         if p.check(first_si_unit_specifier()) {
             let element_checkpoint = p.open();
             p.expect(first_si_unit_specifier());
@@ -198,7 +198,7 @@ pub fn parse_enum_member_decls(p: &mut Parser) {
 
     // allow empty enum when parsing
     let list_checkpoint = p.open();
-    while !p.check(RIGHT_BRACKET | EOF) {
+    while !p.check(RIGHT_BRACKET) && !p.eof() {
         if p.check(first_qualified_identifier()) {
             let element_checkpoint = p.open();
             parse_qualified_identifier(p);
