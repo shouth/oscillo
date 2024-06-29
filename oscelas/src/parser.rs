@@ -17,6 +17,12 @@ use crate::syntax::OscSyntaxKindSet;
 #[derive(Debug, Clone)]
 pub struct Checkpoint(TreeCheckpoint<PointerUsize>);
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Indentation {
+    Normal,
+    Extra,
+}
+
 pub struct Parser<'a> {
     source: &'a str,
     lexer: Lookahead<LexicalAnalyzer<'a>>,
@@ -24,15 +30,7 @@ pub struct Parser<'a> {
     diagnostic: Vec<SyntaxDiagnostic>,
     expected: OscSyntaxKindSet,
     leading_trivia: bool,
-    has_error: bool,
-}
-
-pub fn error_unexpected(p: &mut Parser) {
-    let range = p.current_token_range();
-    let expected = p.current_expected_set();
-    let found = p.current_token_kind();
-
-    p.diagnostic(SyntaxDiagnostic::UnexpectedToken { range, expected, found });
+    indentations: Vec<Indentation>,
 }
 
 impl<'a> Parser<'a> {
@@ -44,7 +42,7 @@ impl<'a> Parser<'a> {
             diagnostic: Vec::new(),
             expected: OscSyntaxKindSet::new(),
             leading_trivia: false,
-            has_error: false,
+            indentations: Vec::new(),
         };
         parser.skip_trivia();
         parser
@@ -67,25 +65,57 @@ impl<'a> Parser<'a> {
         self.lexer.nth(0).kind
     }
 
-    pub fn current_expected_set(&mut self) -> OscSyntaxKindSet {
-        self.expected
-    }
-
     pub fn has_leading_trivia(&self) -> bool {
         self.leading_trivia
     }
 
     pub fn diagnostic(&mut self, diagnostic: SyntaxDiagnostic) {
-        self.has_error = true;
         self.diagnostic.push(diagnostic);
     }
 
+    pub fn unexpected(&mut self) {
+        if self.check(INDENT) {
+            let start = self.lexer.offset();
+            let length = self.source[start..]
+                .chars()
+                .take_while(|c| [' ', '\t'].contains(c))
+                .count();
+            let range = start..start + length;
+            self.diagnostic(SyntaxDiagnostic::UnexpectedIndentation { range });
+        } else {
+            let range = self.current_token_range();
+            let expected = self.expected;
+            let found = self.current_token_kind();
+            self.diagnostic(SyntaxDiagnostic::UnexpectedToken {
+                range,
+                expected,
+                found,
+            });
+        }
+    }
+
     fn bump(&mut self, kind: OscSyntaxKind) {
-        let token = self.lexer.bump();
-        self.builder.token(kind, token.length).unwrap();
-        self.expected.clear();
-        self.leading_trivia = false;
-        self.skip_trivia();
+        if self.lexer.nth(0).kind == INDENT {
+            let indentation = match kind {
+                ERROR => Indentation::Extra,
+                _ => Indentation::Normal,
+            };
+            self.indentations.push(indentation);
+        }
+
+        loop {
+            let token = self.lexer.bump();
+            self.builder.token(kind, token.length).unwrap();
+            self.expected.clear();
+            self.leading_trivia = false;
+            self.skip_trivia();
+
+            if self.lexer.nth(0).kind != DEDENT
+                || self.indentations.pop() == Some(Indentation::Normal)
+            {
+                break;
+            }
+        }
     }
 
     fn do_check(&mut self, kinds: OscSyntaxKindSet) -> Option<OscSyntaxKind> {
@@ -97,7 +127,9 @@ impl<'a> Parser<'a> {
                 let begin = self.lexer.offset();
                 let length = self.lexer.nth(0).length;
                 let lexeme = &self.source[begin..][..length];
-                kinds.iter().find(|kind| kind.static_token() == Some(lexeme))
+                kinds
+                    .iter()
+                    .find(|kind| kind.static_token() == Some(lexeme))
             }
             _ => None,
         };
@@ -122,8 +154,8 @@ impl<'a> Parser<'a> {
 
     pub fn expect(&mut self, kinds: impl Into<OscSyntaxKindSet>) -> bool {
         let result = self.eat(kinds);
-        if !result && !self.has_error {
-            error_unexpected(self);
+        if !result {
+            self.unexpected();
         }
         result
     }
@@ -140,10 +172,15 @@ impl<'a> Parser<'a> {
         self.builder.close_at(&checkpoint.0, kind).unwrap();
     }
 
-    pub fn finish(mut self) -> (Vec<SyntaxDiagnostic>, Tree<OscSyntaxKind, u32, usize>) {
-        while !self.check(EOF) {
+    pub fn recover(&mut self, recovery: impl Into<OscSyntaxKindSet>) {
+        let recovery = recovery.into();
+        while !self.check(recovery | EOF) {
             self.error();
         }
+    }
+
+    pub fn finish(mut self) -> (Vec<SyntaxDiagnostic>, Tree<OscSyntaxKind, u32, usize>) {
+        self.recover(EOF);
         self.bump(EOF);
 
         let mut diagnostics = Vec::new();
@@ -280,7 +317,7 @@ mod tests {
         };
 
         let mut p = Parser::new(source);
-        parse_expr(&mut p);
+        parse_expr(&mut p, EOF.into());
         let (diagnostics, tree) = p.finish();
 
         assert!(diagnostics.is_empty());
@@ -297,7 +334,7 @@ scenario sut.my__scenario:
     car2: vehicle
 
     do serial:
-        phase1: car1.drive(duration: ) with:
+        phase1: car1.drive(duration:, :
             speed([40kph..80kph], at: end)
             lane([2..4])
         phase2: car1.drive(duration: 24s) with:

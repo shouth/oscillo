@@ -3,6 +3,7 @@ use crate::parser::common::{
 };
 use crate::parser::decl::parse_type_declarator;
 use crate::parser::expr::parse_expr;
+use crate::parser::member::first_structured_type_member;
 use crate::parser::osc_file::parse_structured_identifier;
 use crate::parser::Parser;
 use crate::syntax::OscSyntaxKind::*;
@@ -16,28 +17,19 @@ pub fn parse_method_declaration(p: &mut Parser) {
     }
 
     if p.check(ARROW) {
-        parse_method_return_type(p);
+        let checkpoint = p.open();
+        p.expect(ARROW);
+        parse_type_declarator(p);
+        p.close(checkpoint, METHOD_RETURN_TYPE);
     }
 
-    parse_method_implementation(p);
-    p.close(checkpoint, METHOD_DECLARATION);
-}
-
-fn parse_method_return_type(p: &mut Parser) {
-    let checkpoint = p.open();
-    p.expect(ARROW);
-    parse_type_declarator(p);
-    p.close(checkpoint, METHOD_RETURN_TYPE);
-}
-
-fn parse_method_implementation(p: &mut Parser) {
-    let checkpoint = p.open();
+    let impl_checkpoint = p.open();
     p.expect(IS_KW);
     p.eat(ONLY_KW); // method qualifier (optional)
 
     let body_checkpoint = p.open();
     if p.eat(EXPRESSION_KW) {
-        parse_expr(p);
+        parse_expr(p, NEWLINE | DEDENT | first_structured_type_member());
         p.close(body_checkpoint, METHOD_EXPRESSION_BODY);
     } else if p.eat(UNDEFINED_KW) {
         // undefined method body
@@ -48,5 +40,8 @@ fn parse_method_implementation(p: &mut Parser) {
         }
         p.close(body_checkpoint, METHOD_EXTERNAL_BODY);
     }
-    p.close(checkpoint, METHOD_IMPLEMENTATION);
+    p.close(impl_checkpoint, METHOD_IMPLEMENTATION);
+
+    p.expect(NEWLINE);
+    p.close(checkpoint, METHOD_DECLARATION);
 }

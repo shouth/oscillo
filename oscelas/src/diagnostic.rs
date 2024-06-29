@@ -33,6 +33,8 @@ impl DiagnosticDisplay for OscSyntaxKind {
                 INTEGER_LITERAL => write!(f, "integer literal")?,
                 FLOAT_LITERAL => write!(f, "float literal")?,
                 STRING_LITERAL => write!(f, "string literal")?,
+                INDENT => write!(f, "indentation")?,
+                NEWLINE => write!(f, "newline")?,
                 _ => write!(f, "{:?}", self)?,
             }
         }
@@ -58,6 +60,9 @@ pub enum SyntaxDiagnostic {
         range: Range<usize>,
         expected: OscSyntaxKindSet,
         found: OscSyntaxKind,
+    },
+    UnexpectedIndentation {
+        range: Range<usize>,
     },
     ExpectedExpression {
         range: Range<usize>,
@@ -112,6 +117,13 @@ impl SyntaxDiagnostic {
 
                 Diagnostic::error()
                     .with_message(message)
+                    .with_labels(vec![
+                        Label::primary(file_id.clone(), range)
+                    ])
+            }
+            SyntaxDiagnostic::UnexpectedIndentation { range } => {
+                Diagnostic::error()
+                    .with_message(format!("unexpected indentation"))
                     .with_labels(vec![
                         Label::primary(file_id.clone(), range)
                     ])

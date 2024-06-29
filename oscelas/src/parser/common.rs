@@ -1,10 +1,10 @@
-use crate::parser::{error_unexpected, Parser};
+use crate::parser::Parser;
 use crate::parser::decl::parse_type_declarator;
-use crate::parser::expr::{parse_expr, parse_remaining_expr};
-use crate::syntax::OscSyntaxKind::*;
+use crate::parser::expr::{first_expr, parse_expr, parse_remaining_expr};
+use crate::syntax::{OscSyntaxKind::*, OscSyntaxKindSet};
 
-pub fn check_qualifed_identifier(p: &mut Parser) -> bool {
-    p.check(IDENTIFIER | NULL_KW | COLON_COLON)
+pub fn first_qualified_identifier() -> OscSyntaxKindSet {
+    NULL_KW | IDENTIFIER | COLON_COLON
 }
 
 pub fn parse_qualified_identifier(p: &mut Parser) {
@@ -22,7 +22,7 @@ pub fn parse_qualified_identifier(p: &mut Parser) {
         p.expect(IDENTIFIER);
         p.close(checkpoint, PREFIXED_IDENTIFIER);
     } else {
-        error_unexpected(p);
+        p.unexpected();
     }
 }
 
@@ -32,21 +32,26 @@ pub fn parse_argument_spcifications(p: &mut Parser) {
 
     let list_checkpoint = p.open();
     while !p.check(RIGHT_PAREN | EOF) {
-        let element_checkpoint = p.open();
-        parse_qualified_identifier(p);
-        p.expect(COLON);
-        parse_type_declarator(p);
+        if p.check(first_qualified_identifier()) {
+            let element_checkpoint = p.open();
+            parse_qualified_identifier(p);
+            p.expect(COLON);
+            parse_type_declarator(p);
 
-        let init_checkpoint = p.open();
-        if p.eat(EQUAL) {
-            parse_expr(p);
-            p.close(init_checkpoint, ARGUMENT_INITIALIZER_CLAUSE);
-        }
+            let init_checkpoint = p.open();
+            if p.eat(EQUAL) {
+                parse_expr(p, COMMA | RIGHT_PAREN);
+                p.close(init_checkpoint, ARGUMENT_INITIALIZER_CLAUSE);
+            }
 
-        if !p.check(RIGHT_PAREN) {
-            p.expect(COMMA);
+            if !p.check(RIGHT_PAREN) {
+                p.expect(COMMA);
+            }
+            p.close(element_checkpoint, ARGUMENT_SPECIFICATION);
+        } else {
+            p.unexpected();
+            p.error();
         }
-        p.close(element_checkpoint, ARGUMENT_SPECIFICATION);
     }
     p.close(list_checkpoint, ARGUMENT_SPECIFICATION_LIST);
 
@@ -60,29 +65,32 @@ pub fn parse_arguments(p: &mut Parser) {
 
     while !p.check(RIGHT_PAREN | EOF) {
         let argument_checkpoint = p.open();
-        if p.check(IDENTIFIER | NULL_KW | COLON_COLON) {
+        if p.check(first_qualified_identifier()) {
             let expr_checkpoint = p.open();
             parse_qualified_identifier(p);
 
             if p.eat(COLON) {
-                parse_expr(p);
+                parse_expr(p, COMMA | RIGHT_PAREN);
                 if !p.check(RIGHT_PAREN) {
                     p.expect(COMMA);
                 }
                 p.close(argument_checkpoint, NAMED_ARGUMENT);
             } else {
-                parse_remaining_expr(p, expr_checkpoint);
+                parse_remaining_expr(p, expr_checkpoint, COMMA | RIGHT_PAREN);
                 if !p.check(RIGHT_PAREN) {
                     p.expect(COMMA);
                 }
                 p.close(argument_checkpoint, POSITIONAL_ARGUMENT);
             }
-        } else {
-            parse_expr(p);
+        } else if p.check(first_expr()) {
+            parse_expr(p, COMMA | RIGHT_PAREN);
             if !p.check(RIGHT_PAREN) {
                 p.expect(COMMA);
             }
             p.close(argument_checkpoint, POSITIONAL_ARGUMENT);
+        } else {
+            p.unexpected();
+            p.error();
         }
     }
 
