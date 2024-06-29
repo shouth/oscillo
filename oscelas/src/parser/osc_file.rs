@@ -1,5 +1,5 @@
 use crate::parser::common::first_qualified_identifier;
-use crate::syntax::OscSyntaxKind::*;
+use crate::syntax::{OscSyntaxKind::*, OscSyntaxKindSet};
 
 use crate::parser::decl::{first_osc_declaration, parse_osc_declaration};
 use crate::parser::Parser;
@@ -52,7 +52,7 @@ pub fn parse_structured_identifier(p: &mut Parser) {
     }
 }
 
-fn first_main_statement() -> OscSyntaxKind {
+fn first_main_statement() -> OscSyntaxKindSet {
     NAMESPACE_KW | EXPORT_KW | first_osc_declaration()
 }
 
