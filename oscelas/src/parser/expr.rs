@@ -34,7 +34,7 @@ fn parse_leading_expr(p: &mut Parser, power: u8, recovery: OscSyntaxKindSet) {
             p.close(list_checkpoint, EXPRESSION_LIST);
         } else {
             let mut element_checkpoint = p.open();
-            parse_expr(p, RIGHT_BRACKET | COMMA | recovery);
+            parse_expr(p, DOT_DOT | RIGHT_BRACKET | COMMA | recovery);
             if p.eat(DOT_DOT) {
                 parse_expr(p, RIGHT_BRACKET | recovery);
                 p.expect(RIGHT_BRACKET);
