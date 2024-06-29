@@ -270,17 +270,7 @@ StructBodyOrNewline =
   StructBody | 'newline'
 
 StructBody =
-  ':' 'newline' 'indent' StructMemberList 'dedent'
-
-StructMemberList =
-  StructMember*
-
-StructMember =
-  EventDeclaration
-| FieldDeclaration
-| ConstraintDeclaration
-| MethodDeclaration
-| CoverageDeclaration
+  ':' 'newline' 'indent' StructuredTypeMemberList 'dedent'
 
 
 // actor-declaration ::= 'actor' actor-name ['inherits' actor-name ['(' field-name '==' (enum-value-reference | bool-literal) ')']] ( (':' NEWLINE INDENT
@@ -302,17 +292,7 @@ ActorBodyOrNewline =
   ActorBody | 'newline'
 
 ActorBody =
-  ':' 'newline' 'indent' ActorMemberList 'dedent'
-
-ActorMemberList =
-  ActorMemberDecl*
-
-ActorMemberDecl =
-  EventDeclaration
-| FieldDeclaration
-| ConstraintDeclaration
-| MethodDeclaration
-| CoverageDeclaration
+  ':' 'newline' 'indent' StructuredTypeMemberList 'dedent'
 
 
 // scenario-declaration ::= 'scenario' qualified-behavior-name ['inherits' qualified-behavior-name ['(' field-name '==' (enum-value-reference | bool-literal) ')']] ( (':' NEWLINE INDENT
@@ -337,22 +317,7 @@ ScenarioBodyOrNewline =
   ScenarioBody | 'newline'
 
 ScenarioBody =
-  ':' 'newline' 'indent' ScenarioMemberList 'dedent'
-
-ScenarioMemberList =
-  ScenarioMember*
-
-ScenarioMember =
-  ScenarioMemberDecl
-| BehaviorSpecification
-
-ScenarioMemberDecl =
-  EventDeclaration
-| FieldDeclaration
-| ConstraintDeclaration
-| MethodDeclaration
-| CoverageDeclaration
-| ModifierApplication
+  ':' 'newline' 'indent' StructuredTypeMemberList 'dedent'
 
 QualifiedBehaviorName =
   QualifiedIdentifier
@@ -379,14 +344,7 @@ ActionInheritsCondition =
   '(' condition:Expression ')'
 
 ActionBody =
-  ':' 'newline' 'indent' ActionMemberList 'dedent'
-
-ActionMemberList =
-  ActionMember*
-
-ActionMember =
-  ScenarioMemberDecl
-| BehaviorSpecification
+  ':' 'newline' 'indent' StructuredTypeMemberList 'dedent'
 
 
 // modifier-declaration ::= 'modifier' [actor-name '.'] modifier-name ['of' qualified-behavior-name] ( (':' NEWLINE INDENT
@@ -405,14 +363,7 @@ ModifierBodyOrNewline =
   ModifierBody | 'newline'
 
 ModifierBody =
-  ':' 'newline' 'indent' ModifierMemberList 'dedent'
-
-ModifierMemberList =
-  ModifierMember*
-
-ModifierMember =
-  ScenarioMemberDecl
-| OnDirective
+  ':' 'newline' 'indent' StructuredTypeMemberList 'dedent'
 
 
 // type-extension ::= enum-type-extension | structured-type-extension
@@ -436,28 +387,28 @@ EnumTypeExtensionBody =
   ':' EnumMemberDecls 'newline'
 
 StructuredTypeExtensionBody =
-  ':' 'newline' 'indent' ExtensionMemberList 'dedent'
-
-ExtensionMemberList =
-  ExtensionMember*
-
-ExtensionMember =
-  ExtensionMemberDecl
-| BehaviorSpecification
-
-ExtensionMemberDecl =
-  EventDeclaration
-| FieldDeclaration
-| ConstraintDeclaration
-| MethodDeclaration
-| CoverageDeclaration
-| ModifierApplication
+  ':' 'newline' 'indent' StructuredTypeMemberList 'dedent'
 
 
 // global-parameter-declaration ::= 'global' parameter-declaration
 
 GlobalParameterDeclaration =
   'global' ParameterDeclaration
+
+
+// structued type members
+
+StructuredTypeMemberList =
+  StructuredTypeMember*
+
+StructuredTypeMember =
+  EventDeclaration
+| FieldDeclaration
+| ConstraintDeclaration
+| MethodDeclaration
+| CoverageDeclaration
+| ModifierApplication
+| BehaviorSpecification
 
 
 // event-declaration ::= 'event' event-name ['(' argument-list-specification ')'] ['is' event-specification] NEWLINE

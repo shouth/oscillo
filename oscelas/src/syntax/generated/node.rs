@@ -3947,7 +3947,7 @@ impl StructBody<'_> {
     pub fn indent_token(&self) -> Option<IndentToken> {
         support::child(&self.0, 0usize)
     }
-    pub fn struct_member_list(&self) -> Option<StructMemberList> {
+    pub fn structured_type_member_list(&self) -> Option<StructuredTypeMemberList> {
         support::child(&self.0, 0usize)
     }
     pub fn dedent_token(&self) -> Option<DedentToken> {
@@ -3968,17 +3968,17 @@ impl<'a> TypedNode for StructBody<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct StructMemberList<'a>(OscNode<'a>);
-impl<'a> StructMemberList<'a> {
-    pub fn struct_member(&self) -> impl Iterator<Item = StructMember<'a>> + 'a {
+pub struct StructuredTypeMemberList<'a>(OscNode<'a>);
+impl<'a> StructuredTypeMemberList<'a> {
+    pub fn structured_type_member(&self) -> impl Iterator<Item = StructuredTypeMember<'a>> + 'a {
         support::children(&self.0)
     }
 }
-impl<'a> TypedNode for StructMemberList<'a> {
+impl<'a> TypedNode for StructuredTypeMemberList<'a> {
     type Value = OscSyntaxKind;
     type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
-        value == STRUCT_MEMBER_LIST
+        value == STRUCTURED_TYPE_MEMBER_LIST
     }
     fn cast(node: Self::Node) -> Option<Self> {
         Self::can_cast(*node.value()).then(|| Self(node))
@@ -3988,14 +3988,643 @@ impl<'a> TypedNode for StructMemberList<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum StructMember<'a> {
+pub struct ActorInheritsClause<'a>(OscNode<'a>);
+impl ActorInheritsClause<'_> {
+    pub fn inherits_token(&self) -> Option<InheritsToken> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn base_name(&self) -> Option<QualifiedIdentifier> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn actor_inherits_condition(&self) -> Option<ActorInheritsCondition> {
+        support::child(&self.0, 0usize)
+    }
+}
+impl<'a> TypedNode for ActorInheritsClause<'a> {
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == ACTOR_INHERITS_CLAUSE
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ActorBodyOrNewline<'a> {
+    ActorBody(ActorBody<'a>),
+    NewlineToken(NewlineToken<'a>),
+}
+impl ActorBodyOrNewline<'_> {
+    pub fn as_actor_body(&self) -> Option<ActorBody> {
+        match self {
+            Self::ActorBody(node) => Some(node.clone()),
+            _ => None,
+        }
+    }
+    pub fn as_newline_token(&self) -> Option<NewlineToken> {
+        match self {
+            Self::NewlineToken(node) => Some(node.clone()),
+            _ => None,
+        }
+    }
+}
+impl<'a> TypedNode for ActorBodyOrNewline<'a> {
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        matches!(value, ACTOR_BODY | NEWLINE)
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        match *node.value() {
+            ACTOR_BODY => Some(Self::ActorBody(ActorBody::cast(node.clone())?)),
+            NEWLINE => Some(Self::NewlineToken(NewlineToken::cast(node.clone())?)),
+            _ => None,
+        }
+    }
+    fn syntax(&self) -> &Self::Node {
+        match self {
+            Self::ActorBody(node) => node.syntax(),
+            Self::NewlineToken(node) => node.syntax(),
+        }
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ActorInheritsCondition<'a>(OscNode<'a>);
+impl ActorInheritsCondition<'_> {
+    pub fn left_paren_token(&self) -> Option<LeftParenToken> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn condition(&self) -> Option<Expression> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn right_paren_token(&self) -> Option<RightParenToken> {
+        support::child(&self.0, 0usize)
+    }
+}
+impl<'a> TypedNode for ActorInheritsCondition<'a> {
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == ACTOR_INHERITS_CONDITION
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ActorBody<'a>(OscNode<'a>);
+impl ActorBody<'_> {
+    pub fn colon_token(&self) -> Option<ColonToken> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn newline_token(&self) -> Option<NewlineToken> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn indent_token(&self) -> Option<IndentToken> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn structured_type_member_list(&self) -> Option<StructuredTypeMemberList> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn dedent_token(&self) -> Option<DedentToken> {
+        support::child(&self.0, 0usize)
+    }
+}
+impl<'a> TypedNode for ActorBody<'a> {
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == ACTOR_BODY
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ScenarioInheritsClause<'a>(OscNode<'a>);
+impl ScenarioInheritsClause<'_> {
+    pub fn inherits_token(&self) -> Option<InheritsToken> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn base_name(&self) -> Option<QualifiedBehaviorName> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn scenario_inherits_condition(&self) -> Option<ScenarioInheritsCondition> {
+        support::child(&self.0, 0usize)
+    }
+}
+impl<'a> TypedNode for ScenarioInheritsClause<'a> {
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == SCENARIO_INHERITS_CLAUSE
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ScenarioBodyOrNewline<'a> {
+    ScenarioBody(ScenarioBody<'a>),
+    NewlineToken(NewlineToken<'a>),
+}
+impl ScenarioBodyOrNewline<'_> {
+    pub fn as_scenario_body(&self) -> Option<ScenarioBody> {
+        match self {
+            Self::ScenarioBody(node) => Some(node.clone()),
+            _ => None,
+        }
+    }
+    pub fn as_newline_token(&self) -> Option<NewlineToken> {
+        match self {
+            Self::NewlineToken(node) => Some(node.clone()),
+            _ => None,
+        }
+    }
+}
+impl<'a> TypedNode for ScenarioBodyOrNewline<'a> {
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        matches!(value, SCENARIO_BODY | NEWLINE)
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        match *node.value() {
+            SCENARIO_BODY => Some(Self::ScenarioBody(ScenarioBody::cast(node.clone())?)),
+            NEWLINE => Some(Self::NewlineToken(NewlineToken::cast(node.clone())?)),
+            _ => None,
+        }
+    }
+    fn syntax(&self) -> &Self::Node {
+        match self {
+            Self::ScenarioBody(node) => node.syntax(),
+            Self::NewlineToken(node) => node.syntax(),
+        }
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ScenarioInheritsCondition<'a>(OscNode<'a>);
+impl ScenarioInheritsCondition<'_> {
+    pub fn left_paren_token(&self) -> Option<LeftParenToken> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn condition(&self) -> Option<Expression> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn right_paren_token(&self) -> Option<RightParenToken> {
+        support::child(&self.0, 0usize)
+    }
+}
+impl<'a> TypedNode for ScenarioInheritsCondition<'a> {
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == SCENARIO_INHERITS_CONDITION
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ScenarioBody<'a>(OscNode<'a>);
+impl ScenarioBody<'_> {
+    pub fn colon_token(&self) -> Option<ColonToken> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn newline_token(&self) -> Option<NewlineToken> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn indent_token(&self) -> Option<IndentToken> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn structured_type_member_list(&self) -> Option<StructuredTypeMemberList> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn dedent_token(&self) -> Option<DedentToken> {
+        support::child(&self.0, 0usize)
+    }
+}
+impl<'a> TypedNode for ScenarioBody<'a> {
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == SCENARIO_BODY
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct PrefixedBehaviorName<'a>(OscNode<'a>);
+impl PrefixedBehaviorName<'_> {
+    pub fn actor_name(&self) -> Option<QualifiedIdentifier> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn dot_token(&self) -> Option<DotToken> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn behavior_name(&self) -> Option<QualifiedIdentifier> {
+        support::child(&self.0, 1usize)
+    }
+}
+impl<'a> TypedNode for PrefixedBehaviorName<'a> {
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == PREFIXED_BEHAVIOR_NAME
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ActionInheritsClause<'a>(OscNode<'a>);
+impl ActionInheritsClause<'_> {
+    pub fn inherits_token(&self) -> Option<InheritsToken> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn base_name(&self) -> Option<QualifiedBehaviorName> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn action_inherits_condition(&self) -> Option<ActionInheritsCondition> {
+        support::child(&self.0, 0usize)
+    }
+}
+impl<'a> TypedNode for ActionInheritsClause<'a> {
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == ACTION_INHERITS_CLAUSE
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ActionBodyOrNewline<'a> {
+    ActionBody(ActionBody<'a>),
+    NewlineToken(NewlineToken<'a>),
+}
+impl ActionBodyOrNewline<'_> {
+    pub fn as_action_body(&self) -> Option<ActionBody> {
+        match self {
+            Self::ActionBody(node) => Some(node.clone()),
+            _ => None,
+        }
+    }
+    pub fn as_newline_token(&self) -> Option<NewlineToken> {
+        match self {
+            Self::NewlineToken(node) => Some(node.clone()),
+            _ => None,
+        }
+    }
+}
+impl<'a> TypedNode for ActionBodyOrNewline<'a> {
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        matches!(value, ACTION_BODY | NEWLINE)
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        match *node.value() {
+            ACTION_BODY => Some(Self::ActionBody(ActionBody::cast(node.clone())?)),
+            NEWLINE => Some(Self::NewlineToken(NewlineToken::cast(node.clone())?)),
+            _ => None,
+        }
+    }
+    fn syntax(&self) -> &Self::Node {
+        match self {
+            Self::ActionBody(node) => node.syntax(),
+            Self::NewlineToken(node) => node.syntax(),
+        }
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ActionBody<'a>(OscNode<'a>);
+impl ActionBody<'_> {
+    pub fn colon_token(&self) -> Option<ColonToken> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn newline_token(&self) -> Option<NewlineToken> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn indent_token(&self) -> Option<IndentToken> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn structured_type_member_list(&self) -> Option<StructuredTypeMemberList> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn dedent_token(&self) -> Option<DedentToken> {
+        support::child(&self.0, 0usize)
+    }
+}
+impl<'a> TypedNode for ActionBody<'a> {
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == ACTION_BODY
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ActionInheritsCondition<'a>(OscNode<'a>);
+impl ActionInheritsCondition<'_> {
+    pub fn left_paren_token(&self) -> Option<LeftParenToken> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn condition(&self) -> Option<Expression> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn right_paren_token(&self) -> Option<RightParenToken> {
+        support::child(&self.0, 0usize)
+    }
+}
+impl<'a> TypedNode for ActionInheritsCondition<'a> {
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == ACTION_INHERITS_CONDITION
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ModifierOfClause<'a>(OscNode<'a>);
+impl ModifierOfClause<'_> {
+    pub fn of_token(&self) -> Option<OfToken> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn qualified_behavior_name(&self) -> Option<QualifiedBehaviorName> {
+        support::child(&self.0, 0usize)
+    }
+}
+impl<'a> TypedNode for ModifierOfClause<'a> {
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == MODIFIER_OF_CLAUSE
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ModifierBodyOrNewline<'a> {
+    ModifierBody(ModifierBody<'a>),
+    NewlineToken(NewlineToken<'a>),
+}
+impl ModifierBodyOrNewline<'_> {
+    pub fn as_modifier_body(&self) -> Option<ModifierBody> {
+        match self {
+            Self::ModifierBody(node) => Some(node.clone()),
+            _ => None,
+        }
+    }
+    pub fn as_newline_token(&self) -> Option<NewlineToken> {
+        match self {
+            Self::NewlineToken(node) => Some(node.clone()),
+            _ => None,
+        }
+    }
+}
+impl<'a> TypedNode for ModifierBodyOrNewline<'a> {
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        matches!(value, MODIFIER_BODY | NEWLINE)
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        match *node.value() {
+            MODIFIER_BODY => Some(Self::ModifierBody(ModifierBody::cast(node.clone())?)),
+            NEWLINE => Some(Self::NewlineToken(NewlineToken::cast(node.clone())?)),
+            _ => None,
+        }
+    }
+    fn syntax(&self) -> &Self::Node {
+        match self {
+            Self::ModifierBody(node) => node.syntax(),
+            Self::NewlineToken(node) => node.syntax(),
+        }
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ModifierBody<'a>(OscNode<'a>);
+impl ModifierBody<'_> {
+    pub fn colon_token(&self) -> Option<ColonToken> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn newline_token(&self) -> Option<NewlineToken> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn indent_token(&self) -> Option<IndentToken> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn structured_type_member_list(&self) -> Option<StructuredTypeMemberList> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn dedent_token(&self) -> Option<DedentToken> {
+        support::child(&self.0, 0usize)
+    }
+}
+impl<'a> TypedNode for ModifierBody<'a> {
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == MODIFIER_BODY
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum TypeExtensionBody<'a> {
+    EnumTypeExtensionBody(EnumTypeExtensionBody<'a>),
+    StructuredTypeExtensionBody(StructuredTypeExtensionBody<'a>),
+}
+impl TypeExtensionBody<'_> {
+    pub fn as_enum_type_extension_body(&self) -> Option<EnumTypeExtensionBody> {
+        match self {
+            Self::EnumTypeExtensionBody(node) => Some(node.clone()),
+            _ => None,
+        }
+    }
+    pub fn as_structured_type_extension_body(&self) -> Option<StructuredTypeExtensionBody> {
+        match self {
+            Self::StructuredTypeExtensionBody(node) => Some(node.clone()),
+            _ => None,
+        }
+    }
+}
+impl<'a> TypedNode for TypeExtensionBody<'a> {
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        matches!(
+            value,
+            ENUM_TYPE_EXTENSION_BODY | STRUCTURED_TYPE_EXTENSION_BODY
+        )
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        match *node.value() {
+            ENUM_TYPE_EXTENSION_BODY => Some(Self::EnumTypeExtensionBody(
+                EnumTypeExtensionBody::cast(node.clone())?,
+            )),
+            STRUCTURED_TYPE_EXTENSION_BODY => Some(Self::StructuredTypeExtensionBody(
+                StructuredTypeExtensionBody::cast(node.clone())?,
+            )),
+            _ => None,
+        }
+    }
+    fn syntax(&self) -> &Self::Node {
+        match self {
+            Self::EnumTypeExtensionBody(node) => node.syntax(),
+            Self::StructuredTypeExtensionBody(node) => node.syntax(),
+        }
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct EnumTypeExtensionBody<'a>(OscNode<'a>);
+impl EnumTypeExtensionBody<'_> {
+    pub fn colon_token(&self) -> Option<ColonToken> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn enum_member_decls(&self) -> Option<EnumMemberDecls> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn newline_token(&self) -> Option<NewlineToken> {
+        support::child(&self.0, 0usize)
+    }
+}
+impl<'a> TypedNode for EnumTypeExtensionBody<'a> {
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == ENUM_TYPE_EXTENSION_BODY
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct StructuredTypeExtensionBody<'a>(OscNode<'a>);
+impl StructuredTypeExtensionBody<'_> {
+    pub fn colon_token(&self) -> Option<ColonToken> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn newline_token(&self) -> Option<NewlineToken> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn indent_token(&self) -> Option<IndentToken> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn structured_type_member_list(&self) -> Option<StructuredTypeMemberList> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn dedent_token(&self) -> Option<DedentToken> {
+        support::child(&self.0, 0usize)
+    }
+}
+impl<'a> TypedNode for StructuredTypeExtensionBody<'a> {
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == STRUCTURED_TYPE_EXTENSION_BODY
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ParameterDeclaration<'a>(OscNode<'a>);
+impl ParameterDeclaration<'_> {
+    pub fn field_name_list(&self) -> Option<FieldNameList> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn colon_token(&self) -> Option<ColonToken> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn type_declarator(&self) -> Option<TypeDeclarator> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn parameter_initializer_clause(&self) -> Option<ParameterInitializerClause> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn parameter_with_declaration_or_newline(
+        &self,
+    ) -> Option<ParameterWithDeclarationOrNewline> {
+        support::child(&self.0, 0usize)
+    }
+}
+impl<'a> TypedNode for ParameterDeclaration<'a> {
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == PARAMETER_DECLARATION
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum StructuredTypeMember<'a> {
     EventDeclaration(EventDeclaration<'a>),
     FieldDeclaration(FieldDeclaration<'a>),
     ConstraintDeclaration(ConstraintDeclaration<'a>),
     MethodDeclaration(MethodDeclaration<'a>),
     CoverageDeclaration(CoverageDeclaration<'a>),
+    ModifierApplication(ModifierApplication<'a>),
+    BehaviorSpecification(BehaviorSpecification<'a>),
 }
-impl StructMember<'_> {
+impl StructuredTypeMember<'_> {
     pub fn as_event_declaration(&self) -> Option<EventDeclaration> {
         match self {
             Self::EventDeclaration(node) => Some(node.clone()),
@@ -4026,8 +4655,20 @@ impl StructMember<'_> {
             _ => None,
         }
     }
+    pub fn as_modifier_application(&self) -> Option<ModifierApplication> {
+        match self {
+            Self::ModifierApplication(node) => Some(node.clone()),
+            _ => None,
+        }
+    }
+    pub fn as_behavior_specification(&self) -> Option<BehaviorSpecification> {
+        match self {
+            Self::BehaviorSpecification(node) => Some(node.clone()),
+            _ => None,
+        }
+    }
 }
-impl<'a> TypedNode for StructMember<'a> {
+impl<'a> TypedNode for StructuredTypeMember<'a> {
     type Value = OscSyntaxKind;
     type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
@@ -4040,6 +4681,9 @@ impl<'a> TypedNode for StructMember<'a> {
                 | REMOVE_DEFAULT_DECLARATION
                 | METHOD_DECLARATION
                 | COVERAGE_DECLARATION
+                | MODIFIER_APPLICATION
+                | ON_DIRECTIVE
+                | DO_DIRECTIVE
         )
     }
     fn cast(node: Self::Node) -> Option<Self> {
@@ -4059,6 +4703,12 @@ impl<'a> TypedNode for StructMember<'a> {
             COVERAGE_DECLARATION => Some(Self::CoverageDeclaration(CoverageDeclaration::cast(
                 node.clone(),
             )?)),
+            MODIFIER_APPLICATION => Some(Self::ModifierApplication(ModifierApplication::cast(
+                node.clone(),
+            )?)),
+            ON_DIRECTIVE | DO_DIRECTIVE => Some(Self::BehaviorSpecification(
+                BehaviorSpecification::cast(node.clone())?,
+            )),
             _ => None,
         }
     }
@@ -4069,6 +4719,8 @@ impl<'a> TypedNode for StructMember<'a> {
             Self::ConstraintDeclaration(node) => node.syntax(),
             Self::MethodDeclaration(node) => node.syntax(),
             Self::CoverageDeclaration(node) => node.syntax(),
+            Self::ModifierApplication(node) => node.syntax(),
+            Self::BehaviorSpecification(node) => node.syntax(),
         }
     }
 }
@@ -4255,533 +4907,26 @@ impl<'a> TypedNode for CoverageDeclaration<'a> {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ActorInheritsClause<'a>(OscNode<'a>);
-impl ActorInheritsClause<'_> {
-    pub fn inherits_token(&self) -> Option<InheritsToken> {
-        support::child(&self.0, 0usize)
-    }
-    pub fn base_name(&self) -> Option<QualifiedIdentifier> {
-        support::child(&self.0, 0usize)
-    }
-    pub fn actor_inherits_condition(&self) -> Option<ActorInheritsCondition> {
-        support::child(&self.0, 0usize)
-    }
-}
-impl<'a> TypedNode for ActorInheritsClause<'a> {
-    type Value = OscSyntaxKind;
-    type Node = OscNode<'a>;
-    fn can_cast(value: Self::Value) -> bool {
-        value == ACTOR_INHERITS_CLAUSE
-    }
-    fn cast(node: Self::Node) -> Option<Self> {
-        Self::can_cast(*node.value()).then(|| Self(node))
-    }
-    fn syntax(&self) -> &Self::Node {
-        &self.0
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum ActorBodyOrNewline<'a> {
-    ActorBody(ActorBody<'a>),
-    NewlineToken(NewlineToken<'a>),
-}
-impl ActorBodyOrNewline<'_> {
-    pub fn as_actor_body(&self) -> Option<ActorBody> {
-        match self {
-            Self::ActorBody(node) => Some(node.clone()),
-            _ => None,
-        }
-    }
-    pub fn as_newline_token(&self) -> Option<NewlineToken> {
-        match self {
-            Self::NewlineToken(node) => Some(node.clone()),
-            _ => None,
-        }
-    }
-}
-impl<'a> TypedNode for ActorBodyOrNewline<'a> {
-    type Value = OscSyntaxKind;
-    type Node = OscNode<'a>;
-    fn can_cast(value: Self::Value) -> bool {
-        matches!(value, ACTOR_BODY | NEWLINE)
-    }
-    fn cast(node: Self::Node) -> Option<Self> {
-        match *node.value() {
-            ACTOR_BODY => Some(Self::ActorBody(ActorBody::cast(node.clone())?)),
-            NEWLINE => Some(Self::NewlineToken(NewlineToken::cast(node.clone())?)),
-            _ => None,
-        }
-    }
-    fn syntax(&self) -> &Self::Node {
-        match self {
-            Self::ActorBody(node) => node.syntax(),
-            Self::NewlineToken(node) => node.syntax(),
-        }
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ActorInheritsCondition<'a>(OscNode<'a>);
-impl ActorInheritsCondition<'_> {
-    pub fn left_paren_token(&self) -> Option<LeftParenToken> {
-        support::child(&self.0, 0usize)
-    }
-    pub fn condition(&self) -> Option<Expression> {
-        support::child(&self.0, 0usize)
-    }
-    pub fn right_paren_token(&self) -> Option<RightParenToken> {
-        support::child(&self.0, 0usize)
-    }
-}
-impl<'a> TypedNode for ActorInheritsCondition<'a> {
-    type Value = OscSyntaxKind;
-    type Node = OscNode<'a>;
-    fn can_cast(value: Self::Value) -> bool {
-        value == ACTOR_INHERITS_CONDITION
-    }
-    fn cast(node: Self::Node) -> Option<Self> {
-        Self::can_cast(*node.value()).then(|| Self(node))
-    }
-    fn syntax(&self) -> &Self::Node {
-        &self.0
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ActorBody<'a>(OscNode<'a>);
-impl ActorBody<'_> {
-    pub fn colon_token(&self) -> Option<ColonToken> {
+pub struct ModifierApplication<'a>(OscNode<'a>);
+impl ModifierApplication<'_> {
+    pub fn expression(&self) -> Option<Expression> {
         support::child(&self.0, 0usize)
     }
     pub fn newline_token(&self) -> Option<NewlineToken> {
         support::child(&self.0, 0usize)
     }
-    pub fn indent_token(&self) -> Option<IndentToken> {
-        support::child(&self.0, 0usize)
-    }
-    pub fn actor_member_list(&self) -> Option<ActorMemberList> {
-        support::child(&self.0, 0usize)
-    }
-    pub fn dedent_token(&self) -> Option<DedentToken> {
-        support::child(&self.0, 0usize)
-    }
 }
-impl<'a> TypedNode for ActorBody<'a> {
+impl<'a> TypedNode for ModifierApplication<'a> {
     type Value = OscSyntaxKind;
     type Node = OscNode<'a>;
     fn can_cast(value: Self::Value) -> bool {
-        value == ACTOR_BODY
+        value == MODIFIER_APPLICATION
     }
     fn cast(node: Self::Node) -> Option<Self> {
         Self::can_cast(*node.value()).then(|| Self(node))
     }
     fn syntax(&self) -> &Self::Node {
         &self.0
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ActorMemberList<'a>(OscNode<'a>);
-impl<'a> ActorMemberList<'a> {
-    pub fn actor_member_decl(&self) -> impl Iterator<Item = ActorMemberDecl<'a>> + 'a {
-        support::children(&self.0)
-    }
-}
-impl<'a> TypedNode for ActorMemberList<'a> {
-    type Value = OscSyntaxKind;
-    type Node = OscNode<'a>;
-    fn can_cast(value: Self::Value) -> bool {
-        value == ACTOR_MEMBER_LIST
-    }
-    fn cast(node: Self::Node) -> Option<Self> {
-        Self::can_cast(*node.value()).then(|| Self(node))
-    }
-    fn syntax(&self) -> &Self::Node {
-        &self.0
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum ActorMemberDecl<'a> {
-    EventDeclaration(EventDeclaration<'a>),
-    FieldDeclaration(FieldDeclaration<'a>),
-    ConstraintDeclaration(ConstraintDeclaration<'a>),
-    MethodDeclaration(MethodDeclaration<'a>),
-    CoverageDeclaration(CoverageDeclaration<'a>),
-}
-impl ActorMemberDecl<'_> {
-    pub fn as_event_declaration(&self) -> Option<EventDeclaration> {
-        match self {
-            Self::EventDeclaration(node) => Some(node.clone()),
-            _ => None,
-        }
-    }
-    pub fn as_field_declaration(&self) -> Option<FieldDeclaration> {
-        match self {
-            Self::FieldDeclaration(node) => Some(node.clone()),
-            _ => None,
-        }
-    }
-    pub fn as_constraint_declaration(&self) -> Option<ConstraintDeclaration> {
-        match self {
-            Self::ConstraintDeclaration(node) => Some(node.clone()),
-            _ => None,
-        }
-    }
-    pub fn as_method_declaration(&self) -> Option<MethodDeclaration> {
-        match self {
-            Self::MethodDeclaration(node) => Some(node.clone()),
-            _ => None,
-        }
-    }
-    pub fn as_coverage_declaration(&self) -> Option<CoverageDeclaration> {
-        match self {
-            Self::CoverageDeclaration(node) => Some(node.clone()),
-            _ => None,
-        }
-    }
-}
-impl<'a> TypedNode for ActorMemberDecl<'a> {
-    type Value = OscSyntaxKind;
-    type Node = OscNode<'a>;
-    fn can_cast(value: Self::Value) -> bool {
-        matches!(
-            value,
-            EVENT_DECLARATION
-                | PARAMETER_DECLARATION
-                | VARIABLE_DECLARATION
-                | KEEP_CONSTRAINT_DECLARATION
-                | REMOVE_DEFAULT_DECLARATION
-                | METHOD_DECLARATION
-                | COVERAGE_DECLARATION
-        )
-    }
-    fn cast(node: Self::Node) -> Option<Self> {
-        match *node.value() {
-            EVENT_DECLARATION => Some(Self::EventDeclaration(EventDeclaration::cast(
-                node.clone(),
-            )?)),
-            PARAMETER_DECLARATION | VARIABLE_DECLARATION => Some(Self::FieldDeclaration(
-                FieldDeclaration::cast(node.clone())?,
-            )),
-            KEEP_CONSTRAINT_DECLARATION | REMOVE_DEFAULT_DECLARATION => Some(
-                Self::ConstraintDeclaration(ConstraintDeclaration::cast(node.clone())?),
-            ),
-            METHOD_DECLARATION => Some(Self::MethodDeclaration(MethodDeclaration::cast(
-                node.clone(),
-            )?)),
-            COVERAGE_DECLARATION => Some(Self::CoverageDeclaration(CoverageDeclaration::cast(
-                node.clone(),
-            )?)),
-            _ => None,
-        }
-    }
-    fn syntax(&self) -> &Self::Node {
-        match self {
-            Self::EventDeclaration(node) => node.syntax(),
-            Self::FieldDeclaration(node) => node.syntax(),
-            Self::ConstraintDeclaration(node) => node.syntax(),
-            Self::MethodDeclaration(node) => node.syntax(),
-            Self::CoverageDeclaration(node) => node.syntax(),
-        }
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ScenarioInheritsClause<'a>(OscNode<'a>);
-impl ScenarioInheritsClause<'_> {
-    pub fn inherits_token(&self) -> Option<InheritsToken> {
-        support::child(&self.0, 0usize)
-    }
-    pub fn base_name(&self) -> Option<QualifiedBehaviorName> {
-        support::child(&self.0, 0usize)
-    }
-    pub fn scenario_inherits_condition(&self) -> Option<ScenarioInheritsCondition> {
-        support::child(&self.0, 0usize)
-    }
-}
-impl<'a> TypedNode for ScenarioInheritsClause<'a> {
-    type Value = OscSyntaxKind;
-    type Node = OscNode<'a>;
-    fn can_cast(value: Self::Value) -> bool {
-        value == SCENARIO_INHERITS_CLAUSE
-    }
-    fn cast(node: Self::Node) -> Option<Self> {
-        Self::can_cast(*node.value()).then(|| Self(node))
-    }
-    fn syntax(&self) -> &Self::Node {
-        &self.0
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum ScenarioBodyOrNewline<'a> {
-    ScenarioBody(ScenarioBody<'a>),
-    NewlineToken(NewlineToken<'a>),
-}
-impl ScenarioBodyOrNewline<'_> {
-    pub fn as_scenario_body(&self) -> Option<ScenarioBody> {
-        match self {
-            Self::ScenarioBody(node) => Some(node.clone()),
-            _ => None,
-        }
-    }
-    pub fn as_newline_token(&self) -> Option<NewlineToken> {
-        match self {
-            Self::NewlineToken(node) => Some(node.clone()),
-            _ => None,
-        }
-    }
-}
-impl<'a> TypedNode for ScenarioBodyOrNewline<'a> {
-    type Value = OscSyntaxKind;
-    type Node = OscNode<'a>;
-    fn can_cast(value: Self::Value) -> bool {
-        matches!(value, SCENARIO_BODY | NEWLINE)
-    }
-    fn cast(node: Self::Node) -> Option<Self> {
-        match *node.value() {
-            SCENARIO_BODY => Some(Self::ScenarioBody(ScenarioBody::cast(node.clone())?)),
-            NEWLINE => Some(Self::NewlineToken(NewlineToken::cast(node.clone())?)),
-            _ => None,
-        }
-    }
-    fn syntax(&self) -> &Self::Node {
-        match self {
-            Self::ScenarioBody(node) => node.syntax(),
-            Self::NewlineToken(node) => node.syntax(),
-        }
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ScenarioInheritsCondition<'a>(OscNode<'a>);
-impl ScenarioInheritsCondition<'_> {
-    pub fn left_paren_token(&self) -> Option<LeftParenToken> {
-        support::child(&self.0, 0usize)
-    }
-    pub fn condition(&self) -> Option<Expression> {
-        support::child(&self.0, 0usize)
-    }
-    pub fn right_paren_token(&self) -> Option<RightParenToken> {
-        support::child(&self.0, 0usize)
-    }
-}
-impl<'a> TypedNode for ScenarioInheritsCondition<'a> {
-    type Value = OscSyntaxKind;
-    type Node = OscNode<'a>;
-    fn can_cast(value: Self::Value) -> bool {
-        value == SCENARIO_INHERITS_CONDITION
-    }
-    fn cast(node: Self::Node) -> Option<Self> {
-        Self::can_cast(*node.value()).then(|| Self(node))
-    }
-    fn syntax(&self) -> &Self::Node {
-        &self.0
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ScenarioBody<'a>(OscNode<'a>);
-impl ScenarioBody<'_> {
-    pub fn colon_token(&self) -> Option<ColonToken> {
-        support::child(&self.0, 0usize)
-    }
-    pub fn newline_token(&self) -> Option<NewlineToken> {
-        support::child(&self.0, 0usize)
-    }
-    pub fn indent_token(&self) -> Option<IndentToken> {
-        support::child(&self.0, 0usize)
-    }
-    pub fn scenario_member_list(&self) -> Option<ScenarioMemberList> {
-        support::child(&self.0, 0usize)
-    }
-    pub fn dedent_token(&self) -> Option<DedentToken> {
-        support::child(&self.0, 0usize)
-    }
-}
-impl<'a> TypedNode for ScenarioBody<'a> {
-    type Value = OscSyntaxKind;
-    type Node = OscNode<'a>;
-    fn can_cast(value: Self::Value) -> bool {
-        value == SCENARIO_BODY
-    }
-    fn cast(node: Self::Node) -> Option<Self> {
-        Self::can_cast(*node.value()).then(|| Self(node))
-    }
-    fn syntax(&self) -> &Self::Node {
-        &self.0
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ScenarioMemberList<'a>(OscNode<'a>);
-impl<'a> ScenarioMemberList<'a> {
-    pub fn scenario_member(&self) -> impl Iterator<Item = ScenarioMember<'a>> + 'a {
-        support::children(&self.0)
-    }
-}
-impl<'a> TypedNode for ScenarioMemberList<'a> {
-    type Value = OscSyntaxKind;
-    type Node = OscNode<'a>;
-    fn can_cast(value: Self::Value) -> bool {
-        value == SCENARIO_MEMBER_LIST
-    }
-    fn cast(node: Self::Node) -> Option<Self> {
-        Self::can_cast(*node.value()).then(|| Self(node))
-    }
-    fn syntax(&self) -> &Self::Node {
-        &self.0
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum ScenarioMember<'a> {
-    ScenarioMemberDecl(ScenarioMemberDecl<'a>),
-    BehaviorSpecification(BehaviorSpecification<'a>),
-}
-impl ScenarioMember<'_> {
-    pub fn as_scenario_member_decl(&self) -> Option<ScenarioMemberDecl> {
-        match self {
-            Self::ScenarioMemberDecl(node) => Some(node.clone()),
-            _ => None,
-        }
-    }
-    pub fn as_behavior_specification(&self) -> Option<BehaviorSpecification> {
-        match self {
-            Self::BehaviorSpecification(node) => Some(node.clone()),
-            _ => None,
-        }
-    }
-}
-impl<'a> TypedNode for ScenarioMember<'a> {
-    type Value = OscSyntaxKind;
-    type Node = OscNode<'a>;
-    fn can_cast(value: Self::Value) -> bool {
-        matches!(
-            value,
-            EVENT_DECLARATION
-                | PARAMETER_DECLARATION
-                | VARIABLE_DECLARATION
-                | KEEP_CONSTRAINT_DECLARATION
-                | REMOVE_DEFAULT_DECLARATION
-                | METHOD_DECLARATION
-                | COVERAGE_DECLARATION
-                | MODIFIER_APPLICATION
-                | ON_DIRECTIVE
-                | DO_DIRECTIVE
-        )
-    }
-    fn cast(node: Self::Node) -> Option<Self> {
-        match *node.value() {
-            EVENT_DECLARATION
-            | PARAMETER_DECLARATION
-            | VARIABLE_DECLARATION
-            | KEEP_CONSTRAINT_DECLARATION
-            | REMOVE_DEFAULT_DECLARATION
-            | METHOD_DECLARATION
-            | COVERAGE_DECLARATION
-            | MODIFIER_APPLICATION => Some(Self::ScenarioMemberDecl(ScenarioMemberDecl::cast(
-                node.clone(),
-            )?)),
-            ON_DIRECTIVE | DO_DIRECTIVE => Some(Self::BehaviorSpecification(
-                BehaviorSpecification::cast(node.clone())?,
-            )),
-            _ => None,
-        }
-    }
-    fn syntax(&self) -> &Self::Node {
-        match self {
-            Self::ScenarioMemberDecl(node) => node.syntax(),
-            Self::BehaviorSpecification(node) => node.syntax(),
-        }
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum ScenarioMemberDecl<'a> {
-    EventDeclaration(EventDeclaration<'a>),
-    FieldDeclaration(FieldDeclaration<'a>),
-    ConstraintDeclaration(ConstraintDeclaration<'a>),
-    MethodDeclaration(MethodDeclaration<'a>),
-    CoverageDeclaration(CoverageDeclaration<'a>),
-    ModifierApplication(ModifierApplication<'a>),
-}
-impl ScenarioMemberDecl<'_> {
-    pub fn as_event_declaration(&self) -> Option<EventDeclaration> {
-        match self {
-            Self::EventDeclaration(node) => Some(node.clone()),
-            _ => None,
-        }
-    }
-    pub fn as_field_declaration(&self) -> Option<FieldDeclaration> {
-        match self {
-            Self::FieldDeclaration(node) => Some(node.clone()),
-            _ => None,
-        }
-    }
-    pub fn as_constraint_declaration(&self) -> Option<ConstraintDeclaration> {
-        match self {
-            Self::ConstraintDeclaration(node) => Some(node.clone()),
-            _ => None,
-        }
-    }
-    pub fn as_method_declaration(&self) -> Option<MethodDeclaration> {
-        match self {
-            Self::MethodDeclaration(node) => Some(node.clone()),
-            _ => None,
-        }
-    }
-    pub fn as_coverage_declaration(&self) -> Option<CoverageDeclaration> {
-        match self {
-            Self::CoverageDeclaration(node) => Some(node.clone()),
-            _ => None,
-        }
-    }
-    pub fn as_modifier_application(&self) -> Option<ModifierApplication> {
-        match self {
-            Self::ModifierApplication(node) => Some(node.clone()),
-            _ => None,
-        }
-    }
-}
-impl<'a> TypedNode for ScenarioMemberDecl<'a> {
-    type Value = OscSyntaxKind;
-    type Node = OscNode<'a>;
-    fn can_cast(value: Self::Value) -> bool {
-        matches!(
-            value,
-            EVENT_DECLARATION
-                | PARAMETER_DECLARATION
-                | VARIABLE_DECLARATION
-                | KEEP_CONSTRAINT_DECLARATION
-                | REMOVE_DEFAULT_DECLARATION
-                | METHOD_DECLARATION
-                | COVERAGE_DECLARATION
-                | MODIFIER_APPLICATION
-        )
-    }
-    fn cast(node: Self::Node) -> Option<Self> {
-        match *node.value() {
-            EVENT_DECLARATION => Some(Self::EventDeclaration(EventDeclaration::cast(
-                node.clone(),
-            )?)),
-            PARAMETER_DECLARATION | VARIABLE_DECLARATION => Some(Self::FieldDeclaration(
-                FieldDeclaration::cast(node.clone())?,
-            )),
-            KEEP_CONSTRAINT_DECLARATION | REMOVE_DEFAULT_DECLARATION => Some(
-                Self::ConstraintDeclaration(ConstraintDeclaration::cast(node.clone())?),
-            ),
-            METHOD_DECLARATION => Some(Self::MethodDeclaration(MethodDeclaration::cast(
-                node.clone(),
-            )?)),
-            COVERAGE_DECLARATION => Some(Self::CoverageDeclaration(CoverageDeclaration::cast(
-                node.clone(),
-            )?)),
-            MODIFIER_APPLICATION => Some(Self::ModifierApplication(ModifierApplication::cast(
-                node.clone(),
-            )?)),
-            _ => None,
-        }
-    }
-    fn syntax(&self) -> &Self::Node {
-        match self {
-            Self::EventDeclaration(node) => node.syntax(),
-            Self::FieldDeclaration(node) => node.syntax(),
-            Self::ConstraintDeclaration(node) => node.syntax(),
-            Self::MethodDeclaration(node) => node.syntax(),
-            Self::CoverageDeclaration(node) => node.syntax(),
-            Self::ModifierApplication(node) => node.syntax(),
-        }
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -4821,788 +4966,6 @@ impl<'a> TypedNode for BehaviorSpecification<'a> {
             Self::OnDirective(node) => node.syntax(),
             Self::DoDirective(node) => node.syntax(),
         }
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ModifierApplication<'a>(OscNode<'a>);
-impl ModifierApplication<'_> {
-    pub fn expression(&self) -> Option<Expression> {
-        support::child(&self.0, 0usize)
-    }
-    pub fn newline_token(&self) -> Option<NewlineToken> {
-        support::child(&self.0, 0usize)
-    }
-}
-impl<'a> TypedNode for ModifierApplication<'a> {
-    type Value = OscSyntaxKind;
-    type Node = OscNode<'a>;
-    fn can_cast(value: Self::Value) -> bool {
-        value == MODIFIER_APPLICATION
-    }
-    fn cast(node: Self::Node) -> Option<Self> {
-        Self::can_cast(*node.value()).then(|| Self(node))
-    }
-    fn syntax(&self) -> &Self::Node {
-        &self.0
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct PrefixedBehaviorName<'a>(OscNode<'a>);
-impl PrefixedBehaviorName<'_> {
-    pub fn actor_name(&self) -> Option<QualifiedIdentifier> {
-        support::child(&self.0, 0usize)
-    }
-    pub fn dot_token(&self) -> Option<DotToken> {
-        support::child(&self.0, 0usize)
-    }
-    pub fn behavior_name(&self) -> Option<QualifiedIdentifier> {
-        support::child(&self.0, 1usize)
-    }
-}
-impl<'a> TypedNode for PrefixedBehaviorName<'a> {
-    type Value = OscSyntaxKind;
-    type Node = OscNode<'a>;
-    fn can_cast(value: Self::Value) -> bool {
-        value == PREFIXED_BEHAVIOR_NAME
-    }
-    fn cast(node: Self::Node) -> Option<Self> {
-        Self::can_cast(*node.value()).then(|| Self(node))
-    }
-    fn syntax(&self) -> &Self::Node {
-        &self.0
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ActionInheritsClause<'a>(OscNode<'a>);
-impl ActionInheritsClause<'_> {
-    pub fn inherits_token(&self) -> Option<InheritsToken> {
-        support::child(&self.0, 0usize)
-    }
-    pub fn base_name(&self) -> Option<QualifiedBehaviorName> {
-        support::child(&self.0, 0usize)
-    }
-    pub fn action_inherits_condition(&self) -> Option<ActionInheritsCondition> {
-        support::child(&self.0, 0usize)
-    }
-}
-impl<'a> TypedNode for ActionInheritsClause<'a> {
-    type Value = OscSyntaxKind;
-    type Node = OscNode<'a>;
-    fn can_cast(value: Self::Value) -> bool {
-        value == ACTION_INHERITS_CLAUSE
-    }
-    fn cast(node: Self::Node) -> Option<Self> {
-        Self::can_cast(*node.value()).then(|| Self(node))
-    }
-    fn syntax(&self) -> &Self::Node {
-        &self.0
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum ActionBodyOrNewline<'a> {
-    ActionBody(ActionBody<'a>),
-    NewlineToken(NewlineToken<'a>),
-}
-impl ActionBodyOrNewline<'_> {
-    pub fn as_action_body(&self) -> Option<ActionBody> {
-        match self {
-            Self::ActionBody(node) => Some(node.clone()),
-            _ => None,
-        }
-    }
-    pub fn as_newline_token(&self) -> Option<NewlineToken> {
-        match self {
-            Self::NewlineToken(node) => Some(node.clone()),
-            _ => None,
-        }
-    }
-}
-impl<'a> TypedNode for ActionBodyOrNewline<'a> {
-    type Value = OscSyntaxKind;
-    type Node = OscNode<'a>;
-    fn can_cast(value: Self::Value) -> bool {
-        matches!(value, ACTION_BODY | NEWLINE)
-    }
-    fn cast(node: Self::Node) -> Option<Self> {
-        match *node.value() {
-            ACTION_BODY => Some(Self::ActionBody(ActionBody::cast(node.clone())?)),
-            NEWLINE => Some(Self::NewlineToken(NewlineToken::cast(node.clone())?)),
-            _ => None,
-        }
-    }
-    fn syntax(&self) -> &Self::Node {
-        match self {
-            Self::ActionBody(node) => node.syntax(),
-            Self::NewlineToken(node) => node.syntax(),
-        }
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ActionBody<'a>(OscNode<'a>);
-impl ActionBody<'_> {
-    pub fn colon_token(&self) -> Option<ColonToken> {
-        support::child(&self.0, 0usize)
-    }
-    pub fn newline_token(&self) -> Option<NewlineToken> {
-        support::child(&self.0, 0usize)
-    }
-    pub fn indent_token(&self) -> Option<IndentToken> {
-        support::child(&self.0, 0usize)
-    }
-    pub fn action_member_list(&self) -> Option<ActionMemberList> {
-        support::child(&self.0, 0usize)
-    }
-    pub fn dedent_token(&self) -> Option<DedentToken> {
-        support::child(&self.0, 0usize)
-    }
-}
-impl<'a> TypedNode for ActionBody<'a> {
-    type Value = OscSyntaxKind;
-    type Node = OscNode<'a>;
-    fn can_cast(value: Self::Value) -> bool {
-        value == ACTION_BODY
-    }
-    fn cast(node: Self::Node) -> Option<Self> {
-        Self::can_cast(*node.value()).then(|| Self(node))
-    }
-    fn syntax(&self) -> &Self::Node {
-        &self.0
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ActionInheritsCondition<'a>(OscNode<'a>);
-impl ActionInheritsCondition<'_> {
-    pub fn left_paren_token(&self) -> Option<LeftParenToken> {
-        support::child(&self.0, 0usize)
-    }
-    pub fn condition(&self) -> Option<Expression> {
-        support::child(&self.0, 0usize)
-    }
-    pub fn right_paren_token(&self) -> Option<RightParenToken> {
-        support::child(&self.0, 0usize)
-    }
-}
-impl<'a> TypedNode for ActionInheritsCondition<'a> {
-    type Value = OscSyntaxKind;
-    type Node = OscNode<'a>;
-    fn can_cast(value: Self::Value) -> bool {
-        value == ACTION_INHERITS_CONDITION
-    }
-    fn cast(node: Self::Node) -> Option<Self> {
-        Self::can_cast(*node.value()).then(|| Self(node))
-    }
-    fn syntax(&self) -> &Self::Node {
-        &self.0
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ActionMemberList<'a>(OscNode<'a>);
-impl<'a> ActionMemberList<'a> {
-    pub fn action_member(&self) -> impl Iterator<Item = ActionMember<'a>> + 'a {
-        support::children(&self.0)
-    }
-}
-impl<'a> TypedNode for ActionMemberList<'a> {
-    type Value = OscSyntaxKind;
-    type Node = OscNode<'a>;
-    fn can_cast(value: Self::Value) -> bool {
-        value == ACTION_MEMBER_LIST
-    }
-    fn cast(node: Self::Node) -> Option<Self> {
-        Self::can_cast(*node.value()).then(|| Self(node))
-    }
-    fn syntax(&self) -> &Self::Node {
-        &self.0
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum ActionMember<'a> {
-    ScenarioMemberDecl(ScenarioMemberDecl<'a>),
-    BehaviorSpecification(BehaviorSpecification<'a>),
-}
-impl ActionMember<'_> {
-    pub fn as_scenario_member_decl(&self) -> Option<ScenarioMemberDecl> {
-        match self {
-            Self::ScenarioMemberDecl(node) => Some(node.clone()),
-            _ => None,
-        }
-    }
-    pub fn as_behavior_specification(&self) -> Option<BehaviorSpecification> {
-        match self {
-            Self::BehaviorSpecification(node) => Some(node.clone()),
-            _ => None,
-        }
-    }
-}
-impl<'a> TypedNode for ActionMember<'a> {
-    type Value = OscSyntaxKind;
-    type Node = OscNode<'a>;
-    fn can_cast(value: Self::Value) -> bool {
-        matches!(
-            value,
-            EVENT_DECLARATION
-                | PARAMETER_DECLARATION
-                | VARIABLE_DECLARATION
-                | KEEP_CONSTRAINT_DECLARATION
-                | REMOVE_DEFAULT_DECLARATION
-                | METHOD_DECLARATION
-                | COVERAGE_DECLARATION
-                | MODIFIER_APPLICATION
-                | ON_DIRECTIVE
-                | DO_DIRECTIVE
-        )
-    }
-    fn cast(node: Self::Node) -> Option<Self> {
-        match *node.value() {
-            EVENT_DECLARATION
-            | PARAMETER_DECLARATION
-            | VARIABLE_DECLARATION
-            | KEEP_CONSTRAINT_DECLARATION
-            | REMOVE_DEFAULT_DECLARATION
-            | METHOD_DECLARATION
-            | COVERAGE_DECLARATION
-            | MODIFIER_APPLICATION => Some(Self::ScenarioMemberDecl(ScenarioMemberDecl::cast(
-                node.clone(),
-            )?)),
-            ON_DIRECTIVE | DO_DIRECTIVE => Some(Self::BehaviorSpecification(
-                BehaviorSpecification::cast(node.clone())?,
-            )),
-            _ => None,
-        }
-    }
-    fn syntax(&self) -> &Self::Node {
-        match self {
-            Self::ScenarioMemberDecl(node) => node.syntax(),
-            Self::BehaviorSpecification(node) => node.syntax(),
-        }
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ModifierOfClause<'a>(OscNode<'a>);
-impl ModifierOfClause<'_> {
-    pub fn of_token(&self) -> Option<OfToken> {
-        support::child(&self.0, 0usize)
-    }
-    pub fn qualified_behavior_name(&self) -> Option<QualifiedBehaviorName> {
-        support::child(&self.0, 0usize)
-    }
-}
-impl<'a> TypedNode for ModifierOfClause<'a> {
-    type Value = OscSyntaxKind;
-    type Node = OscNode<'a>;
-    fn can_cast(value: Self::Value) -> bool {
-        value == MODIFIER_OF_CLAUSE
-    }
-    fn cast(node: Self::Node) -> Option<Self> {
-        Self::can_cast(*node.value()).then(|| Self(node))
-    }
-    fn syntax(&self) -> &Self::Node {
-        &self.0
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum ModifierBodyOrNewline<'a> {
-    ModifierBody(ModifierBody<'a>),
-    NewlineToken(NewlineToken<'a>),
-}
-impl ModifierBodyOrNewline<'_> {
-    pub fn as_modifier_body(&self) -> Option<ModifierBody> {
-        match self {
-            Self::ModifierBody(node) => Some(node.clone()),
-            _ => None,
-        }
-    }
-    pub fn as_newline_token(&self) -> Option<NewlineToken> {
-        match self {
-            Self::NewlineToken(node) => Some(node.clone()),
-            _ => None,
-        }
-    }
-}
-impl<'a> TypedNode for ModifierBodyOrNewline<'a> {
-    type Value = OscSyntaxKind;
-    type Node = OscNode<'a>;
-    fn can_cast(value: Self::Value) -> bool {
-        matches!(value, MODIFIER_BODY | NEWLINE)
-    }
-    fn cast(node: Self::Node) -> Option<Self> {
-        match *node.value() {
-            MODIFIER_BODY => Some(Self::ModifierBody(ModifierBody::cast(node.clone())?)),
-            NEWLINE => Some(Self::NewlineToken(NewlineToken::cast(node.clone())?)),
-            _ => None,
-        }
-    }
-    fn syntax(&self) -> &Self::Node {
-        match self {
-            Self::ModifierBody(node) => node.syntax(),
-            Self::NewlineToken(node) => node.syntax(),
-        }
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ModifierBody<'a>(OscNode<'a>);
-impl ModifierBody<'_> {
-    pub fn colon_token(&self) -> Option<ColonToken> {
-        support::child(&self.0, 0usize)
-    }
-    pub fn newline_token(&self) -> Option<NewlineToken> {
-        support::child(&self.0, 0usize)
-    }
-    pub fn indent_token(&self) -> Option<IndentToken> {
-        support::child(&self.0, 0usize)
-    }
-    pub fn modifier_member_list(&self) -> Option<ModifierMemberList> {
-        support::child(&self.0, 0usize)
-    }
-    pub fn dedent_token(&self) -> Option<DedentToken> {
-        support::child(&self.0, 0usize)
-    }
-}
-impl<'a> TypedNode for ModifierBody<'a> {
-    type Value = OscSyntaxKind;
-    type Node = OscNode<'a>;
-    fn can_cast(value: Self::Value) -> bool {
-        value == MODIFIER_BODY
-    }
-    fn cast(node: Self::Node) -> Option<Self> {
-        Self::can_cast(*node.value()).then(|| Self(node))
-    }
-    fn syntax(&self) -> &Self::Node {
-        &self.0
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ModifierMemberList<'a>(OscNode<'a>);
-impl<'a> ModifierMemberList<'a> {
-    pub fn modifier_member(&self) -> impl Iterator<Item = ModifierMember<'a>> + 'a {
-        support::children(&self.0)
-    }
-}
-impl<'a> TypedNode for ModifierMemberList<'a> {
-    type Value = OscSyntaxKind;
-    type Node = OscNode<'a>;
-    fn can_cast(value: Self::Value) -> bool {
-        value == MODIFIER_MEMBER_LIST
-    }
-    fn cast(node: Self::Node) -> Option<Self> {
-        Self::can_cast(*node.value()).then(|| Self(node))
-    }
-    fn syntax(&self) -> &Self::Node {
-        &self.0
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum ModifierMember<'a> {
-    ScenarioMemberDecl(ScenarioMemberDecl<'a>),
-    OnDirective(OnDirective<'a>),
-}
-impl ModifierMember<'_> {
-    pub fn as_scenario_member_decl(&self) -> Option<ScenarioMemberDecl> {
-        match self {
-            Self::ScenarioMemberDecl(node) => Some(node.clone()),
-            _ => None,
-        }
-    }
-    pub fn as_on_directive(&self) -> Option<OnDirective> {
-        match self {
-            Self::OnDirective(node) => Some(node.clone()),
-            _ => None,
-        }
-    }
-}
-impl<'a> TypedNode for ModifierMember<'a> {
-    type Value = OscSyntaxKind;
-    type Node = OscNode<'a>;
-    fn can_cast(value: Self::Value) -> bool {
-        matches!(
-            value,
-            EVENT_DECLARATION
-                | PARAMETER_DECLARATION
-                | VARIABLE_DECLARATION
-                | KEEP_CONSTRAINT_DECLARATION
-                | REMOVE_DEFAULT_DECLARATION
-                | METHOD_DECLARATION
-                | COVERAGE_DECLARATION
-                | MODIFIER_APPLICATION
-                | ON_DIRECTIVE
-        )
-    }
-    fn cast(node: Self::Node) -> Option<Self> {
-        match *node.value() {
-            EVENT_DECLARATION
-            | PARAMETER_DECLARATION
-            | VARIABLE_DECLARATION
-            | KEEP_CONSTRAINT_DECLARATION
-            | REMOVE_DEFAULT_DECLARATION
-            | METHOD_DECLARATION
-            | COVERAGE_DECLARATION
-            | MODIFIER_APPLICATION => Some(Self::ScenarioMemberDecl(ScenarioMemberDecl::cast(
-                node.clone(),
-            )?)),
-            ON_DIRECTIVE => Some(Self::OnDirective(OnDirective::cast(node.clone())?)),
-            _ => None,
-        }
-    }
-    fn syntax(&self) -> &Self::Node {
-        match self {
-            Self::ScenarioMemberDecl(node) => node.syntax(),
-            Self::OnDirective(node) => node.syntax(),
-        }
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct OnDirective<'a>(OscNode<'a>);
-impl OnDirective<'_> {
-    pub fn on_token(&self) -> Option<OnToken> {
-        support::child(&self.0, 0usize)
-    }
-    pub fn event_specification(&self) -> Option<EventSpecification> {
-        support::child(&self.0, 0usize)
-    }
-    pub fn colon_token(&self) -> Option<ColonToken> {
-        support::child(&self.0, 0usize)
-    }
-    pub fn newline_token(&self) -> Option<NewlineToken> {
-        support::child(&self.0, 0usize)
-    }
-    pub fn indent_token(&self) -> Option<IndentToken> {
-        support::child(&self.0, 0usize)
-    }
-    pub fn on_member_list(&self) -> Option<OnMemberList> {
-        support::child(&self.0, 0usize)
-    }
-    pub fn dedent_token(&self) -> Option<DedentToken> {
-        support::child(&self.0, 0usize)
-    }
-}
-impl<'a> TypedNode for OnDirective<'a> {
-    type Value = OscSyntaxKind;
-    type Node = OscNode<'a>;
-    fn can_cast(value: Self::Value) -> bool {
-        value == ON_DIRECTIVE
-    }
-    fn cast(node: Self::Node) -> Option<Self> {
-        Self::can_cast(*node.value()).then(|| Self(node))
-    }
-    fn syntax(&self) -> &Self::Node {
-        &self.0
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum TypeExtensionBody<'a> {
-    EnumTypeExtensionBody(EnumTypeExtensionBody<'a>),
-    StructuredTypeExtensionBody(StructuredTypeExtensionBody<'a>),
-}
-impl TypeExtensionBody<'_> {
-    pub fn as_enum_type_extension_body(&self) -> Option<EnumTypeExtensionBody> {
-        match self {
-            Self::EnumTypeExtensionBody(node) => Some(node.clone()),
-            _ => None,
-        }
-    }
-    pub fn as_structured_type_extension_body(&self) -> Option<StructuredTypeExtensionBody> {
-        match self {
-            Self::StructuredTypeExtensionBody(node) => Some(node.clone()),
-            _ => None,
-        }
-    }
-}
-impl<'a> TypedNode for TypeExtensionBody<'a> {
-    type Value = OscSyntaxKind;
-    type Node = OscNode<'a>;
-    fn can_cast(value: Self::Value) -> bool {
-        matches!(
-            value,
-            ENUM_TYPE_EXTENSION_BODY | STRUCTURED_TYPE_EXTENSION_BODY
-        )
-    }
-    fn cast(node: Self::Node) -> Option<Self> {
-        match *node.value() {
-            ENUM_TYPE_EXTENSION_BODY => Some(Self::EnumTypeExtensionBody(
-                EnumTypeExtensionBody::cast(node.clone())?,
-            )),
-            STRUCTURED_TYPE_EXTENSION_BODY => Some(Self::StructuredTypeExtensionBody(
-                StructuredTypeExtensionBody::cast(node.clone())?,
-            )),
-            _ => None,
-        }
-    }
-    fn syntax(&self) -> &Self::Node {
-        match self {
-            Self::EnumTypeExtensionBody(node) => node.syntax(),
-            Self::StructuredTypeExtensionBody(node) => node.syntax(),
-        }
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct EnumTypeExtensionBody<'a>(OscNode<'a>);
-impl EnumTypeExtensionBody<'_> {
-    pub fn colon_token(&self) -> Option<ColonToken> {
-        support::child(&self.0, 0usize)
-    }
-    pub fn enum_member_decls(&self) -> Option<EnumMemberDecls> {
-        support::child(&self.0, 0usize)
-    }
-    pub fn newline_token(&self) -> Option<NewlineToken> {
-        support::child(&self.0, 0usize)
-    }
-}
-impl<'a> TypedNode for EnumTypeExtensionBody<'a> {
-    type Value = OscSyntaxKind;
-    type Node = OscNode<'a>;
-    fn can_cast(value: Self::Value) -> bool {
-        value == ENUM_TYPE_EXTENSION_BODY
-    }
-    fn cast(node: Self::Node) -> Option<Self> {
-        Self::can_cast(*node.value()).then(|| Self(node))
-    }
-    fn syntax(&self) -> &Self::Node {
-        &self.0
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct StructuredTypeExtensionBody<'a>(OscNode<'a>);
-impl StructuredTypeExtensionBody<'_> {
-    pub fn colon_token(&self) -> Option<ColonToken> {
-        support::child(&self.0, 0usize)
-    }
-    pub fn newline_token(&self) -> Option<NewlineToken> {
-        support::child(&self.0, 0usize)
-    }
-    pub fn indent_token(&self) -> Option<IndentToken> {
-        support::child(&self.0, 0usize)
-    }
-    pub fn extension_member_list(&self) -> Option<ExtensionMemberList> {
-        support::child(&self.0, 0usize)
-    }
-    pub fn dedent_token(&self) -> Option<DedentToken> {
-        support::child(&self.0, 0usize)
-    }
-}
-impl<'a> TypedNode for StructuredTypeExtensionBody<'a> {
-    type Value = OscSyntaxKind;
-    type Node = OscNode<'a>;
-    fn can_cast(value: Self::Value) -> bool {
-        value == STRUCTURED_TYPE_EXTENSION_BODY
-    }
-    fn cast(node: Self::Node) -> Option<Self> {
-        Self::can_cast(*node.value()).then(|| Self(node))
-    }
-    fn syntax(&self) -> &Self::Node {
-        &self.0
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ExtensionMemberList<'a>(OscNode<'a>);
-impl<'a> ExtensionMemberList<'a> {
-    pub fn extension_member(&self) -> impl Iterator<Item = ExtensionMember<'a>> + 'a {
-        support::children(&self.0)
-    }
-}
-impl<'a> TypedNode for ExtensionMemberList<'a> {
-    type Value = OscSyntaxKind;
-    type Node = OscNode<'a>;
-    fn can_cast(value: Self::Value) -> bool {
-        value == EXTENSION_MEMBER_LIST
-    }
-    fn cast(node: Self::Node) -> Option<Self> {
-        Self::can_cast(*node.value()).then(|| Self(node))
-    }
-    fn syntax(&self) -> &Self::Node {
-        &self.0
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum ExtensionMember<'a> {
-    ExtensionMemberDecl(ExtensionMemberDecl<'a>),
-    BehaviorSpecification(BehaviorSpecification<'a>),
-}
-impl ExtensionMember<'_> {
-    pub fn as_extension_member_decl(&self) -> Option<ExtensionMemberDecl> {
-        match self {
-            Self::ExtensionMemberDecl(node) => Some(node.clone()),
-            _ => None,
-        }
-    }
-    pub fn as_behavior_specification(&self) -> Option<BehaviorSpecification> {
-        match self {
-            Self::BehaviorSpecification(node) => Some(node.clone()),
-            _ => None,
-        }
-    }
-}
-impl<'a> TypedNode for ExtensionMember<'a> {
-    type Value = OscSyntaxKind;
-    type Node = OscNode<'a>;
-    fn can_cast(value: Self::Value) -> bool {
-        matches!(
-            value,
-            EVENT_DECLARATION
-                | PARAMETER_DECLARATION
-                | VARIABLE_DECLARATION
-                | KEEP_CONSTRAINT_DECLARATION
-                | REMOVE_DEFAULT_DECLARATION
-                | METHOD_DECLARATION
-                | COVERAGE_DECLARATION
-                | MODIFIER_APPLICATION
-                | ON_DIRECTIVE
-                | DO_DIRECTIVE
-        )
-    }
-    fn cast(node: Self::Node) -> Option<Self> {
-        match *node.value() {
-            EVENT_DECLARATION
-            | PARAMETER_DECLARATION
-            | VARIABLE_DECLARATION
-            | KEEP_CONSTRAINT_DECLARATION
-            | REMOVE_DEFAULT_DECLARATION
-            | METHOD_DECLARATION
-            | COVERAGE_DECLARATION
-            | MODIFIER_APPLICATION => Some(Self::ExtensionMemberDecl(ExtensionMemberDecl::cast(
-                node.clone(),
-            )?)),
-            ON_DIRECTIVE | DO_DIRECTIVE => Some(Self::BehaviorSpecification(
-                BehaviorSpecification::cast(node.clone())?,
-            )),
-            _ => None,
-        }
-    }
-    fn syntax(&self) -> &Self::Node {
-        match self {
-            Self::ExtensionMemberDecl(node) => node.syntax(),
-            Self::BehaviorSpecification(node) => node.syntax(),
-        }
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum ExtensionMemberDecl<'a> {
-    EventDeclaration(EventDeclaration<'a>),
-    FieldDeclaration(FieldDeclaration<'a>),
-    ConstraintDeclaration(ConstraintDeclaration<'a>),
-    MethodDeclaration(MethodDeclaration<'a>),
-    CoverageDeclaration(CoverageDeclaration<'a>),
-    ModifierApplication(ModifierApplication<'a>),
-}
-impl ExtensionMemberDecl<'_> {
-    pub fn as_event_declaration(&self) -> Option<EventDeclaration> {
-        match self {
-            Self::EventDeclaration(node) => Some(node.clone()),
-            _ => None,
-        }
-    }
-    pub fn as_field_declaration(&self) -> Option<FieldDeclaration> {
-        match self {
-            Self::FieldDeclaration(node) => Some(node.clone()),
-            _ => None,
-        }
-    }
-    pub fn as_constraint_declaration(&self) -> Option<ConstraintDeclaration> {
-        match self {
-            Self::ConstraintDeclaration(node) => Some(node.clone()),
-            _ => None,
-        }
-    }
-    pub fn as_method_declaration(&self) -> Option<MethodDeclaration> {
-        match self {
-            Self::MethodDeclaration(node) => Some(node.clone()),
-            _ => None,
-        }
-    }
-    pub fn as_coverage_declaration(&self) -> Option<CoverageDeclaration> {
-        match self {
-            Self::CoverageDeclaration(node) => Some(node.clone()),
-            _ => None,
-        }
-    }
-    pub fn as_modifier_application(&self) -> Option<ModifierApplication> {
-        match self {
-            Self::ModifierApplication(node) => Some(node.clone()),
-            _ => None,
-        }
-    }
-}
-impl<'a> TypedNode for ExtensionMemberDecl<'a> {
-    type Value = OscSyntaxKind;
-    type Node = OscNode<'a>;
-    fn can_cast(value: Self::Value) -> bool {
-        matches!(
-            value,
-            EVENT_DECLARATION
-                | PARAMETER_DECLARATION
-                | VARIABLE_DECLARATION
-                | KEEP_CONSTRAINT_DECLARATION
-                | REMOVE_DEFAULT_DECLARATION
-                | METHOD_DECLARATION
-                | COVERAGE_DECLARATION
-                | MODIFIER_APPLICATION
-        )
-    }
-    fn cast(node: Self::Node) -> Option<Self> {
-        match *node.value() {
-            EVENT_DECLARATION => Some(Self::EventDeclaration(EventDeclaration::cast(
-                node.clone(),
-            )?)),
-            PARAMETER_DECLARATION | VARIABLE_DECLARATION => Some(Self::FieldDeclaration(
-                FieldDeclaration::cast(node.clone())?,
-            )),
-            KEEP_CONSTRAINT_DECLARATION | REMOVE_DEFAULT_DECLARATION => Some(
-                Self::ConstraintDeclaration(ConstraintDeclaration::cast(node.clone())?),
-            ),
-            METHOD_DECLARATION => Some(Self::MethodDeclaration(MethodDeclaration::cast(
-                node.clone(),
-            )?)),
-            COVERAGE_DECLARATION => Some(Self::CoverageDeclaration(CoverageDeclaration::cast(
-                node.clone(),
-            )?)),
-            MODIFIER_APPLICATION => Some(Self::ModifierApplication(ModifierApplication::cast(
-                node.clone(),
-            )?)),
-            _ => None,
-        }
-    }
-    fn syntax(&self) -> &Self::Node {
-        match self {
-            Self::EventDeclaration(node) => node.syntax(),
-            Self::FieldDeclaration(node) => node.syntax(),
-            Self::ConstraintDeclaration(node) => node.syntax(),
-            Self::MethodDeclaration(node) => node.syntax(),
-            Self::CoverageDeclaration(node) => node.syntax(),
-            Self::ModifierApplication(node) => node.syntax(),
-        }
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ParameterDeclaration<'a>(OscNode<'a>);
-impl ParameterDeclaration<'_> {
-    pub fn field_name_list(&self) -> Option<FieldNameList> {
-        support::child(&self.0, 0usize)
-    }
-    pub fn colon_token(&self) -> Option<ColonToken> {
-        support::child(&self.0, 0usize)
-    }
-    pub fn type_declarator(&self) -> Option<TypeDeclarator> {
-        support::child(&self.0, 0usize)
-    }
-    pub fn parameter_initializer_clause(&self) -> Option<ParameterInitializerClause> {
-        support::child(&self.0, 0usize)
-    }
-    pub fn parameter_with_declaration_or_newline(
-        &self,
-    ) -> Option<ParameterWithDeclarationOrNewline> {
-        support::child(&self.0, 0usize)
-    }
-}
-impl<'a> TypedNode for ParameterDeclaration<'a> {
-    type Value = OscSyntaxKind;
-    type Node = OscNode<'a>;
-    fn can_cast(value: Self::Value) -> bool {
-        value == PARAMETER_DECLARATION
-    }
-    fn cast(node: Self::Node) -> Option<Self> {
-        Self::can_cast(*node.value()).then(|| Self(node))
-    }
-    fn syntax(&self) -> &Self::Node {
-        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -6850,6 +6213,44 @@ impl<'a> TypedNode for CoverageOperator<'a> {
             Self::CoverToken(node) => node.syntax(),
             Self::RecordToken(node) => node.syntax(),
         }
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct OnDirective<'a>(OscNode<'a>);
+impl OnDirective<'_> {
+    pub fn on_token(&self) -> Option<OnToken> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn event_specification(&self) -> Option<EventSpecification> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn colon_token(&self) -> Option<ColonToken> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn newline_token(&self) -> Option<NewlineToken> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn indent_token(&self) -> Option<IndentToken> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn on_member_list(&self) -> Option<OnMemberList> {
+        support::child(&self.0, 0usize)
+    }
+    pub fn dedent_token(&self) -> Option<DedentToken> {
+        support::child(&self.0, 0usize)
+    }
+}
+impl<'a> TypedNode for OnDirective<'a> {
+    type Value = OscSyntaxKind;
+    type Node = OscNode<'a>;
+    fn can_cast(value: Self::Value) -> bool {
+        value == ON_DIRECTIVE
+    }
+    fn cast(node: Self::Node) -> Option<Self> {
+        Self::can_cast(*node.value()).then(|| Self(node))
+    }
+    fn syntax(&self) -> &Self::Node {
+        &self.0
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
