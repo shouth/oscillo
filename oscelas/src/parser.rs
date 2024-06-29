@@ -97,7 +97,7 @@ impl<'a> Parser<'a> {
     }
 
     fn bump(&mut self, kind: OscSyntaxKind) {
-        self.recovering = kind != ERROR;
+        self.recovering = kind == ERROR;
 
         if self.lexer.nth(0).kind == INDENT {
             let indentation = match kind {
@@ -178,7 +178,7 @@ impl<'a> Parser<'a> {
 
     pub fn recover(&mut self, recovery: impl Into<OscSyntaxKindSet>) {
         let recovery = recovery.into();
-        while !self.check(recovery | EOF) {
+        while !(recovery | EOF).contains(self.lexer.nth(0).kind) {
             self.error();
         }
     }
