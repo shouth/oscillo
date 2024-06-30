@@ -30,6 +30,10 @@ enum Command {
         #[clap(subcommand)]
         command: GenerateCommand,
     },
+    Serve {
+        #[clap(subcommand)]
+        command: ServeCommand,
+    }
 }
 
 #[derive(Subcommand)]
@@ -50,6 +54,11 @@ enum GenerateCommand {
         ucd_path: Option<String>,
     },
     Syntax,
+}
+
+#[derive(Subcommand)]
+enum ServeCommand {
+    AstExplorer,
 }
 
 fn download_ucd(version: String, path: &Path) {
@@ -78,7 +87,7 @@ fn format_src(src: &str) -> String {
         .expect("Failed to format source code")
 }
 
-fn main() {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     let cli = Cli::parse();
 
     match cli.command {
@@ -98,9 +107,7 @@ fn main() {
                         generate_char_set(ucd_path)
                     }
                     None => {
-                        let temp_dir = sh
-                            .create_temp_dir()
-                            .expect("Failed to create a temporary directory");
+                        let temp_dir = sh.create_temp_dir()?;
                         download_ucd("latest".to_owned(), temp_dir.path());
                         generate_char_set(temp_dir.path())
                     }
@@ -110,10 +117,8 @@ fn main() {
                 sh.write_file(
                     base_path.join("id_start_char_set.rs"),
                     id_start_char_set_src,
-                )
-                .expect("Failed to write id_start_char_set.rs");
-                sh.write_file(base_path.join("id_char_set.rs"), id_char_set_src)
-                    .expect("Failed to write id_char_set.rs");
+                )?;
+                sh.write_file(base_path.join("id_char_set.rs"), id_char_set_src)?;
             }
             GenerateCommand::Syntax => {
                 let sh = Shell::new().expect("Failed to create a shell");
@@ -126,11 +131,19 @@ fn main() {
                 let syntax_node_src = format_src(&syntax_node_src);
 
                 let base_path = project_root().join("crates/osc-parser/src/syntax/generated");
-                sh.write_file(base_path.join("node.rs"), syntax_node_src)
-                    .expect("Failed to write node.rs");
-                sh.write_file(base_path.join("kind.rs"), syntax_kind_src)
-                    .expect("Failed to write kind.rs");
+                sh.write_file(base_path.join("node.rs"), syntax_node_src)?;
+                sh.write_file(base_path.join("kind.rs"), syntax_kind_src)?;
             }
         },
+        Command::Serve { command } => match command {
+            ServeCommand::AstExplorer => {
+                let sh = Shell::new().expect("Failed to create a shell");
+                let base_path = project_root().join("crates/osc-ast-explorer");
+                sh.change_dir(base_path);
+                cmd!(sh, "trunk serve").run()?;
+            }
+        }
     }
+
+    Ok(())
 }

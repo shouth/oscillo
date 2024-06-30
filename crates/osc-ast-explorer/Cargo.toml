@@ -6,5 +6,6 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-yew = "0.21.0"
-osc-parser = { path = "../../osc-parser" }
+yew = { version = "0.21.0", features = ["csr"] }
+osc-parser = { path = "../osc-parser" }
+web-sys = "0.3.69"
