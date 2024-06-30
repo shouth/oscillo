@@ -14,6 +14,12 @@ use crate::lexer::{LexedToken, LexicalAnalyzer};
 use crate::syntax::OscSyntaxKind::{self, *};
 use crate::syntax::OscSyntaxKindSet;
 
+pub use common::*;
+pub use decl::*;
+pub use expr::*;
+pub use member::*;
+pub use osc_file::*;
+
 #[derive(Debug, Clone)]
 pub struct Checkpoint(TreeCheckpoint<PointerUsize>);
 
@@ -248,175 +254,12 @@ impl<'a> Parser<'a> {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use codespan_reporting::files::SimpleFiles;
-    use codespan_reporting::term;
-    use codespan_reporting::term::termcolor::{ColorChoice, StandardStream};
-    use expr::parse_expr;
-    use osc_file::parse_osc_file;
+pub fn to_osc_syntax_string(source: &str) -> String {
+    let mut p = Parser::new(source);
+    parse_osc_file(&mut p);
+    let (_, tree) = p.finish();
 
-    use super::*;
-
-    #[test]
-    fn test_parse_expr() -> Result<(), Box<dyn std::error::Error>> {
-        let source = "not not (-x in [1, 2, 3]) and y > 3.14 or 42 % 3 == 1 => object.method(a[i], x: 2 * pi)";
-        let expected = syntree::tree! {
-            LOGICAL_EXP => {
-                LOGICAL_EXP => {
-                    LOGICAL_EXP => {
-                        UNARY_EXP => {
-                            (NOT_KW, 3),
-                            (WHITESPACE, 1),
-                            UNARY_EXP => {
-                                (NOT_KW, 3),
-                                (WHITESPACE, 1),
-                                PARENTHESIZED_EXP => {
-                                    (LEFT_PAREN, 1),
-                                    BINARY_EXP => {
-                                        UNARY_EXP => {
-                                            (MINUS, 1),
-                                            (IDENTIFIER, 1),
-                                            (WHITESPACE, 1),
-                                        },
-                                        (IN_KW, 2),
-                                        (WHITESPACE, 1),
-                                        LIST_CONSTRUCTOR => {
-                                            (LEFT_BRACKET, 1),
-                                            EXPRESSION_LIST => {
-                                                EXPRESSION_LIST_ELEMENT => {
-                                                    (INTEGER_LITERAL, 1),
-                                                    (COMMA, 1),
-                                                    (WHITESPACE, 1),
-                                                },
-                                                EXPRESSION_LIST_ELEMENT => {
-                                                    (INTEGER_LITERAL, 1),
-                                                    (COMMA, 1),
-                                                    (WHITESPACE, 1),
-                                                },
-                                                EXPRESSION_LIST_ELEMENT => {
-                                                    (INTEGER_LITERAL, 1),
-                                                },
-                                            },
-                                            (RIGHT_BRACKET, 1),
-                                        },
-                                    },
-                                    (RIGHT_PAREN, 1),
-                                    (WHITESPACE, 1),
-                                },
-                            },
-                        },
-                        (AND_KW, 3),
-                        (WHITESPACE, 1),
-                        BINARY_EXP => {
-                            (IDENTIFIER, 1),
-                            (WHITESPACE, 1),
-                            (GREATER, 1),
-                            (WHITESPACE, 1),
-                            (FLOAT_LITERAL, 4),
-                            (WHITESPACE, 1),
-                        },
-                    },
-                    (OR_KW, 2),
-                    (WHITESPACE, 1),
-                    BINARY_EXP => {
-                        BINARY_EXP => {
-                            (INTEGER_LITERAL, 2),
-                            (WHITESPACE, 1),
-                            (PERCENT, 1),
-                            (WHITESPACE, 1),
-                            (INTEGER_LITERAL, 1),
-                            (WHITESPACE, 1),
-                        },
-                        (EQUAL, 2),
-                        (WHITESPACE, 1),
-                        (INTEGER_LITERAL, 1),
-                        (WHITESPACE, 1),
-                    },
-                },
-                (FAT_ARROW, 2),
-                (WHITESPACE, 1),
-                FUNCTION_APPLICATION => {
-                    MEMBER_REFERENCE => {
-                        (IDENTIFIER, 6),
-                        (DOT, 1),
-                        (IDENTIFIER, 6),
-                    },
-                    (LEFT_PAREN, 1),
-                    ARGUMENT_LIST => {
-                        POSITIONAL_ARGUMENT => {
-                            ELEMENT_ACCESS => {
-                                (IDENTIFIER, 1),
-                                (LEFT_BRACKET, 1),
-                                (IDENTIFIER, 1),
-                                (RIGHT_BRACKET, 1),
-                            },
-                            (COMMA, 1),
-                            (WHITESPACE, 1),
-                        },
-                        NAMED_ARGUMENT => {
-                            (IDENTIFIER, 1),
-                            (COLON, 1),
-                            (WHITESPACE, 1),
-                            BINARY_EXP => {
-                                (INTEGER_LITERAL, 1),
-                                (WHITESPACE, 1),
-                                (STAR, 1),
-                                (WHITESPACE, 1),
-                                (IDENTIFIER, 2),
-                            },
-                        },
-                    },
-                    (RIGHT_PAREN, 1),
-                },
-            },
-            EOF,
-        };
-
-        let mut p = Parser::new(source);
-        parse_expr(&mut p, EOF.into());
-        let (diagnostics, tree) = p.finish();
-
-        assert!(diagnostics.is_empty());
-        assert_eq!(tree, expected);
-
-        Ok(())
-    }
-
-    #[test]
-    fn test_parse_osc_file() -> Result<(), Box<dyn std::error::Error>> {
-        let source = r#"
-scenario sut.my__scenario:
-    car1: vehicle
-    car2: vehicle
-
-    do serial:
-        phase1: car1.drive(duration:, ) with:
-            speed(
-                [40kph..80kph],
-                at: end)
-            lane([2..4])
-        phase2: car1.drive(duration: 24s with:
-            speed([70kph..60kph], at: )
-"#;
-
-        let mut p = Parser::new(source);
-        parse_osc_file(&mut p);
-        let (diagnostics, tree) = p.finish();
-
-        let writer = StandardStream::stderr(ColorChoice::Always);
-        syntree::print::print_with_source(&mut writer.lock(), &tree, &source)?;
-
-        let mut files = SimpleFiles::new();
-        let file_id = files.add("<builtin>", source);
-        let config = codespan_reporting::term::Config::default();
-
-        for diagnostic in diagnostics {
-            let diagnostic = diagnostic.into_codespan_reporting(&file_id);
-            term::emit(&mut writer.lock(), &config, &files, &diagnostic)?;
-        }
-        println!("end of test_parse_osc_file()");
-
-        Ok(())
-    }
+    let mut writer = Vec::new();
+    syntree::print::print_with_source(&mut writer, &tree, source).unwrap();
+    unsafe { String::from_utf8_unchecked(writer) }
 }

@@ -50,8 +50,9 @@ fn parse_leading_expr(p: &mut Parser, power: u8, recovery: OscSyntaxKindSet) {
                     parse_expr(p, RIGHT_BRACKET | COMMA | recovery);
                 }
                 p.close(element_checkpoint, EXPRESSION_LIST_ELEMENT);
-                p.right(left, RIGHT_BRACKET);
                 p.close(list_checkpoint, EXPRESSION_LIST);
+                p.right(left, RIGHT_BRACKET);
+                p.close(checkpoint.clone(), LIST_CONSTRUCTOR);
             }
         }
     } else if p.eat(RANGE_KW) {
