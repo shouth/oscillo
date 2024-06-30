@@ -28,7 +28,7 @@ pub fn parse_qualified_identifier(p: &mut Parser) {
 
 pub fn parse_argument_spcifications(p: &mut Parser) {
     let checkpoint = p.open();
-    p.expect(LEFT_PAREN);
+    let left = p.left(LEFT_PAREN);
 
     let list_checkpoint = p.open();
     while !p.check(RIGHT_PAREN) || !p.eof() {
@@ -55,13 +55,13 @@ pub fn parse_argument_spcifications(p: &mut Parser) {
     }
     p.close(list_checkpoint, ARGUMENT_SPECIFICATION_LIST);
 
-    p.expect(RIGHT_PAREN);
+    p.right(left, RIGHT_PAREN);
     p.close(checkpoint, ARGUMENT_SPECIFICATIONS);
 }
 
 pub fn parse_arguments(p: &mut Parser) {
     let checkpoint = p.open();
-    p.expect(LEFT_PAREN);
+    let left = p.left(LEFT_PAREN);
 
     while !p.check(RIGHT_PAREN) && !p.eof() {
         let argument_checkpoint = p.open();
@@ -94,6 +94,6 @@ pub fn parse_arguments(p: &mut Parser) {
         }
     }
 
-    p.expect(RIGHT_PAREN);
+    p.right(left, RIGHT_PAREN);
     p.close(checkpoint, ARGUMENT_LIST);
 }

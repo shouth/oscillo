@@ -23,21 +23,24 @@ fn parse_leading_expr(p: &mut Parser, power: u8, recovery: OscSyntaxKindSet) {
     if p.eat(NOT_KW | MINUS) {
         parse_leading_expr(p, 100, recovery);
         p.close(checkpoint.clone(), UNARY_EXP);
-    } else if p.eat(LEFT_PAREN) {
+    } else if p.check(LEFT_PAREN) {
+        let left = p.left(LEFT_PAREN);
         parse_expr(p, RIGHT_PAREN | recovery);
-        p.expect(RIGHT_PAREN);
+        p.right(left, RIGHT_PAREN);
         p.close(checkpoint.clone(), PARENTHESIZED_EXP);
-    } else if p.eat(LEFT_BRACKET) {
+    } else if p.check(LEFT_BRACKET) {
+        let left = p.left(LEFT_BRACKET);
         let list_checkpoint = p.open();
-        if p.eat(RIGHT_BRACKET) {
+        if p.check(RIGHT_BRACKET) {
             // allow empty list when parsing
+            p.right(left, RIGHT_BRACKET);
             p.close(list_checkpoint, EXPRESSION_LIST);
         } else {
             let mut element_checkpoint = p.open();
             parse_expr(p, DOT_DOT | RIGHT_BRACKET | COMMA | recovery);
             if p.eat(DOT_DOT) {
                 parse_expr(p, RIGHT_BRACKET | recovery);
-                p.expect(RIGHT_BRACKET);
+                p.right(left, RIGHT_BRACKET);
                 p.close(checkpoint.clone(), BRACKETS_RANGE_CONSTRUCTOR);
             } else {
                 while !p.check(RIGHT_BRACKET) && !p.eof() {
@@ -47,16 +50,16 @@ fn parse_leading_expr(p: &mut Parser, power: u8, recovery: OscSyntaxKindSet) {
                     parse_expr(p, RIGHT_BRACKET | COMMA | recovery);
                 }
                 p.close(element_checkpoint, EXPRESSION_LIST_ELEMENT);
-                p.expect(RIGHT_BRACKET);
+                p.right(left, RIGHT_BRACKET);
                 p.close(list_checkpoint, EXPRESSION_LIST);
             }
         }
     } else if p.eat(RANGE_KW) {
-        p.expect(LEFT_PAREN);
+        let left = p.left(LEFT_PAREN);
         parse_expr(p, COMMA | RIGHT_PAREN | recovery);
         p.expect(COMMA);
         parse_expr(p, RIGHT_PAREN | recovery);
-        p.expect(RIGHT_PAREN);
+        p.right(left, RIGHT_PAREN);
         p.close(checkpoint.clone(), PARENTHESES_RANGE_CONSTRUCTOR);
     } else if p.check(IDENTIFIER | NULL_KW | COLON_COLON) {
         parse_qualified_identifier(p);
@@ -95,14 +98,14 @@ fn parse_trailing_expr(p: &mut Parser, checkpoint: Checkpoint, power: u8, recove
         // As of version 2.1.0, postfix operators have higher precedence than any other operators.
         if p.eat(DOT) {
             if p.eat(AS_KW) {
-                p.expect(LEFT_PAREN);
+                let left = p.left(LEFT_PAREN);
                 parse_type_declarator(p);
-                p.expect(RIGHT_PAREN);
+                p.right(left, RIGHT_PAREN);
                 p.close(checkpoint.clone(), CAST_EXP);
             } else if p.eat(IS_KW) {
-                p.expect(LEFT_PAREN);
+                let left = p.left(LEFT_PAREN);
                 parse_type_declarator(p);
-                p.expect(RIGHT_PAREN);
+                p.right(left, RIGHT_PAREN);
                 p.close(checkpoint.clone(), TYPE_TEST_EXP);
             } else if p.check(IDENTIFIER | NULL_KW | COLON_COLON) {
                 parse_qualified_identifier(p);
@@ -110,9 +113,10 @@ fn parse_trailing_expr(p: &mut Parser, checkpoint: Checkpoint, power: u8, recove
             } else {
                 p.unexpected();
             }
-        } else if p.eat(LEFT_BRACKET) {
+        } else if p.check(LEFT_BRACKET) {
+            let left = p.left(LEFT_BRACKET);
             parse_expr(p, RIGHT_BRACKET | recovery);
-            p.expect(RIGHT_BRACKET);
+            p.right(left, RIGHT_BRACKET);
             p.close(checkpoint.clone(), ELEMENT_ACCESS);
         } else if p.check(LEFT_PAREN) {
             parse_arguments(p);

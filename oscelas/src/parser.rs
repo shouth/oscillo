@@ -10,7 +10,7 @@ use syntree::pointer::PointerUsize;
 use syntree::{Builder as TreeBuilder, Checkpoint as TreeCheckpoint, Tree};
 
 use crate::diagnostic::SyntaxDiagnostic;
-use crate::lexer::{LexicalAnalyzer, Lookahead};
+use crate::lexer::{LexedToken, LexicalAnalyzer};
 use crate::syntax::OscSyntaxKind::{self, *};
 use crate::syntax::OscSyntaxKindSet;
 
@@ -23,9 +23,16 @@ pub enum Indentation {
     Extra,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Enclosure {
+    Present(OscSyntaxKind),
+    Absent(OscSyntaxKind),
+}
+
 pub struct Parser<'a> {
     source: &'a str,
-    lexer: Lookahead<LexicalAnalyzer<'a>>,
+    lexer: LexicalAnalyzer<'a>,
+    next: LexedToken,
     builder: TreeBuilder<OscSyntaxKind, u32, usize>,
     diagnostic: Vec<SyntaxDiagnostic>,
     expected: OscSyntaxKindSet,
@@ -36,9 +43,13 @@ pub struct Parser<'a> {
 
 impl<'a> Parser<'a> {
     pub fn new(source: &'a str) -> Parser<'a> {
+        let mut lexer = LexicalAnalyzer::new(source);
+        let next = lexer.next_token();
+
         let mut parser = Parser {
             source,
-            lexer: Lookahead::new(LexicalAnalyzer::new(source)),
+            lexer,
+            next,
             builder: TreeBuilder::new(),
             diagnostic: Vec::new(),
             expected: OscSyntaxKindSet::new(),
@@ -50,22 +61,26 @@ impl<'a> Parser<'a> {
         parser
     }
 
+    pub fn offset(&self) -> usize {
+        self.lexer.offset() - self.next.length
+    }
+
     fn skip_trivia(&mut self) {
-        while let kind @ (WHITESPACE | COMMENT | TRIVIAL_NEWLINE) = self.lexer.nth(0).kind {
-            let token = self.lexer.bump();
+        while let kind @ (WHITESPACE | COMMENT | TRIVIAL_NEWLINE) = self.next.kind {
+            let token = self.do_bump();
             self.builder.token(kind, token.length).unwrap();
             self.leading_trivia = true;
         }
     }
 
     pub fn current_token_range(&mut self) -> Range<usize> {
-        let start = self.lexer.offset();
-        let end = start + self.lexer.nth(0).length;
+        let start = self.offset();
+        let end = start + self.next.length;
         start..end
     }
 
     pub fn current_token_kind(&mut self) -> OscSyntaxKind {
-        self.lexer.nth(0).kind
+        self.next.kind
     }
 
     pub fn has_leading_trivia(&self) -> bool {
@@ -77,8 +92,8 @@ impl<'a> Parser<'a> {
     }
 
     pub fn unexpected(&mut self) {
-        if self.lexer.nth(0).kind == INDENT {
-            let start = self.lexer.offset();
+        if self.next.kind == INDENT {
+            let start = self.offset();
             let length = self.source[start..]
                 .chars()
                 .take_while(|c| [' ', '\t'].contains(c))
@@ -97,10 +112,16 @@ impl<'a> Parser<'a> {
         }
     }
 
+    fn do_bump(&mut self) -> LexedToken {
+        let current = self.next;
+        self.next = self.lexer.next_token();
+        current
+    }
+
     fn bump(&mut self, kind: OscSyntaxKind) {
         self.recovering = kind == ERROR;
 
-        if self.lexer.nth(0).kind == INDENT {
+        if self.next.kind == INDENT {
             let indentation = match kind {
                 ERROR => Indentation::Extra,
                 _ => Indentation::Normal,
@@ -109,15 +130,13 @@ impl<'a> Parser<'a> {
         }
 
         loop {
-            let token = self.lexer.bump();
+            let token = self.do_bump();
             self.builder.token(kind, token.length).unwrap();
             self.expected.clear();
             self.leading_trivia = false;
             self.skip_trivia();
 
-            if self.lexer.nth(0).kind != DEDENT
-                || self.indentations.pop() == Some(Indentation::Normal)
-            {
+            if self.next.kind != DEDENT || self.indentations.pop() == Some(Indentation::Normal) {
                 break;
             }
         }
@@ -125,12 +144,12 @@ impl<'a> Parser<'a> {
 
     fn do_check(&mut self, kinds: OscSyntaxKindSet) -> Option<OscSyntaxKind> {
         self.expected |= kinds;
-        let next = self.lexer.nth(0).kind;
+        let next = self.next.kind;
 
         let keyword = match next {
             IDENTIFIER => {
-                let begin = self.lexer.offset();
-                let length = self.lexer.nth(0).length;
+                let begin = self.offset();
+                let length = self.next.length;
                 let lexeme = &self.source[begin..][..length];
                 kinds
                     .iter()
@@ -165,8 +184,37 @@ impl<'a> Parser<'a> {
         result
     }
 
+    pub fn left(&mut self, left: OscSyntaxKind) -> Enclosure {
+        self.lexer.left();
+        if self.expect(left) {
+            Enclosure::Present(left)
+        } else {
+            self.lexer.right();
+            Enclosure::Absent(left)
+        }
+    }
+
+    pub fn right(&mut self, enclosure: Enclosure, right: OscSyntaxKind) -> bool {
+        let result = self.expect(right);
+        let left = match enclosure {
+            Enclosure::Present(left) => {
+                self.lexer.right();
+                left
+            }
+            Enclosure::Absent(left) => {
+                left
+            }
+        };
+
+        match (left, right) {
+            (LEFT_PAREN, RIGHT_PAREN) | (LEFT_BRACKET, RIGHT_BRACKET) => (),
+            _ => panic!("Bug: mismatched enclosure parser"),
+        }
+        result
+    }
+
     pub fn eof(&mut self) -> bool {
-        self.lexer.nth(0).kind == EOF
+        self.next.kind == EOF
     }
 
     pub fn error(&mut self) {
@@ -183,7 +231,7 @@ impl<'a> Parser<'a> {
 
     pub fn recover(&mut self, recovery: impl Into<OscSyntaxKindSet>) {
         let recovery = recovery.into();
-        while !(recovery | EOF).contains(self.lexer.nth(0).kind) {
+        while !(recovery | EOF).contains(self.next.kind) {
             self.error();
         }
     }
@@ -193,7 +241,7 @@ impl<'a> Parser<'a> {
         self.bump(EOF);
 
         let mut diagnostics = Vec::new();
-        diagnostics.extend(self.lexer.finish().finish());
+        diagnostics.extend(self.lexer.finish());
         diagnostics.extend(self.diagnostic);
 
         (diagnostics, self.builder.build().unwrap())
@@ -343,10 +391,12 @@ scenario sut.my__scenario:
     car2: vehicle
 
     do serial:
-        phase1: car1.drive(duration:, :
-            speed([40kph..80kph], at: end)
+        phase1: car1.drive(duration:, ) with:
+            speed(
+                [40kph..80kph],
+                at: end)
             lane([2..4])
-        phase2: car1.drive(duration: 24s) with:
+        phase2: car1.drive(duration: 24s with:
             speed([70kph..60kph], at: )
 "#;
 
@@ -365,6 +415,7 @@ scenario sut.my__scenario:
             let diagnostic = diagnostic.into_codespan_reporting(&file_id);
             term::emit(&mut writer.lock(), &config, &files, &diagnostic)?;
         }
+        println!("end of test_parse_osc_file()");
 
         Ok(())
     }

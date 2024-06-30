@@ -56,10 +56,10 @@ pub fn parse_constraint_declaration(p: &mut Parser) {
 pub fn parse_keep_constraint_declaration(p: &mut Parser) {
     let checkpoint = p.open();
     p.expect(KEEP_KW);
-    p.expect(LEFT_PAREN);
+    let left = p.left(LEFT_PAREN);
     p.eat(DEFAULT_KW | HARD_KW); // constant qualifier (optional)
     parse_expr(p, RIGHT_PAREN | NEWLINE | DEDENT | first_structured_type_member());
-    p.expect(RIGHT_PAREN);
+    p.right(left, RIGHT_PAREN);
     p.expect(NEWLINE);
     p.close(checkpoint, KEEP_CONSTRAINT_DECLARATION);
 }
@@ -67,9 +67,9 @@ pub fn parse_keep_constraint_declaration(p: &mut Parser) {
 pub fn parse_remove_default_declaration(p: &mut Parser) {
     let checkpoint = p.open();
     p.expect(REMOVE_DEFAULT_KW);
-    p.expect(LEFT_PAREN);
+    let left = p.left(LEFT_PAREN);
     parse_expr(p, RIGHT_PAREN | NEWLINE | DEDENT | first_structured_type_member());
-    p.expect(RIGHT_PAREN);
+    p.right(left, RIGHT_PAREN);
     p.expect(NEWLINE);
     p.close(checkpoint, REMOVE_DEFAULT_DECLARATION);
 }

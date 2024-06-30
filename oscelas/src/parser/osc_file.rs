@@ -1,8 +1,7 @@
 use crate::parser::common::first_qualified_identifier;
-use crate::syntax::{OscSyntaxKind::*, OscSyntaxKindSet};
-
 use crate::parser::decl::{first_osc_declaration, parse_osc_declaration};
 use crate::parser::Parser;
+use crate::syntax::{OscSyntaxKind::*, OscSyntaxKindSet};
 
 pub fn parse_osc_file(p: &mut Parser) {
     let checkpoint = p.open();

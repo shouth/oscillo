@@ -1,53 +1,56 @@
 use crate::diagnostic::SyntaxDiagnostic;
+use crate::lexer::raw_lexer::RawLexer;
+use crate::lexer::LexedToken;
 use crate::syntax::OscSyntaxKind::{self, *};
 
-use super::lookahead::{LookaheadSource, Lookahead};
-use super::raw_lexer::RawLexer;
-use super::LexedToken;
-
 pub struct Lexer<'a> {
-    inner: Lookahead<RawLexer<'a>>,
+    lexer: RawLexer<'a>,
+    next: LexedToken,
 }
 
 impl Lexer<'_> {
     pub fn new(source: &str) -> Lexer {
-        Lexer {
-            inner: Lookahead::new(RawLexer::new(source)),
-        }
+        let mut lexer = RawLexer::new(source);
+        let next = lexer.next_token();
+        Lexer { lexer, next }
+    }
+
+    pub fn offset(&self) -> usize {
+        self.lexer.offset() - self.next.length
+    }
+
+    fn bump(&mut self) -> LexedToken {
+        let current = self.next;
+        self.next = self.lexer.next_token();
+        current
     }
 
     fn glue(&mut self, kind: OscSyntaxKind, prev: LexedToken) -> LexedToken {
-        let next = self.inner.bump();
+        let current = self.bump();
         LexedToken {
             kind,
-            length: prev.length + next.length,
+            length: prev.length + current.length,
         }
     }
 
     pub fn next_token(&mut self) -> LexedToken {
-        let token = self.inner.bump();
+        let current = self.bump();
 
         // glue sign token and adjacent numeric token to meet max munch rule
-        match token.kind {
-            PLUS => match self.inner.nth(0).kind {
-                kind @ FLOAT_LITERAL => self.glue(kind, token),
-                _ => token,
+        match current.kind {
+            PLUS => match self.next.kind {
+                kind @ FLOAT_LITERAL => self.glue(kind, current),
+                _ => current,
             },
-            MINUS => match self.inner.nth(0).kind {
-                kind @ (INTEGER_LITERAL | FLOAT_LITERAL) => self.glue(kind, token),
-                _ => token,
+            MINUS => match self.next.kind {
+                kind @ (INTEGER_LITERAL | FLOAT_LITERAL) => self.glue(kind, current),
+                _ => current,
             },
-            _ => token,
+            _ => current,
         }
     }
 
     pub fn finish(self) -> Vec<SyntaxDiagnostic> {
-        self.inner.finish().finish()
-    }
-}
-
-impl LookaheadSource for Lexer<'_> {
-    fn next_token(&mut self) -> LexedToken {
-        self.next_token()
+        self.lexer.finish()
     }
 }

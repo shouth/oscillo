@@ -1,5 +1,5 @@
-use std::{fmt::Display, ops::Range};
-use std::fmt::Write;
+use std::fmt::{Display, Write};
+use std::ops::Range;
 
 use codespan_reporting::diagnostic::{Diagnostic, Label};
 

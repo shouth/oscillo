@@ -1,11 +1,9 @@
 mod cursor;
 mod lexer;
 mod lexical_analyzer;
-mod lookahead;
 mod raw_lexer;
 
 pub use lexical_analyzer::LexicalAnalyzer;
-pub use lookahead::Lookahead;
 
 use crate::syntax::OscSyntaxKind;
 

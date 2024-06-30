@@ -1,8 +1,7 @@
 use std::str::Chars;
 
+use crate::lexer::LexedToken;
 use crate::syntax::OscSyntaxKind;
-
-use super::LexedToken;
 
 pub struct Cursor<'a> {
     source: Chars<'a>,

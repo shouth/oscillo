@@ -1,9 +1,7 @@
 use crate::diagnostic::SyntaxDiagnostic;
+use crate::lexer::LexedToken;
+use crate::lexer::lexer::Lexer;
 use crate::syntax::OscSyntaxKind::{self, *};
-
-use super::lookahead::{Lookahead, LookaheadSource};
-use super::LexedToken;
-use super::lexer::Lexer;
 
 #[derive(Debug)]
 pub struct Indentation<'a> {
@@ -12,8 +10,8 @@ pub struct Indentation<'a> {
     pub width: usize,
 }
 
-impl<'a> Indentation<'a> {
-    pub fn new(text: &str, offset: usize) -> Indentation {
+impl Indentation<'_> {
+    pub fn new<'a>(text: &'a str, offset: usize) -> Indentation<'a> {
         let text_width = text[offset..]
             .chars()
             .take_while(|c| [' ', '\t'].contains(c))
@@ -37,32 +35,47 @@ enum LexicalAnalyzerState {
 
 pub struct LexicalAnalyzer<'a> {
     source: &'a str,
-    lexer: Lookahead<Lexer<'a>>,
+    lexer: Lexer<'a>,
+    next: [LexedToken; 2],
     indentations: Vec<Indentation<'a>>,
-    enclosing_level: i32,
+    nesting: i32,
     diagnostics: Vec<SyntaxDiagnostic>,
     state: LexicalAnalyzerState,
 }
 
 impl<'a> LexicalAnalyzer<'a> {
     pub fn new(source: &'a str) -> LexicalAnalyzer<'a> {
+        let mut lexer = Lexer::new(source);
+        let next = [lexer.next_token(), lexer.next_token()];
+
         LexicalAnalyzer {
             source,
-            lexer: Lookahead::new(Lexer::new(source)),
-            indentations: vec![Indentation::new("", 0)],
-            enclosing_level: 0,
+            lexer,
+            next,
+            indentations: vec![Indentation::new(source, 0)],
+            nesting: 0,
             diagnostics: Vec::new(),
             state: LexicalAnalyzerState::StartOfLine,
         }
     }
 
-    pub fn push_enclosure(&mut self) {
-        self.enclosing_level += 1;
+    pub fn offset(&self) -> usize {
+        self.lexer.offset() - self.next[0].length - self.next[1].length
     }
 
-    pub fn pop_enclosure(&mut self) {
-        assert!(self.enclosing_level > 0);
-        self.enclosing_level -= 1;
+    pub fn left(&mut self) {
+        self.nesting += 1;
+    }
+
+    pub fn right(&mut self) {
+        assert!(self.nesting > 0);
+        self.nesting -= 1;
+    }
+
+    fn bump(&mut self) -> LexedToken {
+        let current = self.next[0];
+        self.next = [self.next[1], self.lexer.next_token()];
+        current
     }
 
     fn spawn(&self, kind: OscSyntaxKind) -> LexedToken {
@@ -71,16 +84,16 @@ impl<'a> LexicalAnalyzer<'a> {
 
     pub fn next_token(&mut self) -> LexedToken {
         match self.state {
-            LexicalAnalyzerState::StartOfLine => match self.lexer.nth(0).kind {
+            LexicalAnalyzerState::StartOfLine => match self.next[0].kind {
                 TRIVIAL_NEWLINE => {
-                    self.lexer.bump()
+                    self.bump()
                 }
                 WHITESPACE | EOF => {
-                    if self.lexer.nth(1).kind == TRIVIAL_NEWLINE {
-                        return self.lexer.bump();
+                    if self.next[1].kind == TRIVIAL_NEWLINE {
+                        return self.bump();
                     }
 
-                    let indentation = Indentation::new(&self.source, self.lexer.offset());
+                    let indentation = Indentation::new(&self.source, self.offset());
                     let last_indentation = self.indentations.last()
                         .expect("indentations should not be empty");
 
@@ -99,8 +112,8 @@ impl<'a> LexicalAnalyzer<'a> {
                         }
 
                         if indentation.width > outer_indentation.width {
-                            let start = self.lexer.offset();
-                            let end = start + self.lexer.nth(0).length;
+                            let start = self.offset();
+                            let end = start + self.next[0].length;
                             self.diagnostics.push(SyntaxDiagnostic::IrregularIndentationSize {
                                 range: start..end,
                                 expected: outer_indentation.width,
@@ -108,14 +121,14 @@ impl<'a> LexicalAnalyzer<'a> {
                             });
 
                             self.indentations.push(last_indentation);
-                            self.lexer.bump()
+                            self.bump()
                         } else {
                             self.spawn(DEDENT)
                         }
                     } else {
                         if indentation.text != last_indentation.text {
-                            let start = self.lexer.offset();
-                            let end = start + self.lexer.nth(0).length;
+                            let start = self.offset();
+                            let end = start + self.next[0].length;
                             let last_start = last_indentation.offset;
                             let last_end = last_start + last_indentation.text.len();
                             self.diagnostics.push(SyntaxDiagnostic::IrregularIndentationSequence {
@@ -123,22 +136,30 @@ impl<'a> LexicalAnalyzer<'a> {
                                 last: last_start..last_end,
                             });
                         }
-                        self.lexer.bump()
+                        self.bump()
                     }
                 }
                 _ => {
                     self.state = LexicalAnalyzerState::Normal;
-                    self.lexer.bump()
+                    self.bump()
                 }
             }
-            LexicalAnalyzerState::Normal => match self.lexer.nth(0).kind {
+            LexicalAnalyzerState::Normal => match self.next[0].kind {
                 TRIVIAL_NEWLINE => {
-                    if self.enclosing_level == 0 {
+                    if self.nesting == 0 {
                         self.state = LexicalAnalyzerState::EndOfLine;
                     }
-                    self.lexer.bump()
+                    self.bump()
                 }
-                _ => self.lexer.bump(),
+                EOF => {
+                    if self.indentations.len() > 1 {
+                        self.indentations.pop();
+                        self.spawn(DEDENT)
+                    } else {
+                        self.bump()
+                    }
+                }
+                _ => self.bump(),
             }
             LexicalAnalyzerState::EndOfLine => {
                 self.state = LexicalAnalyzerState::StartOfLine;
@@ -148,14 +169,9 @@ impl<'a> LexicalAnalyzer<'a> {
     }
 
     pub fn finish(self) -> Vec<SyntaxDiagnostic> {
+        assert!(self.nesting == 0);
         let mut diagnostics = self.diagnostics;
-        diagnostics.extend(self.lexer.finish().finish());
+        diagnostics.extend(self.lexer.finish());
         diagnostics
-    }
-}
-
-impl LookaheadSource for LexicalAnalyzer<'_> {
-    fn next_token(&mut self) -> LexedToken {
-        self.next_token()
     }
 }

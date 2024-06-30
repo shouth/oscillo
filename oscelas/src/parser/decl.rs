@@ -125,7 +125,7 @@ fn first_si_base_unit_name() -> OscSyntaxKindSet {
 fn parse_si_base_unit_specifier(p: &mut Parser) {
     let checkpoint = p.open();
     p.expect(SI_KW);
-    p.expect(LEFT_PAREN);
+    let left = p.left(LEFT_PAREN);
 
     let list_checkpoint = p.open();
     while !p.check(RIGHT_PAREN) && !p.eof() {
@@ -145,7 +145,7 @@ fn parse_si_base_unit_specifier(p: &mut Parser) {
     }
     p.close(list_checkpoint, SI_BASE_EXPONENT_LIST);
 
-    p.expect(RIGHT_PAREN);
+    p.right(left, RIGHT_PAREN);
     p.close(checkpoint, SI_BASE_UNIT_SPECIFIER);
 }
 
@@ -156,7 +156,7 @@ fn first_si_unit_specifier() -> OscSyntaxKindSet {
 fn parse_si_unit_specifier(p: &mut Parser) {
     let checkpoint = p.open();
     p.expect(SI_KW);
-    p.expect(LEFT_PAREN);
+    let left = p.left(LEFT_PAREN);
 
     let list_checkpoint = p.open();
     while !p.check(RIGHT_PAREN) && !p.eof() {
@@ -176,7 +176,7 @@ fn parse_si_unit_specifier(p: &mut Parser) {
     }
     p.close(list_checkpoint, SI_UNIT_ARGUMENT_LIST);
 
-    p.expect(RIGHT_PAREN);
+    p.right(left, RIGHT_PAREN);
     p.close(checkpoint, SI_UNIT_SPECIFIER);
 }
 
@@ -192,9 +192,7 @@ pub fn parse_enum_declaration(p: &mut Parser) {
 
 pub fn parse_enum_member_decls(p: &mut Parser) {
     let checkpoint = p.open();
-    if !p.expect(LEFT_BRACKET) {
-        return;
-    }
+    let left = p.left(LEFT_BRACKET);
 
     // allow empty enum when parsing
     let list_checkpoint = p.open();
@@ -218,7 +216,7 @@ pub fn parse_enum_member_decls(p: &mut Parser) {
     }
     p.close(list_checkpoint, ENUM_MEMBER_DECL_LIST);
 
-    p.expect(RIGHT_BRACKET);
+    p.right(left, RIGHT_BRACKET);
     p.close(checkpoint, ENUM_MEMBER_DECLS);
 }
 
@@ -233,9 +231,10 @@ pub fn parse_struct_declaration(p: &mut Parser) {
         parse_qualified_behavior_name(p);
 
         let condition_checkpoint = p.open();
-        if p.eat(LEFT_PAREN) {
+        if p.check(LEFT_PAREN) {
+            let left = p.left(LEFT_PAREN);
             parse_qualified_behavior_name(p);
-            p.expect(RIGHT_PAREN);
+            p.right(left, RIGHT_PAREN);
             p.close(condition_checkpoint, STRUCT_INHERITS_CONDITION);
         }
         p.close(checkpoint, STRUCT_INHERITS_CLAUSE);
@@ -269,9 +268,10 @@ pub fn parse_actor_declaration(p: &mut Parser) {
         parse_qualified_behavior_name(p);
 
         let condition_checkpoint = p.open();
-        if p.eat(LEFT_PAREN) {
+        if p.check(LEFT_PAREN) {
+            let left = p.left(LEFT_PAREN);
             parse_expr(p, RIGHT_PAREN | COLON | NEWLINE);
-            p.expect(RIGHT_PAREN);
+            p.right(left, RIGHT_PAREN);
             p.close(condition_checkpoint, ACTOR_INHERITS_CONDITION);
         }
         p.close(checkpoint, ACTOR_INHERITS_CLAUSE);
@@ -305,9 +305,10 @@ pub fn parse_scenario_declaration(p: &mut Parser) {
         parse_qualified_behavior_name(p);
 
         let condition_checkpoint = p.open();
-        if p.eat(LEFT_PAREN) {
+        if p.check(LEFT_PAREN) {
+            let left = p.left(LEFT_PAREN);
             parse_expr(p, RIGHT_PAREN | COLON | NEWLINE);
-            p.expect(RIGHT_PAREN);
+            p.right(left, RIGHT_PAREN);
             p.close(condition_checkpoint, SCENARIO_INHERITS_CONDITION);
         }
         p.close(checkpoint, SCENARIO_INHERITS_CLAUSE);
@@ -341,9 +342,10 @@ pub fn parse_action_declaration(p: &mut Parser) {
         parse_qualified_behavior_name(p);
 
         let condition_checkpoint = p.open();
-        if p.eat(LEFT_PAREN) {
+        if p.check(LEFT_PAREN) {
+            let left = p.left(LEFT_PAREN);
             parse_expr(p, RIGHT_PAREN | COLON | NEWLINE);
-            p.expect(RIGHT_PAREN);
+            p.right(left, RIGHT_PAREN);
             p.close(condition_checkpoint, ACTION_INHERITS_CONDITION);
         }
         p.close(checkpoint, ACTION_INHERITS_CLAUSE);

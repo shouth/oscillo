@@ -70,22 +70,22 @@ fn parse_event_condition(p: &mut Parser, recovery: OscSyntaxKindSet) {
     let checkpoint = p.open();
 
     if p.eat(RISE_KW) {
-        p.expect(LEFT_PAREN);
+        let left = p.left(LEFT_PAREN);
         parse_expr(p, RIGHT_PAREN | recovery);
-        p.expect(RIGHT_PAREN);
+        p.right(left, RIGHT_PAREN);
         p.close(checkpoint, RISE_EXPRESSION);
     } else if p.eat(FALL_KW) {
-        p.expect(LEFT_PAREN);
+        let left = p.left(LEFT_PAREN);
         parse_expr(p, RIGHT_PAREN | recovery);
-        p.expect(RIGHT_PAREN);
+        p.right(left, RIGHT_PAREN);
         p.close(checkpoint, FALL_EXPRESSION);
     } else if p.eat(ELAPSED_KW) {
-        p.expect(LEFT_PAREN);
+        let left = p.left(LEFT_PAREN);
         parse_expr(p, RIGHT_PAREN | recovery);
-        p.expect(RIGHT_PAREN);
+        p.right(left, RIGHT_PAREN);
         p.close(checkpoint, ELAPSED_EXPRESSION);
     } else if p.eat(EVERY_KW) {
-        p.expect(LEFT_PAREN);
+        let left = p.left(LEFT_PAREN);
         parse_expr(p, COMMA | RIGHT_PAREN | recovery);
 
         if p.eat(COMMA) {
@@ -96,7 +96,7 @@ fn parse_event_condition(p: &mut Parser, recovery: OscSyntaxKindSet) {
             p.close(offset_checkpoint, EVERY_EXP_OFFSET);
         }
 
-        p.expect(RIGHT_PAREN);
+        p.right(left, RIGHT_PAREN);
         p.close(checkpoint, EVERY_EXPRESSION);
     } else {
         parse_expr(p, recovery);

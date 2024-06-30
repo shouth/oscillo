@@ -1,7 +1,5 @@
-use super::lookahead::LookaheadSource;
-use super::cursor::Cursor;
-use super::LexedToken;
-
+use crate::lexer::cursor::Cursor;
+use crate::lexer::LexedToken;
 use crate::chars::{is_id_char, is_id_start_char};
 use crate::diagnostic::SyntaxDiagnostic;
 use crate::syntax::OscSyntaxKind::*;
@@ -17,6 +15,10 @@ impl RawLexer<'_> {
             cursor: Cursor::new(source),
             diagnostics: Vec::new(),
         }
+    }
+
+    pub fn offset(&self) -> usize {
+        self.cursor.source_offset()
     }
 
     fn eat_digits(&mut self, radix: u32) -> bool {
@@ -273,11 +275,5 @@ impl RawLexer<'_> {
 
     pub fn finish(self) -> Vec<SyntaxDiagnostic> {
         self.diagnostics
-    }
-}
-
-impl LookaheadSource for RawLexer<'_> {
-    fn next_token(&mut self) -> LexedToken {
-        self.next_token()
     }
 }
