@@ -201,7 +201,7 @@ pub fn parse_enum_member_decls(p: &mut Parser) {
             let element_checkpoint = p.open();
             parse_qualified_identifier(p);
             let init_checkpoint = p.open();
-            if p.eat(EQUAL) {
+            if p.eat(ASSIGN) {
                 parse_expr(p, RIGHT_BRACKET | COMMA);
                 p.close(init_checkpoint, ENUM_INITIALIZER_CLAUSE);
             }

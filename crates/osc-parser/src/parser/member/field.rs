@@ -46,7 +46,7 @@ pub fn parse_variable_declaration(p: &mut Parser) {
     parse_type_declarator(p);
 
     let init_checkpoint = p.open();
-    if p.eat(EQUAL) {
+    if p.eat(ASSIGN) {
         parse_expr(p, DEDENT | NEWLINE | first_structured_type_member());
         p.close(init_checkpoint, VARIABLE_INITIALIZER_CLAUSE);
     }
@@ -61,7 +61,7 @@ pub fn parse_parameter_declaration(p: &mut Parser) {
     parse_type_declarator(p);
 
     let init_checkpoint = p.open();
-    if p.eat(EQUAL) {
+    if p.eat(ASSIGN) {
         parse_expr(p, WITH_KW | DEDENT | NEWLINE | first_structured_type_member());
         p.close(init_checkpoint, PARAMETER_INITIALIZER_CLAUSE);
     }
