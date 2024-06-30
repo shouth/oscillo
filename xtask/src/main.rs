@@ -113,7 +113,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     }
                 };
 
-                let base_path = project_root().join("oscelas/src/chars/generated");
+                let base_path = project_root().join("crates/osc-parser/src/chars/generated");
                 sh.write_file(
                     base_path.join("id_start_char_set.rs"),
                     id_start_char_set_src,
