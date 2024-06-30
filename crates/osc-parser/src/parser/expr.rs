@@ -33,23 +33,34 @@ fn parse_leading_expr(p: &mut Parser, power: u8, recovery: OscSyntaxKindSet) {
         let list_checkpoint = p.open();
         if p.check(RIGHT_BRACKET) {
             // allow empty list when parsing
-            p.right(left, RIGHT_BRACKET);
             p.close(list_checkpoint, EXPRESSION_LIST);
+            p.right(left, RIGHT_BRACKET);
+            p.close(checkpoint.clone(), LIST_CONSTRUCTOR);
         } else {
-            let mut element_checkpoint = p.open();
             parse_expr(p, DOT_DOT | RIGHT_BRACKET | COMMA | recovery);
             if p.eat(DOT_DOT) {
                 parse_expr(p, RIGHT_BRACKET | recovery);
                 p.right(left, RIGHT_BRACKET);
                 p.close(checkpoint.clone(), BRACKETS_RANGE_CONSTRUCTOR);
             } else {
-                while !p.check(RIGHT_BRACKET) && !p.eof() {
+                if !p.check(RIGHT_BRACKET) {
                     p.expect(COMMA);
-                    p.close(element_checkpoint, EXPRESSION_LIST_ELEMENT);
-                    element_checkpoint = p.open();
-                    parse_expr(p, RIGHT_BRACKET | COMMA | recovery);
                 }
-                p.close(element_checkpoint, EXPRESSION_LIST_ELEMENT);
+                p.close(list_checkpoint.clone(), EXPRESSION_LIST_ELEMENT);
+
+                while !p.check(RIGHT_BRACKET) && !p.eof() {
+                    let element_checkpoint = p.open();
+                    if p.check(first_expr()) {
+                        parse_expr(p, RIGHT_BRACKET | COMMA | recovery);
+
+                        if !p.check(RIGHT_BRACKET) {
+                            p.expect(COMMA);
+                        }
+                        p.close(element_checkpoint, EXPRESSION_LIST_ELEMENT);
+                    } else {
+                        break;
+                    }
+                }
                 p.close(list_checkpoint, EXPRESSION_LIST);
                 p.right(left, RIGHT_BRACKET);
                 p.close(checkpoint.clone(), LIST_CONSTRUCTOR);
