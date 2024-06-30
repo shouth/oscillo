@@ -1,9 +1,6 @@
 use quote::{format_ident, quote};
 
-use crate::{
-    grammar::{Grammar, NodeIndex, RuleKind},
-    syntax_name::{SyntaxKindName, SyntaxMemberName, SyntaxNodeName},
-};
+use crate::syntax::{Grammar, NodeIndex, RuleKind, SyntaxKindName, SyntaxMemberName, SyntaxNodeName};
 
 pub fn generate_syntax_node<T>(grammar: &Grammar<T>) -> String
 where

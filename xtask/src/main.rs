@@ -1,18 +1,12 @@
-mod generate_char_set;
-mod generate_syntax_kind;
-mod generate_syntax_node;
-mod grammar;
-mod osc;
-mod syntax_name;
+mod syntax;
 
-use clap::{Parser, Subcommand};
 use std::env;
 use std::path::{Path, PathBuf};
+
+use clap::{Parser, Subcommand};
 use xshell::{cmd, Shell};
 
-use generate_char_set::generate_char_set;
-use generate_syntax_kind::generate_syntax_kind;
-use generate_syntax_node::generate_syntax_node;
+use syntax::{generate_char_set, generate_syntax_kind, generate_syntax_node, osc};
 
 pub fn project_root() -> PathBuf {
     let dir =
@@ -55,8 +49,7 @@ enum GenerateCommand {
         #[clap(long)]
         ucd_path: Option<String>,
     },
-    SyntaxKind,
-    SyntaxNode,
+    Syntax,
 }
 
 fn download_ucd(version: String, path: &Path) {
@@ -122,25 +115,21 @@ fn main() {
                 sh.write_file(base_path.join("id_char_set.rs"), id_char_set_src)
                     .expect("Failed to write id_char_set.rs");
             }
-            GenerateCommand::SyntaxKind => {
+            GenerateCommand::Syntax => {
                 let sh = Shell::new().expect("Failed to create a shell");
                 let grammar = osc::grammar();
+
                 let syntax_kind_src = generate_syntax_kind(&grammar);
                 let syntax_kind_src = format_src(&syntax_kind_src);
 
-                let base_path = project_root().join("oscelas/src/syntax/generated");
-                sh.write_file(base_path.join("kind.rs"), syntax_kind_src)
-                    .expect("Failed to write kind.rs");
-            }
-            GenerateCommand::SyntaxNode => {
-                let sh = Shell::new().expect("Failed to create a shell");
-                let grammar = osc::grammar();
                 let syntax_node_src = generate_syntax_node(&grammar);
                 let syntax_node_src = format_src(&syntax_node_src);
 
-                let base_path = project_root().join("oscelas/src/syntax/generated");
+                let base_path = project_root().join("crates/osc-parser/src/syntax/generated");
                 sh.write_file(base_path.join("node.rs"), syntax_node_src)
                     .expect("Failed to write node.rs");
+                sh.write_file(base_path.join("kind.rs"), syntax_kind_src)
+                    .expect("Failed to write kind.rs");
             }
         },
     }

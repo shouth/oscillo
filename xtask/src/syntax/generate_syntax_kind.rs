@@ -1,6 +1,6 @@
 use quote::{format_ident, quote};
 
-use crate::{grammar::{Grammar, RuleKind}, syntax_name::SyntaxKindName};
+use crate::syntax::{Grammar, RuleKind, SyntaxKindName};
 
 pub trait StaticToken {
     fn static_token(&self) -> Option<&str>;

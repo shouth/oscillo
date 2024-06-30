@@ -1,9 +1,7 @@
 use convert_case::{Case, Casing};
 use ungrammar::Grammar as Ungrammar;
 
-use crate::generate_syntax_kind::StaticToken;
-use crate::grammar::{Grammar, Terminal};
-use crate::syntax_name::{SyntaxKindName, SyntaxMemberName, SyntaxNodeName};
+use crate::syntax::{StaticToken, Grammar, Terminal, SyntaxKindName, SyntaxMemberName, SyntaxNodeName};
 
 const PUNCTS: &[(&str, &str)] = &[
     (".", "dot"),
@@ -167,7 +165,7 @@ pub enum TokenKind {
 }
 
 pub fn grammar() -> Grammar<Token> {
-    let ungrammar = include_str!("osc.ungram");
+    let ungrammar = include_str!("../osc.ungram");
     let ungrammar = ungrammar.parse::<Ungrammar>().unwrap();
     let tokens = std::iter::empty()
         .chain(PUNCTS.iter().map(|x| (x.1, x.0, TokenKind::Punctuation)))

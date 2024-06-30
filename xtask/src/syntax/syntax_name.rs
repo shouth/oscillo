@@ -1,6 +1,6 @@
 use convert_case::{Case, Casing};
 
-use crate::grammar::{Grammar, NodeIndex, Rule, SequenceItem};
+use crate::syntax::{Grammar, NodeIndex, Rule, SequenceItem};
 
 pub trait SyntaxKindName {
     fn syntax_kind_name(&self) -> String;
